@@ -2760,9 +2760,14 @@ function healWalls(tol){
       if(best&&bd>0.5){ set(w,e,best); extended++; }
     }
   }
-  // drop anything that healing (or earlier editing) reduced to nothing
+  /* Drop stubs. Auto-tracing leaves little fragments a few centimetres long,
+     and healing can shrink a wall to nothing. They are invisible on the plan
+     but they still count as geometry: a single 5 cm stub at the far corner of
+     a traced flat halved the size of the 3D view, because Fit has to frame it
+     like anything else. Nothing this short is ever a real wall. */
+  const STUB=12;
   const before=DOC.walls.length;
-  DOC.walls=DOC.walls.filter(w=>wallLen(w)>=1);
+  DOC.walls=DOC.walls.filter(w=>wallLen(w)>=STUB);
   const dropped=before-DOC.walls.length;
   if(dropped){
     const live=new Set(DOC.walls.map(w=>w.id));
@@ -2777,7 +2782,7 @@ $("bHeal").onclick=()=>{
   commit();
   toast("Joined "+r.joined+" corners, straightened "+r.straightened+
         ", extended "+r.extended+" wall ends"+
-        (r.dropped?", removed "+r.dropped+" zero-length":"")+".",4500);
+        (r.dropped?", removed "+r.dropped+" stub"+(r.dropped>1?"s":""):"")+".",4500);
 };
 
 async function runAutoTrace(){
@@ -2846,6 +2851,9 @@ function sunDir(){
 }
 let is3D=false;
 const CEIL=()=>DOC.ceiling||280;
+/* Cutaway sections the walls at knee height so you see over them into every
+   room, from any angle. */
+const wallCap=()=>(V3.cutaway!==false)?Math.min(CEIL(),Math.round(CEIL()*0.38)):CEIL();
 
 function shade(hex,f){
   const n=parseInt(hex.slice(1),16);
@@ -3028,7 +3036,7 @@ function buildScene(){
      side of centre, so all of them are kept and the furniture behind them
      vanishes behind a slab of grey. Section the walls instead - cap them at
      knee height - and every room stays readable from every angle. */
-  const WH = (V3.cutaway!==false) ? Math.min(H, Math.round(H*0.38)) : H;
+  const WH = wallCap();
   for(const r of DOC.rooms){
     const col=r.kind==="balcony"?"#e4ece0":(r.kind==="outdoor"?"#e9ecef":
               (r.kind==="wet"?"#e2edf5":"#efece7"));
@@ -3138,16 +3146,12 @@ function render3(){
   const cam={...V3, cx:V3.cx||(x0+x1)/2, cy:V3.cy||(y0+y1)/2, cz:CEIL()/2};
   const B=camBasis(cam);
   const f=Math.min(W,H)*1.1;
-  // Doll-house cutaway: a wall between you and the centre of the plan just
-  // blocks the view, so hide it. Toggle off to see the shell intact.
-  const useCut = V3.cutaway!==false;
-  const mid=[cam.cx,-cam.cy];
-  const fwd=[B.fx,B.fy];
-  const vis = quads.filter(q=>{
-    if(!q.wall || !useCut) return true;
-    const dx=q.wall[0]-mid[0], dy=q.wall[1]-mid[1];
-    return (dx*fwd[0]+dy*fwd[1]) > -20;      // keep far-side walls only
-  });
+  /* Cutaway is done by sectioning the walls in buildScene - they are built at
+     knee height so you see over them into every room. The half-space filter
+     that used to live here deleted whole walls on the near side of the plan's
+     centre as well; running both left the building with its near half missing
+     AND its far half cut down. Sectioning alone is the whole effect. */
+  const vis = quads;
   /* Clip to the near plane rather than discarding. Dropping any quad with a
      single corner behind the camera threw away up to 128 surfaces a frame once
      you zoomed in - and which ones changed with every degree of orbit, so
@@ -3199,10 +3203,44 @@ function fit3D(){
     x0=Math.min(x0,p[0]); y0=Math.min(y0,p[1]); x1=Math.max(x1,p[0]); y1=Math.max(y1,p[1]); }
   if(x0>x1){ x0=y0=0; x1=y1=400; }
   V3.cx=(x0+x1)/2; V3.cy=(y0+y1)/2;
-  const span=Math.max(x1-x0, y1-y0, 200);
-  V3.dist=span*1.6+400;                 // frame the whole plan with room to spare
-  NAV.taz=-55; NAV.tel=42; NAV.tdist=V3.dist; NAV.tcx=V3.cx; NAV.tcy=V3.cy;
   V3.az=-55; V3.el=42;
+  /* span*1.6+400 was a guess, and a bad one - it framed the plan at about a
+     quarter of the viewport. Rather than predicting the projected size, render
+     and measure it: scan the canvas for what was actually painted and scale the
+     distance by the shortfall. Screen size goes as 1/distance, so two or three
+     passes converge, and measuring the real pixels cannot disagree with what
+     you end up looking at. */
+  const span=Math.max(x1-x0, y1-y0, 200);
+  V3.dist=span*1.5+300;
+  const cnv=$("cv3");
+  const painted=()=>{
+    const g=cnv.getContext("2d");
+    const d=g.getImageData(0,0,cnv.width,cnv.height).data;
+    let a0=1e9,b0=1e9,a1=-1,b1=-1;
+    for(let y=0;y<cnv.height;y+=4) for(let x=0;x<cnv.width;x+=4){
+      const i=(y*cnv.width+x)*4;
+      // background is the flat #eef1f4 fill laid down at the start of render3
+      if(Math.abs(d[i]-238)>5||Math.abs(d[i+1]-241)>5||Math.abs(d[i+2]-244)>5){
+        if(x<a0)a0=x; if(x>a1)a1=x; if(y<b0)b0=y; if(y>b1)b1=y;
+      }
+    }
+    return a1<0?null:{a0,a1,b0,b1, cw:cnv.width, ch:cnv.height};
+  };
+  for(let pass=0; pass<5; pass++){
+    render3();
+    const box=painted();
+    if(!box||box.a1-box.a0<2||box.b1-box.b0<2){ V3.dist*=1.6; continue; }
+    /* Changing distance scales the picture about the centre of the screen, and
+       the model does not sit centred there, so fit the furthest corner from the
+       centre - fitting the box's width would still clip the far side. */
+    const cx=box.cw/2, cy=box.ch/2;
+    const ex=Math.max(Math.abs(box.a0-cx), Math.abs(box.a1-cx));
+    const ey=Math.max(Math.abs(box.b0-cy), Math.abs(box.b1-cy));
+    const k=Math.min(cx*0.92/Math.max(1,ex), cy*0.92/Math.max(1,ey));
+    if(Math.abs(k-1)<0.02) break;
+    V3.dist=Math.max(200,Math.min(40000,V3.dist/k));
+  }
+  NAV.taz=-55; NAV.tel=42; NAV.tdist=V3.dist; NAV.tcx=V3.cx; NAV.tcy=V3.cy;
   render3();
 }
 function set3D(on){
