@@ -1,8 +1,8 @@
 # Floor Plan Studio — deploy notes
 
-`index.html` is the whole application. One file, no build step, no dependencies,
-no network calls at runtime. Everything a visitor draws stays in their own
-browser — nothing is sent anywhere.
+`app.html` is the whole application: one file, no build step, no dependencies, no
+network calls at runtime. `index.html` is the landing page that links to it.
+Everything a visitor draws stays in their own browser — nothing is sent anywhere.
 
 ## Deploying
 
@@ -25,8 +25,9 @@ There is nothing to configure. No environment variables, no server.
 
 ## Before you switch ads on
 
-1. **Privacy policy** — `privacy.html` is a starting draft. Read it, fill in the
-   bracketed parts, and have someone check it. Ad networks require one.
+1. **Privacy policy** — `privacy.html` is filled in and accurate for the site as it
+   stands: no analytics, no ads, no cookies. The moment you add either, update it
+   *before* they go live — it currently states outright that neither is present.
 2. **Cookie consent** — display ads set cookies, so EU/UK visitors need a
    consent banner *before* the ad script loads. Google's Funding Choices or
    Cookiebot both do this.
