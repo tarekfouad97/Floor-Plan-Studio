@@ -3022,6 +3022,13 @@ function itemHeight(name){
 }
 function buildScene(){
   const q=[], H=CEIL();
+  /* Cutaway used to drop whole walls that sat between the camera and the
+     centre of the plan. That only ever clears the near edge: orbit until you
+     are looking down the long axis and every interior cross-wall is on the far
+     side of centre, so all of them are kept and the furniture behind them
+     vanishes behind a slab of grey. Section the walls instead - cap them at
+     knee height - and every room stays readable from every angle. */
+  const WH = (V3.cutaway!==false) ? Math.min(H, Math.round(H*0.38)) : H;
   for(const r of DOC.rooms){
     const col=r.kind==="balcony"?"#e4ece0":(r.kind==="outdoor"?"#e9ecef":
               (r.kind==="wet"?"#e2edf5":"#efece7"));
@@ -3034,6 +3041,7 @@ function buildScene(){
                           .map(o=>({a:o.at,b:o.at+o.w,type:o.type}))
                           .sort((p,r)=>p.a-r.a);
     const piece=(a,b,z0,z1)=>{
+      z0=Math.min(z0,WH); z1=Math.min(z1,WH);   // section the wall
       if(b-a<0.5||z1-z0<0.5) return;
       const A=wallPt(w,a), B2=wallPt(w,b);
       const c=[[A.x+nx,A.y+ny],[B2.x+nx,B2.y+ny],[B2.x-nx,B2.y-ny],[A.x-nx,A.y-ny]];
