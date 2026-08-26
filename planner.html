@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Apartment Furniture Planner</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --panel:#ffffff; --ink:#1d2430; --muted:#6b7684;
+    --line:#d9dee5; --accent:#2f6fd0; --accent-soft:#e8f0fb; --warn:#c2410c;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);overflow:hidden}
+  button,input,select{font:inherit;color:inherit}
+
+  #app{display:grid;grid-template-columns:250px 1fr 290px;grid-template-rows:48px 1fr;height:100%}
+  #bar{grid-column:1/4;display:flex;align-items:center;gap:6px;padding:0 12px;
+       background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
+  #bar h1{font-size:14px;margin:0 14px 0 0;white-space:nowrap;font-weight:650}
+  #bar .sp{flex:1}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 10px;
+       cursor:pointer;white-space:nowrap}
+  .btn:hover{background:#f0f3f7}
+  .btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  aside{background:var(--panel);overflow-y:auto;display:flex;flex-direction:column}
+  #cat{border-right:1px solid var(--line)}
+  #side{border-left:1px solid var(--line)}
+  .pad{padding:10px 12px}
+  .hd{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+      font-weight:700;padding:12px 12px 6px}
+  #search{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff}
+
+  .grp{border-top:1px solid var(--line)}
+  .grp>summary{cursor:pointer;padding:8px 12px;font-weight:650;font-size:13px;list-style:none;
+       display:flex;align-items:center;gap:8px}
+  .grp>summary::-webkit-details-marker{display:none}
+  .grp>summary::before{content:"";width:9px;height:9px;border-radius:3px;background:var(--sw,#999)}
+  .it{display:flex;justify-content:space-between;gap:8px;align-items:center;
+      padding:5px 12px 5px 29px;cursor:grab;font-size:13px}
+  .it:hover{background:var(--accent-soft)}
+  .it .d{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  #stage{position:relative;overflow:hidden;background:var(--bg)}
+  svg#plan{width:100%;height:100%;display:block;touch-action:none;cursor:default}
+  #hint{position:absolute;left:12px;bottom:10px;color:var(--muted);font-size:12px;
+        background:rgba(255,255,255,.9);padding:4px 8px;border-radius:6px;pointer-events:none}
+  #zoombox{position:absolute;right:10px;bottom:10px;display:flex;gap:4px}
+
+  .row{display:flex;gap:8px;align-items:center;margin:6px 0}
+  .row label{width:74px;color:var(--muted);font-size:12px}
+  .row input[type=number],.row input[type=text],.row select{
+      flex:1;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}
+  .empty{color:var(--muted);font-size:13px;padding:4px 12px 12px}
+  .warn{background:#fff3ea;border:1px solid #f5c9a8;color:var(--warn);
+        border-radius:7px;padding:7px 9px;font-size:12px;margin:8px 12px}
+
+  table.bom{width:100%;border-collapse:collapse;font-size:12px}
+  table.bom th,table.bom td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+  table.bom th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  table.bom td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.bom tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:none}
+
+  #printonly{display:none}
+  @page{size:A4 landscape;margin:10mm}
+  @media print{
+    body{overflow:visible;background:#fff}
+    #app{display:block;height:auto}
+    #bar,#cat,#side,#hint,#zoombox{display:none!important}
+    #stage{overflow:visible;height:auto;background:#fff}
+    svg#plan{width:100%;height:170mm}
+    #printonly{display:block;break-before:page;padding-top:6mm}
+    #printonly h2{font-size:13pt;margin:0 0 3mm}
+    #printonly table{width:100%;border-collapse:collapse;font-size:9pt}
+    #printonly th,#printonly td{border:1px solid #999;padding:2mm 2.5mm;text-align:left}
+    #printonly td.n{text-align:right}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bar">
+    <h1>Apartment Planner</h1>
+    <button class="btn" id="bRot">Rotate 90° <small>(R)</small></button>
+    <button class="btn" id="bDup">Duplicate <small>(D)</small></button>
+    <button class="btn" id="bDel">Delete <small>(⌫)</small></button>
+    <button class="btn" id="bUndo">Undo <small>(⌘Z)</small></button>
+    <span style="width:1px;height:22px;background:var(--line)"></span>
+    <button class="btn" id="bTape">📏 Measure</button>
+    <button class="btn" id="bGrid">Grid</button>
+    <button class="btn" id="bLabels">Sizes</button>
+    <span class="sp"></span>
+    <button class="btn" id="bSave">Save</button>
+    <button class="btn" id="bExport">Export JSON</button>
+    <button class="btn" id="bImport">Import</button>
+    <button class="btn" id="bPng">PNG</button>
+    <button class="btn pri" id="bPrint">Print / PDF</button>
+  </div>
+
+  <aside id="cat">
+    <div class="pad"><input id="search" placeholder="Search furniture…" autocomplete="off"></div>
+    <div id="cats"></div>
+    <div class="pad" style="color:var(--muted);font-size:11px;border-top:1px solid var(--line)">
+      Drag an item onto the plan, or click it to drop in the middle.
+    </div>
+  </aside>
+
+  <div id="stage">
+    <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="hint">Drag to move · R rotate · ⌫ delete · scroll to zoom · drag empty space to pan</div>
+    <div id="zoombox">
+      <button class="btn" id="bZo">−</button>
+      <button class="btn" id="bFit">Fit</button>
+      <button class="btn" id="bZi">+</button>
+    </div>
+  </div>
+
+  <aside id="side">
+    <div class="hd">Selected item</div>
+    <div id="props"><div class="empty">Nothing selected.</div></div>
+    <div id="warns"></div>
+    <div class="hd" style="border-top:1px solid var(--line)">Shopping list</div>
+    <div id="bom"></div>
+  </aside>
+</div>
+
+<div id="printonly">
+  <h2>Shopping list — measurements in centimetres</h2>
+  <div id="bomPrint"></div>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   1. THE APARTMENT — traced from IMG_1933.jpeg
+   ---------------------------------------------------------------------
+   Nothing here is hand-drawn or estimated. The wall rectangles were
+   extracted from the photograph itself: the image was thresholded, the
+   paired wall lines closed morphologically, and everything that was not
+   thick in BOTH directions (dimension lines, arrows, text) discarded.
+   What remains is the drawing's own linework.
+
+   Room rectangles are read off the edges of those extracted wall bands.
+
+   Scale is calibrated per axis against the sketch's own dimension
+   labels (median over every labelled room): 0.694 px/cm across,
+   0.780 px/cm down. The sketch is drawn slightly anisotropically, so a
+   single scale would have made every room about 10% too tall.
+
+   All coordinates below are CENTIMETRES.
+   ===================================================================== */
+const PLAN = {"walls":[[0.0,0.0,1680.1,17.9],[0.0,15.4,1410.7,1.3],[0.0,16.7,600.9,1.3],[0.0,17.9,36.0,51.3],[0.0,69.2,17.3,109.0],[0.0,178.2,57.6,52.6],[0.0,230.8,17.3,102.6],[0.0,333.3,36.0,61.5],[0.0,391.0,295.4,1.3],[0.0,392.3,295.4,2.6],[0.0,394.9,295.4,12.8],[36.0,178.2,21.6,1.3],[36.0,229.5,21.6,1.3],[46.1,176.9,15.9,1.3],[49.0,230.8,13.0,1.3],[53.3,387.2,10.1,3.8],[54.8,385.9,8.6,1.3],[57.6,17.9,10.1,3.8],[57.6,21.8,8.6,1.3],[118.2,394.9,17.3,42.3],[118.2,430.8,17.3,1.3],[118.2,432.1,17.3,1.3],[118.2,433.3,44.7,7.7],[118.2,437.2,17.3,69.2],[118.2,441.0,17.3,3.8],[118.2,506.4,44.7,48.7],[118.2,555.1,17.3,67.9],[118.2,623.1,438.0,24.4],[118.2,630.8,44.7,1.3],[118.2,646.2,44.7,1.3],[152.7,548.7,8.6,1.3],[152.7,626.9,10.1,3.8],[154.2,625.6,8.6,1.3],[157.1,407.7,8.6,3.8],[157.1,411.5,7.2,1.3],[158.5,647.4,8.6,1.3],[188.8,394.9,51.9,42.3],[188.8,630.8,242.1,1.3],[204.6,612.8,7.2,7.7],[204.6,620.5,90.8,1.3],[204.6,621.8,90.8,1.3],[204.6,623.1,90.8,7.7],[278.1,394.9,17.3,42.3],[278.1,437.2,17.3,7.7],[278.1,437.2,17.3,38.5],[278.1,475.6,322.8,30.8],[278.1,485.9,322.8,1.3],[278.1,487.2,322.8,2.6],[278.1,501.3,17.3,2.6],[278.1,506.4,17.3,32.1],[278.1,529.5,17.3,6.4],[278.1,535.9,17.3,5.1],[278.1,538.5,17.3,16.7],[278.1,551.3,17.3,3.8],[278.1,555.1,17.3,1.3],[278.1,556.4,17.3,1.3],[295.4,646.2,20.2,1.3],[355.9,482.1,10.1,3.8],[357.3,480.8,8.6,1.3],[360.2,17.9,10.1,5.1],[360.2,501.3,70.6,19.2],[360.2,506.4,70.6,32.1],[390.5,17.9,31.7,51.3],[390.5,65.4,31.7,1.3],[390.5,66.7,31.7,2.6],[390.5,69.2,17.3,3.8],[390.5,69.2,17.3,303.8],[390.5,73.1,17.3,1.3],[390.5,373.1,288.2,1.3],[390.5,373.1,308.4,21.8],[390.5,387.2,308.4,1.3],[415.0,388.5,106.6,1.3],[415.0,389.7,106.6,7.7],[415.0,397.4,106.6,1.3],[415.0,398.7,15.9,1.3],[415.0,400.0,7.2,5.1],[448.1,369.2,10.1,3.8],[449.6,367.9,8.6,1.3],[453.9,17.9,8.6,3.8],[453.9,21.8,7.2,1.3],[465.4,466.7,1.4,1.3],[465.4,467.9,4.3,1.3],[465.4,469.2,8.6,1.3],[465.4,470.5,13.0,1.3],[465.4,471.8,17.3,1.3],[465.4,646.2,7.2,1.3],[466.9,630.8,15.9,1.3],[468.3,473.1,53.3,1.3],[468.3,474.4,53.3,1.3],[468.3,475.6,53.3,10.3],[468.3,625.6,8.6,5.1],[472.6,501.3,8.6,5.1],[501.4,501.3,20.2,1.3],[501.4,506.4,20.2,32.1],[501.4,532.1,20.2,6.4],[501.4,538.5,20.2,1.3],[501.4,538.5,20.2,56.4],[501.4,594.9,54.8,28.2],[501.4,646.2,54.8,1.3],[501.4,647.4,20.2,37.2],[501.4,684.6,20.2,6.4],[501.4,691.0,20.2,29.5],[501.4,712.8,20.2,7.7],[501.4,720.5,20.2,26.9],[501.4,747.4,20.2,1.3],[501.4,747.4,579.3,17.9],[501.4,748.7,579.3,1.3],[501.4,765.4,33.1,29.5],[501.4,765.4,579.3,1.3],[546.1,743.6,10.1,5.1],[550.4,501.3,10.1,3.8],[550.4,505.1,8.6,1.3],[593.7,501.3,7.2,1.3],[600.9,388.5,10.1,1.3],[629.7,16.7,357.3,1.3],[629.7,388.5,11.5,1.3],[678.7,373.1,20.2,1.3],[678.7,388.5,20.2,1.3],[678.7,475.6,293.9,30.8],[678.7,485.9,89.3,1.3],[678.7,487.2,293.9,1.3],[678.7,501.3,20.2,1.3],[678.7,506.4,20.2,66.7],[678.7,573.1,20.2,21.8],[678.7,594.9,69.2,52.6],[678.7,647.4,20.2,73.1],[678.7,712.8,20.2,2.6],[678.7,715.4,20.2,1.3],[678.7,716.7,20.2,3.8],[678.7,720.5,20.2,2.6],[678.7,720.5,20.2,26.9],[678.7,723.1,20.2,1.3],[678.7,746.2,20.2,2.6],[721.9,593.6,25.9,1.3],[721.9,594.9,25.9,1.3],[721.9,644.9,25.9,1.3],[721.9,646.2,25.9,1.3],[737.8,743.6,10.1,3.8],[739.2,501.3,15.9,1.3],[743.5,502.6,8.6,2.6],[743.5,505.1,7.2,1.3],[747.8,747.4,20.2,1.3],[765.1,298.7,5.8,1.3],[768.0,300.0,53.3,73.1],[768.0,373.1,53.3,21.8],[768.0,387.2,53.3,1.3],[768.0,388.5,53.3,1.3],[785.3,69.2,23.1,1.3],[785.3,70.5,21.6,2.6],[789.6,198.7,17.3,101.3],[791.1,69.2,15.9,129.5],[791.1,482.1,8.6,3.8],[791.1,485.9,15.9,1.3],[795.4,389.7,7.2,3.8],[799.7,17.9,21.6,51.3],[799.7,65.4,21.6,1.3],[799.7,66.7,21.6,2.6],[799.7,298.7,21.6,1.3],[799.7,501.3,7.2,1.3],[889.0,373.1,7.2,1.3],[890.5,373.1,292.5,21.8],[890.5,388.5,292.5,1.3],[928.0,501.3,44.7,1.3],[1040.3,475.6,40.3,30.8],[1040.3,500.0,40.3,1.3],[1040.3,501.3,40.3,5.1],[1040.3,506.4,40.3,1.3],[1040.3,506.4,40.3,66.7],[1040.3,507.7,40.3,6.4],[1040.3,573.1,40.3,147.4],[1040.3,709.0,40.3,3.8],[1040.3,712.8,40.3,2.6],[1040.3,715.4,40.3,1.3],[1040.3,716.7,40.3,1.3],[1040.3,717.9,40.3,3.8],[1040.3,720.5,40.3,26.9],[1040.3,721.8,40.3,2.6],[1040.3,724.4,40.3,1.3],[1040.3,725.6,40.3,5.1],[1102.3,16.7,109.5,1.3],[1122.5,369.2,10.1,5.1],[1126.8,17.9,10.1,3.8],[1126.8,21.8,8.6,1.3],[1164.3,665.4,18.7,100.0],[1164.3,764.1,18.7,1.3],[1171.5,69.2,23.1,3.8],[1172.9,73.1,21.6,1.3],[1172.9,555.1,17.3,39.7],[1172.9,556.4,24.5,1.3],[1172.9,557.7,20.2,2.6],[1172.9,594.9,20.2,28.2],[1172.9,623.1,17.3,24.4],[1172.9,647.4,15.9,17.9],[1175.8,137.2,17.3,121.8],[1175.8,311.5,17.3,42.3],[1175.8,353.8,14.4,19.2],[1177.2,69.2,17.3,67.9],[1177.2,133.3,15.9,3.8],[1183.0,-1.3,49.0,1.3],[1183.0,17.9,28.8,3.8],[1183.0,17.9,28.8,51.3],[1183.0,57.7,28.8,7.7],[1183.0,65.4,28.8,1.3],[1183.0,66.7,28.8,2.6],[1183.0,259.0,49.0,52.6],[1183.0,538.5,147.0,16.7],[1183.0,541.0,147.0,1.3],[1183.0,555.1,49.0,1.3],[1211.8,310.3,20.2,1.3],[1226.2,535.9,8.6,5.1],[1232.0,16.7,7.2,5.1],[1266.6,-1.3,70.6,1.3],[1279.5,555.1,33.1,1.3],[1367.4,538.5,312.7,16.7],[1374.6,555.1,54.8,1.3],[1505.8,15.4,174.4,1.3],[1505.8,17.9,66.3,14.1],[1505.8,555.1,174.4,1.3],[1514.4,-1.3,25.9,1.3],[1553.3,32.1,18.7,37.2],[1553.3,61.5,126.8,3.8],[1553.3,65.4,126.8,1.3],[1553.3,66.7,126.8,2.6],[1553.3,69.2,18.7,3.8],[1553.3,69.2,18.7,35.9],[1553.3,105.1,18.7,32.1],[1553.3,137.2,18.7,26.9],[1553.3,164.1,18.7,14.1],[1553.3,178.2,18.7,14.1],[1553.3,192.3,18.7,6.4],[1553.3,198.7,18.7,12.8],[1553.3,211.5,126.8,19.2],[1592.2,44.9,87.9,1.3],[1592.2,44.9,87.9,24.4],[1618.2,535.9,10.1,5.1],[1622.5,226.9,10.1,3.8],[1622.5,230.8,8.6,1.3],[1629.7,43.6,50.4,1.3],[1629.7,101.3,50.4,1.3],[1629.7,102.6,50.4,1.3],[1629.7,103.8,50.4,1.3],[1629.7,105.1,50.4,2.6],[1629.7,105.1,50.4,32.1],[1629.7,128.2,50.4,17.9],[1629.7,137.2,50.4,17.9],[1629.7,152.6,50.4,2.6],[1629.7,155.1,50.4,1.3],[1657.1,17.9,23.1,26.9],[1657.1,69.2,23.1,35.9],[1657.1,155.1,23.1,56.4],[1657.1,206.4,23.1,5.1],[1657.1,230.8,23.1,275.6],[1657.1,506.4,23.1,32.1],[1657.1,510.3,23.1,1.3],[1657.1,511.5,23.1,6.4]],"rooms":[{"id":"rec","name":"Reception","rects":[[28.8,16.7,361.7,356.4]],"outdoor":false,"label":"3.60 x 3.73"},{"id":"bed1","name":"Bedroom 1","rects":[[406.3,16.7,358.8,356.4]],"outdoor":false,"label":"3.60 x 3.48"},{"id":"bed2","name":"Bedroom 2","rects":[[821.3,16.7,337.2,356.4]],"outdoor":false,"label":"3.50 x 3.48"},{"id":"mbed","name":"Master Bed","rects":[[1208.9,16.7,345.8,194.9],[1208.9,211.5,443.8,329.5]],"outdoor":false,"label":"3.60 x 5.10"},{"id":"balc","name":"Balcony","rects":[[1570.6,16.7,92.2,194.9]],"outdoor":true,"label":"1.10 x 2.00"},{"id":"hall","name":"Corridor","rects":[[295.4,406.4,863.1,79.5]],"outdoor":false,"label":"1.00 wide"},{"id":"bath","name":"Bathroom","rects":[[132.6,406.4,147.0,214.1]],"outdoor":false,"label":"1.42 x 2.20"},{"id":"stor","name":"Store","rects":[[295.4,500.0,208.9,120.5]],"outdoor":false,"label":"2.06 x 1.32"},{"id":"wc","name":"Toilet","rects":[[518.7,500.0,147.0,248.7]],"outdoor":false,"label":"1.60 x 2.32"},{"id":"kit","name":"Kitchen","rects":[[700.3,500.0,337.2,248.7]],"outdoor":false,"label":"3.35 x 2.32"},{"id":"lob","name":"Entrance","rects":[[1067.7,555.1,90.8,193.6]],"outdoor":false,"label":"-"}],"extent":{"x":-13.0,"y":-20.5,"w":1729.1,"h":815.4}};
+
+const WALLS = PLAN.walls;          // [[x,y,w,h], ...] wall rectangles
+const ROOMS = PLAN.rooms;          // [{id,name,rects:[[x,y,w,h],...],label}]
+
+const BOUNDS = (()=>{
+  const e = PLAN.extent, m = 40;
+  return { x:e.x-m, y:e.y-m, w:e.w+2*m, h:e.h+2*m };
+})();
+
+/* =====================================================================
+   2. FURNITURE CATALOGUE   (w = width, d = depth, in cm)
+   ===================================================================== */
+const CATS = [
+  { key:"living",  name:"Living / Reception", color:"#4f83cc" },
+  { key:"dining",  name:"Dining",             color:"#c98a3a" },
+  { key:"bedroom", name:"Bedroom",            color:"#7a67c8" },
+  { key:"office",  name:"Office",             color:"#4a8c78" },
+  { key:"kitchen", name:"Kitchen",            color:"#c0603f" },
+  { key:"bath",    name:"Bathroom",           color:"#3f9bb5" },
+  { key:"hall",    name:"Hall & extras",      color:"#7d8794" }
+];
+
+const CATALOG = [
+  ["living","Sofa 3-seat",200,90],       ["living","Sofa 2-seat",150,90],
+  ["living","Sofa 4-seat",240,95],       ["living","Armchair",90,85],
+  ["living","Recliner",95,95],           ["living","Corner sofa (L)",260,180,"L"],
+  ["living","Chaise longue",160,80],     ["living","Coffee table",110,60],
+  ["living","Coffee table round",90,90,"circle"],
+  ["living","Side table",50,50],         ["living","Nest of tables",60,45],
+  ["living","TV unit",180,45],           ["living","TV unit small",140,40],
+  ["living","Console table",120,40],     ["living","Bookshelf",80,35],
+  ["living","Bookshelf tall",100,35],    ["living","Display cabinet",120,45],
+  ["living","Rug 200x300",200,300],      ["living","Rug 160x230",160,230],
+  ["living","Rug round",200,200,"circle"],
+  ["living","Pouf",45,45,"circle"],      ["living","Floor lamp",40,40,"circle"],
+  ["living","Piano (upright)",150,60],
+  ["dining","Dining table 4",120,80],    ["dining","Dining table 6",160,90],
+  ["dining","Dining table 8",200,100],   ["dining","Dining table 10",240,110],
+  ["dining","Dining round 4",120,120,"circle"],
+  ["dining","Dining round 6",140,140,"circle"],
+  ["dining","Dining chair",45,45],       ["dining","Bench 120",120,40],
+  ["dining","Sideboard",160,45],         ["dining","Buffet 200",200,50],
+  ["dining","China cabinet",120,45],     ["dining","Bar cart",70,40],
+  ["bedroom","Bed king 180",180,200],    ["bedroom","Bed queen 160",160,200],
+  ["bedroom","Bed double 140",140,200],  ["bedroom","Bed single 90",90,200],
+  ["bedroom","Bed kids 120",120,200],    ["bedroom","Bunk bed",90,200],
+  ["bedroom","Crib",120,60],             ["bedroom","Nightstand",45,40],
+  ["bedroom","Wardrobe 2-door",100,60],  ["bedroom","Wardrobe 3-door",150,60],
+  ["bedroom","Wardrobe 4-door",200,60],  ["bedroom","Wardrobe 6-door",300,60],
+  ["bedroom","Corner wardrobe",100,100,"L"],
+  ["bedroom","Dresser",120,50],          ["bedroom","Chest of drawers",80,45],
+  ["bedroom","Dressing table",100,45],   ["bedroom","Mirror stand",60,40],
+  ["bedroom","Ottoman bench",100,40],    ["bedroom","Blanket box",90,45],
+  ["bedroom","Changing table",80,50],
+  ["office","Desk 120",120,60],          ["office","Desk 140",140,70],
+  ["office","Desk L-shape",160,160,"L"], ["office","Office chair",60,60,"circle"],
+  ["office","Filing cabinet",40,50],     ["office","Printer table",60,45],
+  ["office","Study chair",45,45],
+  ["kitchen","Base unit 60",60,60],      ["kitchen","Base unit 80",80,60],
+  ["kitchen","Base unit 100",100,60],    ["kitchen","Base unit 120",120,60],
+  ["kitchen","Corner base",90,90,"L"],   ["kitchen","Sink unit",80,60],
+  ["kitchen","Sink unit double",120,60], ["kitchen","Cooker 60",60,60],
+  ["kitchen","Cooker 90",90,60],         ["kitchen","Oven column",60,60],
+  ["kitchen","Fridge",60,65],            ["kitchen","Fridge side-by-side",90,70],
+  ["kitchen","Freezer",60,65],           ["kitchen","Dishwasher",60,60],
+  ["kitchen","Washing machine",60,60],   ["kitchen","Dryer",60,60],
+  ["kitchen","Tall pantry",60,60],       ["kitchen","Kitchen island",180,90],
+  ["kitchen","Breakfast bar",120,60],    ["kitchen","Bar stool",40,40,"circle"],
+  ["kitchen","Microwave shelf",50,40],   ["kitchen","Water filter",40,40],
+  ["bath","Toilet",40,70],               ["bath","Bidet",40,60],
+  ["bath","Wash basin 60",60,50],        ["bath","Vanity 80",80,50],
+  ["bath","Vanity 100",100,50],          ["bath","Vanity 120",120,50],
+  ["bath","Bathtub 170",170,75],         ["bath","Bathtub 150",150,70],
+  ["bath","Shower 90x90",90,90],         ["bath","Shower 80x80",80,80],
+  ["bath","Shower 120x80",120,80],       ["bath","Corner shower",90,90,"L"],
+  ["bath","Towel cabinet",40,35],        ["bath","Water heater",45,45],
+  ["bath","Laundry basket",45,40],
+  ["hall","Shoe cabinet",90,35],         ["hall","Coat rack",50,35],
+  ["hall","Hall console",100,35],        ["hall","Hall mirror",60,10],
+  ["hall","Storage cabinet",100,45],     ["hall","Split A/C unit",90,25],
+  ["hall","Water tank",80,80,"circle"],  ["hall","Plant large",50,50,"circle"],
+  ["hall","Plant small",35,35,"circle"], ["hall","Spare fridge",70,70],
+  ["hall","Ironing board",130,40],       ["hall","Vacuum store",40,40],
+  ["hall","Safe",50,45],                 ["hall","Suitcase store",70,45]
+].map((a,i)=>({ id:"c"+i, cat:a[0], name:a[1], w:a[2], d:a[3], shape:a[4]||"rect",
+                color:CATS.find(c=>c.key===a[0]).color }));
+
+/* =====================================================================
+   3. STATE
+   ===================================================================== */
+const S = {
+  items: [], sel:null,
+  view: { x:BOUNDS.x, y:BOUNDS.y, w:BOUNDS.w },
+  showGrid:true, showLabels:true,
+  tape:null, tapeMode:false, undo:[]
+};
+let uid = 1;
+
+const svg   = document.getElementById("plan");
+const stage = document.getElementById("stage");
+const SVGNS = "http://www.w3.org/2000/svg";
+
+/* ---------- geometry helpers ---------- */
+function bbox(it){
+  const r = ((it.rot%360)+360)%360, swap = (r===90||r===270);
+  const w = swap ? it.d : it.w, h = swap ? it.w : it.d;
+  return { x: it.x-w/2, y: it.y-h/2, w, h };
+}
+const overlap=(a,b)=> a.x < b.x+b.w && b.x < a.x+a.w && a.y < b.y+b.h && b.y < a.y+a.h;
+const inRect=(x,y,r)=> x>=r[0] && x<=r[0]+r[2] && y>=r[1] && y<=r[1]+r[3];
+
+function rectAt(x,y){
+  for(const rm of ROOMS) for(const r of rm.rects) if(inRect(x,y,r)) return {room:rm, r};
+  return null;
+}
+function roomAt(x,y){ const h=rectAt(x,y); return h?h.room:null; }
+function roomBBox(rm){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const r of rm.rects){ x0=Math.min(x0,r[0]); y0=Math.min(y0,r[1]);
+                            x1=Math.max(x1,r[0]+r[2]); y1=Math.max(y1,r[1]+r[3]); }
+  return {x:x0,y:y0,w:x1-x0,h:y1-y0};
+}
+const roomArea = rm => rm.rects.reduce((s,r)=>s+r[2]*r[3],0);
+
+/* =====================================================================
+   4. RENDER
+   ===================================================================== */
+function viewH(){ return S.view.w * stage.clientHeight / stage.clientWidth; }
+function cmPerPx(){ return S.view.w / stage.clientWidth; }
+function el(tag, attrs, parent){
+  const n = document.createElementNS(SVGNS, tag);
+  for(const k in attrs) if(attrs[k]!=null) n.setAttribute(k, attrs[k]);
+  if(parent) parent.appendChild(n);
+  return n;
+}
+
+function render(){
+  const k = cmPerPx();
+  svg.setAttribute("viewBox", `${S.view.x} ${S.view.y} ${S.view.w} ${viewH()}`);
+  svg.innerHTML = "";
+  const gGrid=el("g",{},svg), gFloor=el("g",{},svg), gWall=el("g",{},svg),
+        gDim=el("g",{},svg), gItems=el("g",{},svg), gOver=el("g",{},svg);
+
+  if(S.showGrid){
+    const step=50, x0=Math.floor(S.view.x/step)*step, y0=Math.floor(S.view.y/step)*step;
+    for(let x=x0;x<S.view.x+S.view.w;x+=step)
+      el("line",{x1:x,y1:S.view.y,x2:x,y2:S.view.y+viewH(),
+                 stroke:x%100?"#eef2f6":"#e3e9f0","stroke-width":k},gGrid);
+    for(let y=y0;y<S.view.y+viewH();y+=step)
+      el("line",{x1:S.view.x,y1:y,x2:S.view.x+S.view.w,y2:y,
+                 stroke:y%100?"#eef2f6":"#e3e9f0","stroke-width":k},gGrid);
+  }
+
+  for(const rm of ROOMS)
+    for(const r of rm.rects)
+      el("rect",{x:r[0],y:r[1],width:r[2],height:r[3],
+                 fill:rm.outdoor?"#f2f5f8":"#ffffff"},gFloor);
+
+  for(const w of WALLS)
+    el("rect",{x:w[0],y:w[1],width:w[2],height:w[3],fill:"#1e242c"},gWall);
+
+  for(const rm of ROOMS){
+    const b=roomBBox(rm), f=13*k;
+    if(b.w < f*4.5 || b.h < f*2.4) continue;
+    const cx=b.x+b.w/2, cy=b.y+b.h/2;
+    el("text",{x:cx,y:cy-2*k,"text-anchor":"middle","font-size":f,fill:"#9aa5b1",
+               "font-weight":"600","letter-spacing":0.6*k,"paint-order":"stroke",
+               stroke:"#fff","stroke-width":3*k},gDim).textContent=rm.name.toUpperCase();
+    el("text",{x:cx,y:cy+13*k,"text-anchor":"middle","font-size":11*k,fill:"#bcc5cf",
+               "paint-order":"stroke",stroke:"#fff","stroke-width":3*k},gDim)
+      .textContent = `${(roomArea(rm)/10000).toFixed(1)} m²`;
+  }
+
+  for(const it of S.items){
+    const g = el("g",{transform:`translate(${it.x} ${it.y}) rotate(${it.rot})`,
+                      "data-id":it.id, style:"cursor:move"},gItems);
+    const w=it.w, d=it.d, hw=w/2, hd=d/2, on=(S.sel===it.id);
+    const base={ fill:it.color+"33", stroke:it.color,
+                 "stroke-width":on?3:1.6, "vector-effect":"non-scaling-stroke" };
+    if(it.shape==="circle") el("ellipse",{cx:0,cy:0,rx:hw,ry:hd,...base},g);
+    else if(it.shape==="L"){
+      const a=w*0.55,b2=d*0.55;
+      el("path",{d:`M ${-hw} ${-hd} L ${hw} ${-hd} L ${hw} ${-hd+b2} L ${-hw+a} ${-hd+b2} L ${-hw+a} ${hd} L ${-hw} ${hd} Z`,...base},g);
+    } else {
+      el("rect",{x:-hw,y:-hd,width:w,height:d,rx:Math.min(3,w/12),...base},g);
+      el("line",{x1:-hw,y1:hd,x2:hw,y2:hd,stroke:it.color,"stroke-width":on?4:2.5,
+                 "vector-effect":"non-scaling-stroke",opacity:.75},g);
+    }
+    if(on) el("rect",{x:-hw-4,y:-hd-4,width:w+8,height:d+8,fill:"none",
+                      stroke:"#2f6fd0","stroke-width":1.5,"stroke-dasharray":"6 4",
+                      "vector-effect":"non-scaling-stroke"},g);
+
+    if(S.showLabels || on){
+      const f=Math.max(9*k,7), rot90=(it.rot===90||it.rot===270);
+      const along = rot90 ? d : w, across = rot90 ? w : d;
+      const inside = (across > f*2.5) && (along > f*0.54*it.name.length);
+      const t=el("text",{x:0,y:inside?-f*0.08:-hd-f*0.7,"text-anchor":"middle",
+            "font-size":f,fill:on?"#2f6fd0":"#46515e","font-weight":on?"700":"600",
+            transform:rot90?"rotate(-90)":null,"paint-order":"stroke",
+            stroke:"#fff","stroke-width":3.2*k,"stroke-linejoin":"round"},g);
+      const maxChars=Math.max(5,Math.floor((inside?along:along*2.2)/(f*0.54)));
+      el("tspan",{x:0,dy:0},t).textContent =
+        it.name.length<=maxChars ? it.name : it.name.slice(0,maxChars-1)+"…";
+      el("tspan",{x:0,dy:f*1.05,"font-size":f*0.86,"font-weight":"400",
+                  fill:on?"#2f6fd0":"#79838f"},t)
+        .textContent = `${Math.round(it.w)}×${Math.round(it.d)} cm`;
+    }
+  }
+
+  if(S.tape && S.tape.b){
+    const {a,b}=S.tape, dist=Math.hypot(b.x-a.x,b.y-a.y);
+    el("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:"#c2410c","stroke-width":2*k},gOver);
+    for(const p of [a,b]) el("circle",{cx:p.x,cy:p.y,r:4*k,fill:"#c2410c"},gOver);
+    el("text",{x:(a.x+b.x)/2,y:(a.y+b.y)/2-8*k,"text-anchor":"middle","font-size":14*k,
+        fill:"#c2410c","font-weight":"700","paint-order":"stroke",stroke:"#fff",
+        "stroke-width":4*k},gOver).textContent = `${Math.round(dist)} cm`;
+  }
+  bindItemDrag(gItems);
+}
+
+/* =====================================================================
+   5. INTERACTION
+   ===================================================================== */
+function toCm(evt){
+  const p=svg.createSVGPoint(); p.x=evt.clientX; p.y=evt.clientY;
+  const q=p.matrixTransform(svg.getScreenCTM().inverse());
+  return {x:q.x, y:q.y};
+}
+function snap(it,x,y){
+  const TOL=12;
+  const r=((it.rot%360)+360)%360, swap=(r===90||r===270);
+  const w=swap?it.d:it.w, h=swap?it.w:it.d;
+  const hit=rectAt(x,y);
+  if(hit){
+    const R=hit.r;
+    const L=R[0]+w/2, Rt=R[0]+R[2]-w/2, T=R[1]+h/2, B=R[1]+R[3]-h/2;
+    if(Math.abs(x-L)<TOL) x=L; else if(Math.abs(x-Rt)<TOL) x=Rt;
+    if(Math.abs(y-T)<TOL) y=T; else if(Math.abs(y-B)<TOL) y=B;
+  }
+  return {x:Math.round(x), y:Math.round(y)};
+}
+
+let drag=null;
+function bindItemDrag(layer){
+  layer.querySelectorAll("g[data-id]").forEach(g=>{
+    const id=g.getAttribute("data-id");
+    g.addEventListener("pointerdown",e=>{
+      if(S.tapeMode) return;
+      e.stopPropagation();
+      const it=S.items.find(i=>i.id===id);
+      select(id);
+      const p=toCm(e);
+      drag={it,dx:it.x-p.x,dy:it.y-p.y,moved:false};
+      g.setPointerCapture(e.pointerId);
+    });
+    g.addEventListener("pointermove",e=>{
+      if(!drag||drag.it.id!==id) return;
+      const p=toCm(e);
+      if(!drag.moved){ pushUndo(); drag.moved=true; }
+      const s=snap(drag.it,p.x+drag.dx,p.y+drag.dy);
+      drag.it.x=s.x; drag.it.y=s.y;
+      render(); showProps();
+    });
+    const end=()=>{ if(drag){ drag=null; refreshBom(); } };
+    g.addEventListener("pointerup",end);
+    g.addEventListener("pointercancel",end);
+  });
+}
+
+let pan=null;
+svg.addEventListener("pointerdown",e=>{
+  if(S.tapeMode){
+    const p=toCm(e);
+    if(!S.tape||S.tape.b) S.tape={a:p,b:null}; else S.tape.b=p;
+    render(); return;
+  }
+  select(null);
+  pan={sx:e.clientX,sy:e.clientY,vx:S.view.x,vy:S.view.y};
+  svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener("pointermove",e=>{
+  if(!pan) return;
+  const k=cmPerPx();
+  S.view.x=pan.vx-(e.clientX-pan.sx)*k;
+  S.view.y=pan.vy-(e.clientY-pan.sy)*k;
+  render();
+});
+svg.addEventListener("pointerup",()=>pan=null);
+svg.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const p=toCm(e), f=e.deltaY>0?1.12:1/1.12;
+  const nw=Math.min(BOUNDS.w*3,Math.max(150,S.view.w*f)), r=nw/S.view.w;
+  S.view.x=p.x-(p.x-S.view.x)*r; S.view.y=p.y-(p.y-S.view.y)*r; S.view.w=nw;
+  render();
+},{passive:false});
+
+svg.addEventListener("dragover",e=>{ e.preventDefault(); e.dataTransfer.dropEffect="copy"; });
+svg.addEventListener("drop",e=>{
+  e.preventDefault();
+  const cid=e.dataTransfer.getData("text/plain");
+  if(cid) addItem(cid,toCm(e));
+});
+
+/* =====================================================================
+   6. ITEM OPERATIONS
+   ===================================================================== */
+function pushUndo(){ S.undo.push(JSON.stringify(S.items)); if(S.undo.length>60) S.undo.shift(); }
+function addItem(catalogId,at){
+  const c=CATALOG.find(x=>x.id===catalogId); if(!c) return;
+  pushUndo();
+  const p=at||{x:S.view.x+S.view.w/2, y:S.view.y+viewH()/2};
+  const it={id:"i"+(uid++),catalogId:c.id,name:c.name,color:c.color,shape:c.shape,
+            w:c.w,d:c.d,x:Math.round(p.x),y:Math.round(p.y),rot:0,note:"",price:""};
+  const s=snap(it,it.x,it.y); it.x=s.x; it.y=s.y;
+  S.items.push(it); select(it.id); refreshBom(); render();
+}
+function select(id){ S.sel=id; render(); showProps(); }
+function selected(){ return S.items.find(i=>i.id===S.sel); }
+function delSel(){ const it=selected(); if(!it) return;
+  pushUndo(); S.items=S.items.filter(i=>i.id!==it.id); select(null); refreshBom(); }
+function rotSel(){ const it=selected(); if(!it) return;
+  pushUndo(); it.rot=(it.rot+90)%360; render(); showProps(); }
+function dupSel(){ const it=selected(); if(!it) return;
+  pushUndo(); const c={...it,id:"i"+(uid++),x:it.x+30,y:it.y+30};
+  S.items.push(c); select(c.id); refreshBom(); }
+function undo(){ if(!S.undo.length) return;
+  S.items=JSON.parse(S.undo.pop()); select(null); refreshBom(); }
+
+/* =====================================================================
+   7. RIGHT PANEL
+   ===================================================================== */
+function showProps(){
+  const box=document.getElementById("props"), it=selected();
+  if(!it){ box.innerHTML='<div class="empty">Nothing selected.</div>'; checkWarnings(); return; }
+  const room=roomAt(it.x,it.y);
+  box.innerHTML=`
+    <div class="pad">
+      <div style="font-weight:650;margin-bottom:8px">${it.name}</div>
+      <div class="row"><label>Width</label><input type="number" id="pw" value="${it.w}" step="1" min="5"> <span style="color:var(--muted)">cm</span></div>
+      <div class="row"><label>Depth</label><input type="number" id="pd" value="${it.d}" step="1" min="5"> <span style="color:var(--muted)">cm</span></div>
+      <div class="row"><label>Rotation</label>
+        <select id="pr">${[0,90,180,270].map(a=>`<option value="${a}" ${a===it.rot?"selected":""}>${a}°</option>`).join("")}</select></div>
+      <div class="row"><label>Room</label><input type="text" value="${room?room.name:"— outside —"}" disabled></div>
+      <div class="row"><label>Note</label><input type="text" id="pn" value="${it.note||""}" placeholder="colour, shop…"></div>
+      <div class="row"><label>Price</label><input type="text" id="pp" value="${it.price||""}" placeholder="optional"></div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <button class="btn" id="pRot">Rotate</button>
+        <button class="btn" id="pDup">Duplicate</button>
+        <button class="btn" id="pDel">Delete</button>
+      </div>
+    </div>`;
+  const upd=()=>{
+    it.w=+document.getElementById("pw").value||it.w;
+    it.d=+document.getElementById("pd").value||it.d;
+    it.rot=+document.getElementById("pr").value;
+    it.note=document.getElementById("pn").value;
+    it.price=document.getElementById("pp").value;
+    render(); refreshBom();
+  };
+  ["pw","pd","pr","pn","pp"].forEach(id=>{
+    const n=document.getElementById(id);
+    n.addEventListener("change",()=>{pushUndo();upd();});
+    n.addEventListener("input",upd);
+  });
+  document.getElementById("pRot").onclick=rotSel;
+  document.getElementById("pDup").onclick=dupSel;
+  document.getElementById("pDel").onclick=delSel;
+  checkWarnings();
+}
+
+function checkWarnings(){
+  const out=[];
+  for(const it of S.items){
+    const b=bbox(it), room=roomAt(it.x,it.y);
+    if(!room){ out.push(`<b>${it.name}</b> is outside the flat.`); continue; }
+    for(const w of WALLS){
+      if(overlap(b,{x:w[0],y:w[1],w:w[2],h:w[3]})){
+        out.push(`<b>${it.name}</b> runs into a wall in ${room.name}.`); break;
+      }
+    }
+  }
+  for(let i=0;i<S.items.length;i++) for(let j=i+1;j<S.items.length;j++){
+    const a=S.items[i], c=S.items[j];
+    if(a.name.startsWith("Rug")||c.name.startsWith("Rug")) continue;
+    if(overlap(bbox(a),bbox(c))) out.push(`<b>${a.name}</b> overlaps <b>${c.name}</b>.`);
+  }
+  const uniq=[...new Set(out)].slice(0,8);
+  document.getElementById("warns").innerHTML =
+    uniq.length ? uniq.map(w=>`<div class="warn">⚠ ${w}</div>`).join("") : "";
+}
+
+function bomRows(){
+  const map=new Map();
+  for(const it of S.items){
+    const room=roomAt(it.x,it.y);
+    const key=[it.name,it.w,it.d,room?room.name:"—",it.note||"",it.price||""].join("|");
+    if(map.has(key)) map.get(key).qty++;
+    else map.set(key,{name:it.name,w:it.w,d:it.d,room:room?room.name:"—",
+                      note:it.note||"",price:it.price||"",qty:1});
+  }
+  return [...map.values()].sort((a,b)=>a.room.localeCompare(b.room)||a.name.localeCompare(b.name));
+}
+function refreshBom(){
+  const rows=bomRows();
+  const total=rows.reduce((s,r)=>{
+    const v=parseFloat(String(r.price).replace(/[^0-9.]/g,""));
+    return s+(isFinite(v)?v*r.qty:0);
+  },0);
+  document.getElementById("bom").innerHTML = rows.length
+    ? `<table class="bom"><tr><th>Item</th><th>Room</th><th class="n">Size (cm)</th><th class="n">Qty</th></tr>`
+      + rows.map(r=>`<tr><td>${r.name}${r.note?`<br><span style="color:#8b95a1">${r.note}</span>`:""}</td>
+          <td>${r.room}</td><td class="n">${Math.round(r.w)} × ${Math.round(r.d)}</td>
+          <td class="n">${r.qty}</td></tr>`).join("") + `</table>`
+    : '<div class="empty">No furniture placed yet.</div>';
+
+  const tf = total>0 ? `<tfoot><tr><td colspan="5">Total</td><td class="n">${total.toFixed(2)}</td></tr></tfoot>` : "";
+  document.getElementById("bomPrint").innerHTML = rows.length
+    ? `<table><tr><th>Item</th><th>Room</th><th>Size (cm)</th><th>Qty</th><th>Note</th><th>Price</th></tr>`
+      + rows.map(r=>`<tr><td>${r.name}</td><td>${r.room}</td>
+          <td class="n">${Math.round(r.w)} × ${Math.round(r.d)}</td><td class="n">${r.qty}</td>
+          <td>${r.note}</td><td class="n">${r.price}</td></tr>`).join("") + tf + `</table>`
+    : "<p>No furniture placed.</p>";
+  checkWarnings();
+}
+
+/* =====================================================================
+   8. CATALOGUE UI
+   ===================================================================== */
+function buildCatalog(filter=""){
+  const host=document.getElementById("cats"); host.innerHTML="";
+  const f=filter.trim().toLowerCase();
+  for(const c of CATS){
+    const items=CATALOG.filter(i=>i.cat===c.key && (!f||i.name.toLowerCase().includes(f)));
+    if(!items.length) continue;
+    const d=document.createElement("details");
+    d.className="grp"; d.open=!!f||c.key==="living";
+    d.style.setProperty("--sw",c.color);
+    d.innerHTML=`<summary>${c.name} <span style="color:var(--muted);font-weight:400">(${items.length})</span></summary>`;
+    for(const i of items){
+      const row=document.createElement("div");
+      row.className="it"; row.draggable=true;
+      row.innerHTML=`<span>${i.name}</span><span class="d">${i.w}×${i.d}</span>`;
+      row.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",i.id));
+      row.addEventListener("click",()=>addItem(i.id));
+      d.appendChild(row);
+    }
+    host.appendChild(d);
+  }
+}
+
+/* =====================================================================
+   9. SAVE / LOAD / EXPORT
+   ===================================================================== */
+const KEY="apt-planner-v2";
+function save(){ localStorage.setItem(KEY,JSON.stringify({items:S.items,uid}));
+  flash(document.getElementById("bSave"),"Saved ✓"); }
+function load(){
+  try{ const raw=localStorage.getItem(KEY); if(!raw) return;
+    const o=JSON.parse(raw); S.items=o.items||[]; uid=o.uid||S.items.length+1;
+  }catch(e){}
+}
+function flash(btn,txt){ const t=btn.textContent; btn.textContent=txt;
+  setTimeout(()=>btn.textContent=t,1200); }
+function dl(href,name){ const a=document.createElement("a");
+  a.href=href; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+function exportJson(){
+  dl(URL.createObjectURL(new Blob([JSON.stringify({items:S.items},null,2)],
+     {type:"application/json"})),"apartment-layout.json");
+}
+function importJson(){
+  const inp=document.createElement("input"); inp.type="file"; inp.accept=".json";
+  inp.onchange=()=>{ const f=inp.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{ try{ pushUndo(); S.items=JSON.parse(r.result).items||[];
+      uid=S.items.length+1; select(null); refreshBom(); }
+      catch(e){ alert("Could not read that file."); } };
+    r.readAsText(f); };
+  inp.click();
+}
+function exportPng(){
+  const vb=BOUNDS, keep={...S.view}, keepSel=S.sel;
+  S.sel=null; S.view={x:vb.x,y:vb.y,w:vb.w}; render();
+  const clone=svg.cloneNode(true);
+  clone.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  clone.setAttribute("width",vb.w*2); clone.setAttribute("height",vb.h*2);
+  const s=new XMLSerializer().serializeToString(clone);
+  const img=new Image();
+  img.onload=()=>{
+    const cv=document.createElement("canvas");
+    cv.width=vb.w*2; cv.height=vb.h*2;
+    const cx=cv.getContext("2d");
+    cx.fillStyle="#fff"; cx.fillRect(0,0,cv.width,cv.height);
+    cx.drawImage(img,0,0);
+    dl(cv.toDataURL("image/png"),"apartment-plan.png");
+    S.view=keep; S.sel=keepSel; render();
+  };
+  img.onerror=()=>{ S.view=keep; S.sel=keepSel; render(); alert("PNG export failed."); };
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s);
+}
+
+/* =====================================================================
+   10. WIRE-UP
+   ===================================================================== */
+function fit(){
+  const ar=stage.clientWidth/stage.clientHeight;
+  S.view.w=(BOUNDS.w/BOUNDS.h>ar)?BOUNDS.w:BOUNDS.h*ar;
+  S.view.x=BOUNDS.x-(S.view.w-BOUNDS.w)/2;
+  S.view.y=BOUNDS.y-(viewH()-BOUNDS.h)/2;
+  render();
+}
+const $=id=>document.getElementById(id);
+$("bRot").onclick=rotSel; $("bDel").onclick=delSel; $("bDup").onclick=dupSel;
+$("bUndo").onclick=undo;  $("bFit").onclick=fit;
+$("bZi").onclick=()=>{S.view.w/=1.25;render();};
+$("bZo").onclick=()=>{S.view.w*=1.25;render();};
+$("bSave").onclick=save;  $("bExport").onclick=exportJson;
+$("bImport").onclick=importJson; $("bPng").onclick=exportPng;
+$("bPrint").onclick=()=>{ const s=S.sel; S.sel=null; render();
+  setTimeout(()=>{ window.print(); S.sel=s; render(); },60); };
+$("bGrid").onclick=e=>{ S.showGrid=!S.showGrid; e.target.classList.toggle("on",S.showGrid); render(); };
+$("bLabels").onclick=e=>{ S.showLabels=!S.showLabels; e.target.classList.toggle("on",S.showLabels); render(); };
+$("bTape").onclick=e=>{ S.tapeMode=!S.tapeMode; e.target.classList.toggle("on",S.tapeMode);
+  svg.style.cursor=S.tapeMode?"crosshair":"default"; if(!S.tapeMode) S.tape=null; render(); };
+$("search").addEventListener("input",e=>buildCatalog(e.target.value));
+
+document.addEventListener("keydown",e=>{
+  if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if(e.key==="r"||e.key==="R") rotSel();
+  else if(e.key==="d"||e.key==="D") dupSel();
+  else if(e.key==="Backspace"||e.key==="Delete"){ e.preventDefault(); delSel(); }
+  else if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="z"){ e.preventDefault(); undo(); }
+  else if(e.key==="Escape"){ S.tape=null; select(null); }
+});
+window.addEventListener("resize",render);
+
+buildCatalog(); load();
+$("bGrid").classList.add("on"); $("bLabels").classList.add("on");
+fit(); refreshBom(); showProps();
+</script>
+</body>
+</html>

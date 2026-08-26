@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Floor Plan Studio — plan your flat and know what fits</title>
+<meta name="description" content="Draw your flat to scale, arrange the furniture, and get a shopping list with every size in centimetres. Free, works in your browser, nothing uploaded.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233b5bfd'/><path d='M8 9h16M8 16h16M8 23h16' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>">
+<style>
+  :root{
+    --ink:#0f1722; --muted:#5a6b80; --line:#e4e9f1; --bg:#ffffff;
+    --soft:#f5f7fb; --accent:#3b5bfd; --accent-2:#6f86ff;
+    --r:14px; --sh:0 2px 6px rgba(15,23,34,.06),0 12px 34px rgba(15,23,34,.07);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.65 ui-sans-serif,-apple-system,BlinkMacSystemFont,
+       "Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  a{color:var(--accent)}
+
+  header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.86);
+         backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;gap:14px;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:-.02em;
+         font-size:17px;text-decoration:none;color:var(--ink)}
+  .brand i{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+     background:linear-gradient(140deg,var(--accent-2),var(--accent));color:#fff;
+     font-style:normal;font-size:15px}
+  header nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+  header nav a{color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:9px;
+     font-size:14.5px;font-weight:530}
+  header nav a:hover{background:var(--soft);color:var(--ink)}
+  .cta{background:linear-gradient(160deg,var(--accent-2),var(--accent));color:#fff!important;
+     padding:10px 18px!important;border-radius:11px!important;font-weight:620;
+     box-shadow:0 2px 6px rgba(59,91,253,.35),0 8px 20px rgba(59,91,253,.2);
+     transition:filter .16s,transform .1s}
+  .cta:hover{filter:brightness(1.07);background:linear-gradient(160deg,var(--accent-2),var(--accent))!important}
+  .cta:active{transform:translateY(1px)}
+
+  .hero{padding:74px 0 30px;text-align:center}
+  .hero h1{font-size:clamp(34px,5.2vw,54px);line-height:1.1;letter-spacing:-.035em;
+     margin:0 0 18px;font-weight:770}
+  .hero h1 em{font-style:normal;background:linear-gradient(120deg,var(--accent),var(--accent-2));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{font-size:19px;color:var(--muted);max-width:39rem;margin:0 auto 30px}
+  .hero .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .ghost{border:1px solid var(--line);padding:10px 18px;border-radius:11px;
+     text-decoration:none;color:var(--ink);font-weight:560;background:#fff}
+  .ghost:hover{border-color:var(--muted)}
+  .note{font-size:13.5px;color:var(--muted);margin-top:18px}
+
+  .shot{margin:44px auto 0;max-width:940px;border-radius:var(--r);overflow:hidden;
+     border:1px solid var(--line);box-shadow:var(--sh);background:var(--soft)}
+  .shot svg{display:block;width:100%;height:auto}
+
+  section{padding:64px 0}
+  section.alt{background:var(--soft);border-top:1px solid var(--line);
+              border-bottom:1px solid var(--line)}
+  h2{font-size:clamp(24px,3.2vw,32px);letter-spacing:-.025em;margin:0 0 12px;font-weight:730}
+  .lede{color:var(--muted);max-width:38rem;margin:0 0 34px}
+
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:18px}
+  .step{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px}
+  section.alt .step{background:#fff}
+  .step .n{width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;
+     display:grid;place-items:center;font-weight:700;font-size:14px;margin-bottom:13px}
+  .step h3{margin:0 0 7px;font-size:16.5px;font-weight:660}
+  .step p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+
+  .feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:20px}
+  .feat h3{margin:0 0 6px;font-size:16.5px;font-weight:660;display:flex;align-items:center;gap:9px}
+  .feat h3 span{width:26px;height:26px;border-radius:8px;background:var(--soft);
+     display:grid;place-items:center;font-size:14px}
+  section.alt .feat h3 span{background:#eef1f7}
+  .feat p{margin:0;color:var(--muted);font-size:14.5px}
+
+  .faq details{border-bottom:1px solid var(--line);padding:15px 0}
+  .faq summary{cursor:pointer;font-weight:600;list-style:none;display:flex;
+     justify-content:space-between;gap:16px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";color:var(--muted);font-weight:400}
+  .faq details[open] summary::after{content:"−"}
+  .faq p{color:var(--muted);margin:10px 0 0;font-size:15px}
+
+  .final{text-align:center;padding:76px 0}
+  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--ink)}
+  footer .sp{flex:1}
+  @media (max-width:640px){
+    header nav a:not(.cta){display:none}
+    .hero{padding:48px 0 20px}
+  }
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <a class="brand" href="#"><i>▤</i>Floor Plan Studio</a>
+  <nav>
+    <a href="#how">How it works</a>
+    <a href="#what">What it does</a>
+    <a href="#faq">Questions</a>
+    <a class="cta" href="app.html">Open the planner</a>
+  </nav>
+</div></header>
+
+<div class="wrap hero">
+  <h1>Plan your flat.<br>Know <em>exactly</em> what fits.</h1>
+  <p>Draw your home to scale, move real furniture around it, and walk into the shop
+     with a list of every size in centimetres. Free, and it runs entirely in your browser.</p>
+  <div class="btns">
+    <a class="cta" href="app.html">Open the planner</a>
+    <a class="ghost" href="#how">See how it works</a>
+  </div>
+  <p class="note">No sign-up. Nothing uploaded. Your plans stay on your own computer.</p>
+
+  <!-- inline illustration: a small plan, drawn to the same conventions as the app -->
+  <div class="shot"><svg viewBox="0 0 940 400" role="img"
+       aria-label="A floor plan with two rooms, furniture and dimensions">
+    <rect width="940" height="400" fill="#f8fafc"/>
+    <g transform="translate(120,52)">
+      <rect x="0" y="0" width="420" height="300" fill="#fff"/>
+      <rect x="430" y="0" width="260" height="300" fill="#fff"/>
+      <g fill="#222a34">
+        <rect x="-8" y="-8" width="706" height="12"/><rect x="-8" y="296" width="706" height="12"/>
+        <rect x="-8" y="-8" width="12" height="316"/><rect x="686" y="-8" width="12" height="316"/>
+        <rect x="418" y="-8" width="12" height="120"/><rect x="418" y="196" width="12" height="112"/>
+      </g>
+      <rect x="150" y="-9" width="150" height="14" fill="#fff"/>
+      <line x1="150" y1="-5" x2="300" y2="-5" stroke="#4a6fa5" stroke-width="2.5"/>
+      <line x1="150" y1="1" x2="300" y2="1" stroke="#4a6fa5" stroke-width="2.5"/>
+      <rect x="500" y="-9" width="120" height="14" fill="#fff"/>
+      <line x1="500" y1="-5" x2="620" y2="-5" stroke="#4a6fa5" stroke-width="2.5"/>
+      <line x1="500" y1="1" x2="620" y2="1" stroke="#4a6fa5" stroke-width="2.5"/>
+      <path d="M424 112 A84 84 0 0 1 424 196" fill="none" stroke="#9fb0c6"
+            stroke-width="1.6" stroke-dasharray="7 5"/>
+      <g fill="#4f83cc33" stroke="#4f83cc" stroke-width="1.8">
+        <rect x="120" y="14" width="180" height="80" rx="4"/>
+        <rect x="150" y="140" width="120" height="60" rx="4"/>
+        <rect x="115" y="250" width="190" height="42" rx="4"/>
+      </g>
+      <g fill="#7a67c833" stroke="#7a67c8" stroke-width="1.8">
+        <rect x="470" y="16" width="150" height="180" rx="4"/>
+        <rect x="620" y="215" width="60" height="80" rx="4"/>
+      </g>
+      <g font-family="ui-sans-serif,system-ui,sans-serif" text-anchor="middle">
+        <text x="210" y="118" font-size="13" fill="#9aa5b1" font-weight="700"
+              letter-spacing="1.2">LIVING</text>
+        <text x="210" y="134" font-size="11" fill="#bcc5cf">4.20 × 3.00 m · 12.6 m²</text>
+        <text x="560" y="118" font-size="13" fill="#9aa5b1" font-weight="700"
+              letter-spacing="1.2">BEDROOM</text>
+        <text x="560" y="134" font-size="11" fill="#bcc5cf">2.60 × 3.00 m · 7.8 m²</text>
+        <text x="210" y="58" font-size="10.5" fill="#46515e" font-weight="600">Sofa 3-seat</text>
+        <text x="210" y="70" font-size="9.5" fill="#79838f">200×90 cm</text>
+        <text x="545" y="110" font-size="10.5" fill="#46515e" font-weight="600">Bed queen</text>
+        <text x="545" y="122" font-size="9.5" fill="#79838f">160×200 cm</text>
+      </g>
+      <g stroke="#c2410c" fill="#c2410c" font-family="ui-sans-serif,sans-serif">
+        <line x1="0" y1="-38" x2="420" y2="-38" stroke-width="1.6"/>
+        <line x1="0" y1="-44" x2="0" y2="-32" stroke-width="1.6"/>
+        <line x1="420" y1="-44" x2="420" y2="-32" stroke-width="1.6"/>
+        <text x="210" y="-46" font-size="12" font-weight="700" text-anchor="middle">420 cm</text>
+      </g>
+    </g>
+  </svg></div>
+</div>
+
+<section id="how" class="alt"><div class="wrap">
+  <h2>Five steps, about ten minutes</h2>
+  <p class="lede">You don't need to know CAD. If you can drag things around, you can do this.</p>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><h3>Bring a photo</h3>
+      <p>Photograph or scan any floor plan and drop it in. It sits behind your
+         drawing as a faint guide. Or skip it and draw from your own measurements.</p></div>
+    <div class="step"><div class="n">2</div><h3>Set the scale</h3>
+      <p>Click two points you know the distance between, type that distance,
+         and everything afterwards is true to size.</p></div>
+    <div class="step"><div class="n">3</div><h3>Trace the walls</h3>
+      <p>Click corner to corner. Type an exact length whenever you want one —
+         360 means 360 cm, not "roughly".</p></div>
+    <div class="step"><div class="n">4</div><h3>Make the rooms</h3>
+      <p>Click inside any enclosed space and it works out the shape, the size
+         and the floor area for you.</p></div>
+    <div class="step"><div class="n">5</div><h3>Furnish it</h3>
+      <p>Drag from 113 pieces at real dimensions. It warns you when something
+         won't fit, blocks a door, or leaves too little room to walk.</p></div>
+  </div>
+</div></section>
+
+<section id="what"><div class="wrap">
+  <h2>What you get</h2>
+  <p class="lede">Built around one idea: the numbers have to be right, or none of it helps.</p>
+  <div class="feats">
+    <div class="feat"><h3><span>📐</span>Everything in centimetres</h3>
+      <p>Every wall, every gap, every piece of furniture. Sizes are shown on the
+         drawing and on the printout, so you can check before you buy.</p></div>
+    <div class="feat"><h3><span>⚠️</span>It tells you what won't work</h3>
+      <p>Furniture through a wall, a wardrobe blocking a door, under 75 cm to
+         squeeze past the sofa — flagged as you go.</p></div>
+    <div class="feat"><h3><span>🛒</span>A shopping list that builds itself</h3>
+      <p>Item, room, size, quantity, your notes and prices. Print it and take it
+         to the shop.</p></div>
+    <div class="feat"><h3><span>🧊</span>See it in 3D</h3>
+      <p>Walls stand up, doors and windows cut through, furniture takes shape,
+         and the sun casts real shadows at any hour of the day.</p></div>
+    <div class="feat"><h3><span>💡</span>Sockets and lighting</h3>
+      <p>Place switches, sockets and lights at proper heights, wire switches to
+         the lights they control, and print a schedule for the electrician.</p></div>
+    <div class="feat"><h3><span>🔒</span>Yours, and only yours</h3>
+      <p>Nothing is uploaded. Plans are saved in your browser or to a file on
+         your computer. No account, no cloud.</p></div>
+  </div>
+</div></section>
+
+<section id="faq" class="alt"><div class="wrap" style="max-width:760px">
+  <h2>Questions</h2>
+  <div class="faq">
+    <details open><summary>Is it really free?</summary>
+      <p>Yes. Open it and use it. There's no account and no trial.</p></details>
+    <details><summary>Where do my plans go?</summary>
+      <p>Into your own browser's storage, and into files you save yourself.
+         Nothing is sent to a server — the page has no way to upload anything.</p></details>
+    <details><summary>Can I use it on my phone?</summary>
+      <p>You can view and adjust a plan, and pinch to zoom in 3D. Drawing a flat
+         from scratch is much easier on a laptop.</p></details>
+    <details><summary>How accurate is it?</summary>
+      <p>As accurate as the numbers you give it. Calibrate the photo carefully,
+         or type real tape-measure lengths, and it's exact. A photo of a sketch is
+         only ever as good as the sketch — always measure before buying something
+         expensive.</p></details>
+    <details><summary>Can I print it?</summary>
+      <p>Yes — the plan on one page, your shopping list on the next, and a room
+         schedule after that. Or export a PNG to send to a carpenter.</p></details>
+  </div>
+</div></section>
+
+<div class="wrap final">
+  <h2>Ready to see what fits?</h2>
+  <p class="lede" style="margin:12px auto 26px">Open it and draw your first room.
+     Nothing to install, nothing to sign up for.</p>
+  <a class="cta" href="app.html">Open the planner</a>
+</div>
+
+<footer><div class="wrap">
+  <span>© <span id="yr">2026</span> Floor Plan Studio</span>
+  <span class="sp"></span>
+  <a href="privacy.html">Privacy</a>
+  <a href="app.html">Open the planner</a>
+</div></footer>
+<script>document.getElementById("yr").textContent=new Date().getFullYear();</script>
+</body>
+</html>

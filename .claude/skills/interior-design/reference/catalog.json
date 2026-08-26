@@ -1,0 +1,1002 @@
+{
+ "categories": [
+  {
+   "key": "living",
+   "name": "Living / Reception",
+   "color": "#4f83cc"
+  },
+  {
+   "key": "dining",
+   "name": "Dining",
+   "color": "#c98a3a"
+  },
+  {
+   "key": "bedroom",
+   "name": "Bedroom",
+   "color": "#7a67c8"
+  },
+  {
+   "key": "office",
+   "name": "Office",
+   "color": "#4a8c78"
+  },
+  {
+   "key": "kitchen",
+   "name": "Kitchen",
+   "color": "#c0603f"
+  },
+  {
+   "key": "bath",
+   "name": "Bathroom",
+   "color": "#3f9bb5"
+  },
+  {
+   "key": "hall",
+   "name": "Hall & extras",
+   "color": "#7d8794"
+  }
+ ],
+ "furniture": [
+  {
+   "cat": "living",
+   "name": "Sofa 3-seat",
+   "w": 200,
+   "d": 90,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Sofa 2-seat",
+   "w": 150,
+   "d": 90,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Sofa 4-seat",
+   "w": 240,
+   "d": 95,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Armchair",
+   "w": 90,
+   "d": 85,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Recliner",
+   "w": 95,
+   "d": 95,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Corner sofa (L)",
+   "w": 260,
+   "d": 180,
+   "shape": "L"
+  },
+  {
+   "cat": "living",
+   "name": "Chaise longue",
+   "w": 160,
+   "d": 80,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Coffee table",
+   "w": 110,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Coffee table round",
+   "w": 90,
+   "d": 90,
+   "shape": "circle"
+  },
+  {
+   "cat": "living",
+   "name": "Side table",
+   "w": 50,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Nest of tables",
+   "w": 60,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "TV unit",
+   "w": 180,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "TV unit small",
+   "w": 140,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Console table",
+   "w": 120,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Bookshelf",
+   "w": 80,
+   "d": 35,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Bookshelf tall",
+   "w": 100,
+   "d": 35,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Display cabinet",
+   "w": 120,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Rug 200x300",
+   "w": 200,
+   "d": 300,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Rug 160x230",
+   "w": 160,
+   "d": 230,
+   "shape": "rect"
+  },
+  {
+   "cat": "living",
+   "name": "Rug round",
+   "w": 200,
+   "d": 200,
+   "shape": "circle"
+  },
+  {
+   "cat": "living",
+   "name": "Pouf",
+   "w": 45,
+   "d": 45,
+   "shape": "circle"
+  },
+  {
+   "cat": "living",
+   "name": "Floor lamp",
+   "w": 40,
+   "d": 40,
+   "shape": "circle"
+  },
+  {
+   "cat": "living",
+   "name": "Piano (upright)",
+   "w": 150,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Dining table 4",
+   "w": 120,
+   "d": 80,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Dining table 6",
+   "w": 160,
+   "d": 90,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Dining table 8",
+   "w": 200,
+   "d": 100,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Dining table 10",
+   "w": 240,
+   "d": 110,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Dining round 4",
+   "w": 120,
+   "d": 120,
+   "shape": "circle"
+  },
+  {
+   "cat": "dining",
+   "name": "Dining round 6",
+   "w": 140,
+   "d": 140,
+   "shape": "circle"
+  },
+  {
+   "cat": "dining",
+   "name": "Dining chair",
+   "w": 45,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Bench 120",
+   "w": 120,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Sideboard",
+   "w": 160,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Buffet 200",
+   "w": 200,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "China cabinet",
+   "w": 120,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "dining",
+   "name": "Bar cart",
+   "w": 70,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Bed king 180",
+   "w": 180,
+   "d": 200,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Bed queen 160",
+   "w": 160,
+   "d": 200,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Bed double 140",
+   "w": 140,
+   "d": 200,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Bed single 90",
+   "w": 90,
+   "d": 200,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Bed kids 120",
+   "w": 120,
+   "d": 200,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Bunk bed",
+   "w": 90,
+   "d": 200,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Crib",
+   "w": 120,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Nightstand",
+   "w": 45,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Wardrobe 2-door",
+   "w": 100,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Wardrobe 3-door",
+   "w": 150,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Wardrobe 4-door",
+   "w": 200,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Wardrobe 6-door",
+   "w": 300,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Corner wardrobe",
+   "w": 100,
+   "d": 100,
+   "shape": "L"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Dresser",
+   "w": 120,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Chest of drawers",
+   "w": 80,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Dressing table",
+   "w": 100,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Mirror stand",
+   "w": 60,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Ottoman bench",
+   "w": 100,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Blanket box",
+   "w": 90,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "bedroom",
+   "name": "Changing table",
+   "w": 80,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "office",
+   "name": "Desk 120",
+   "w": 120,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "office",
+   "name": "Desk 140",
+   "w": 140,
+   "d": 70,
+   "shape": "rect"
+  },
+  {
+   "cat": "office",
+   "name": "Desk L-shape",
+   "w": 160,
+   "d": 160,
+   "shape": "L"
+  },
+  {
+   "cat": "office",
+   "name": "Office chair",
+   "w": 60,
+   "d": 60,
+   "shape": "circle"
+  },
+  {
+   "cat": "office",
+   "name": "Filing cabinet",
+   "w": 40,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "office",
+   "name": "Printer table",
+   "w": 60,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "office",
+   "name": "Study chair",
+   "w": 45,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Base unit 60",
+   "w": 60,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Base unit 80",
+   "w": 80,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Base unit 100",
+   "w": 100,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Base unit 120",
+   "w": 120,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Corner base",
+   "w": 90,
+   "d": 90,
+   "shape": "L"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Sink unit",
+   "w": 80,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Sink unit double",
+   "w": 120,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Cooker 60",
+   "w": 60,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Cooker 90",
+   "w": 90,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Oven column",
+   "w": 60,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Fridge",
+   "w": 60,
+   "d": 65,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Fridge side-by-side",
+   "w": 90,
+   "d": 70,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Freezer",
+   "w": 60,
+   "d": 65,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Dishwasher",
+   "w": 60,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Washing machine",
+   "w": 60,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Dryer",
+   "w": 60,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Tall pantry",
+   "w": 60,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Kitchen island",
+   "w": 180,
+   "d": 90,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Breakfast bar",
+   "w": 120,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Bar stool",
+   "w": 40,
+   "d": 40,
+   "shape": "circle"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Microwave shelf",
+   "w": 50,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "kitchen",
+   "name": "Water filter",
+   "w": 40,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Toilet",
+   "w": 40,
+   "d": 70,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Bidet",
+   "w": 40,
+   "d": 60,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Wash basin 60",
+   "w": 60,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Vanity 80",
+   "w": 80,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Vanity 100",
+   "w": 100,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Vanity 120",
+   "w": 120,
+   "d": 50,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Bathtub 170",
+   "w": 170,
+   "d": 75,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Bathtub 150",
+   "w": 150,
+   "d": 70,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Shower 90x90",
+   "w": 90,
+   "d": 90,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Shower 80x80",
+   "w": 80,
+   "d": 80,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Shower 120x80",
+   "w": 120,
+   "d": 80,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Corner shower",
+   "w": 90,
+   "d": 90,
+   "shape": "L"
+  },
+  {
+   "cat": "bath",
+   "name": "Towel cabinet",
+   "w": 40,
+   "d": 35,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Water heater",
+   "w": 45,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "bath",
+   "name": "Laundry basket",
+   "w": 45,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Shoe cabinet",
+   "w": 90,
+   "d": 35,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Coat rack",
+   "w": 50,
+   "d": 35,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Hall console",
+   "w": 100,
+   "d": 35,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Hall mirror",
+   "w": 60,
+   "d": 10,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Storage cabinet",
+   "w": 100,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Split A/C unit",
+   "w": 90,
+   "d": 25,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Water tank",
+   "w": 80,
+   "d": 80,
+   "shape": "circle"
+  },
+  {
+   "cat": "hall",
+   "name": "Plant large",
+   "w": 50,
+   "d": 50,
+   "shape": "circle"
+  },
+  {
+   "cat": "hall",
+   "name": "Plant small",
+   "w": 35,
+   "d": 35,
+   "shape": "circle"
+  },
+  {
+   "cat": "hall",
+   "name": "Spare fridge",
+   "w": 70,
+   "d": 70,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Ironing board",
+   "w": 130,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Vacuum store",
+   "w": 40,
+   "d": 40,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Safe",
+   "w": 50,
+   "d": 45,
+   "shape": "rect"
+  },
+  {
+   "cat": "hall",
+   "name": "Suitcase store",
+   "w": 70,
+   "d": 45,
+   "shape": "rect"
+  }
+ ],
+ "electrical": [
+  {
+   "k": "ceiling",
+   "name": "Ceiling light",
+   "grp": "Lights",
+   "mount": null,
+   "load": "light"
+  },
+  {
+   "k": "pendant",
+   "name": "Pendant",
+   "grp": "Lights",
+   "mount": null,
+   "load": "light"
+  },
+  {
+   "k": "spot",
+   "name": "Spotlight",
+   "grp": "Lights",
+   "mount": null,
+   "load": "light"
+  },
+  {
+   "k": "walllight",
+   "name": "Wall light",
+   "grp": "Lights",
+   "mount": 200,
+   "load": "light"
+  },
+  {
+   "k": "strip",
+   "name": "LED strip",
+   "grp": "Lights",
+   "mount": null,
+   "load": "light"
+  },
+  {
+   "k": "fan",
+   "name": "Ceiling fan",
+   "grp": "Lights",
+   "mount": null,
+   "load": "light"
+  },
+  {
+   "k": "switch1",
+   "name": "Switch 1-gang",
+   "grp": "Switches",
+   "mount": 110,
+   "load": "switch"
+  },
+  {
+   "k": "switch2",
+   "name": "Switch 2-gang",
+   "grp": "Switches",
+   "mount": 110,
+   "load": "switch"
+  },
+  {
+   "k": "switch3",
+   "name": "Switch 3-gang",
+   "grp": "Switches",
+   "mount": 110,
+   "load": "switch"
+  },
+  {
+   "k": "switchway",
+   "name": "2-way switch",
+   "grp": "Switches",
+   "mount": 110,
+   "load": "switch"
+  },
+  {
+   "k": "dimmer",
+   "name": "Dimmer",
+   "grp": "Switches",
+   "mount": 110,
+   "load": "switch"
+  },
+  {
+   "k": "socket",
+   "name": "Socket",
+   "grp": "Power",
+   "mount": 30,
+   "load": null
+  },
+  {
+   "k": "socket2",
+   "name": "Socket double",
+   "grp": "Power",
+   "mount": 30,
+   "load": null
+  },
+  {
+   "k": "sockethi",
+   "name": "Socket (worktop)",
+   "grp": "Power",
+   "mount": 110,
+   "load": null
+  },
+  {
+   "k": "socketwp",
+   "name": "Socket weatherproof",
+   "grp": "Power",
+   "mount": 30,
+   "load": null
+  },
+  {
+   "k": "cooker",
+   "name": "Cooker point",
+   "grp": "Power",
+   "mount": 60,
+   "load": null
+  },
+  {
+   "k": "ac",
+   "name": "A/C point",
+   "grp": "Power",
+   "mount": 220,
+   "load": null
+  },
+  {
+   "k": "heater",
+   "name": "Water heater point",
+   "grp": "Power",
+   "mount": 180,
+   "load": null
+  },
+  {
+   "k": "tv",
+   "name": "TV point",
+   "grp": "Data",
+   "mount": 30,
+   "load": null
+  },
+  {
+   "k": "net",
+   "name": "Network point",
+   "grp": "Data",
+   "mount": 30,
+   "load": null
+  },
+  {
+   "k": "phone",
+   "name": "Phone point",
+   "grp": "Data",
+   "mount": 30,
+   "load": null
+  },
+  {
+   "k": "bell",
+   "name": "Door bell",
+   "grp": "Data",
+   "mount": 150,
+   "load": null
+  },
+  {
+   "k": "board",
+   "name": "Distribution board",
+   "grp": "Supply",
+   "mount": 170,
+   "load": null
+  },
+  {
+   "k": "meter",
+   "name": "Meter",
+   "grp": "Supply",
+   "mount": 170,
+   "load": null
+  }
+ ]
+}
