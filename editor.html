@@ -6,11 +6,21 @@
 <title>Floor Plan Editor</title>
 <style>
   :root{
-    --bg:#eef1f6; --panel:#ffffff; --ink:#131a24; --muted:#6b7789; --line:#e3e8ef;
+    --bg:#eceff5; --panel:#ffffff; --ink:#111823; --muted:#68748a; --line:#e5e9f0;
+    --line-2:#eef1f6;
     --accent:#3b6ef0; --accent-2:#6b8ffb; --accent-soft:#eef3ff; --warn:#d1620b;
-    --ok:#0f9960; --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 14px rgba(16,24,40,.06);
-    --shadow-lg:0 12px 40px rgba(16,24,40,.16);
-    --r:10px; --r-sm:7px;
+    --ok:#0f9960;
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 3px 10px rgba(16,24,40,.05);
+    --shadow-md:0 4px 12px rgba(16,24,40,.09),0 1px 3px rgba(16,24,40,.05);
+    --shadow-lg:0 16px 48px rgba(16,24,40,.17),0 3px 10px rgba(16,24,40,.07);
+    --r:11px; --r-sm:8px;
+    --ease:cubic-bezier(.22,.85,.28,1);
+    --lw:236px; --rw:316px;
+    --pad-l:236px; --pad-r:316px;
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+                         transition-duration:.01ms!important;scroll-behavior:auto!important}
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
@@ -23,38 +33,97 @@
   ::-webkit-scrollbar-thumb:hover{background:#bcc6d4}
   ::-webkit-scrollbar-track{background:transparent}
 
-  #app{display:grid;grid-template-columns:226px 1fr 312px;
-       grid-template-rows:54px auto 1fr 28px;height:100%}
-  #bar{grid-column:1/4;display:flex;align-items:center;gap:6px;padding:0 14px;
+  /* Track widths are written out per state rather than driven through a var().
+     An unregistered custom property animates discretely, so transitioning a
+     property that reads one is not guaranteed to interpolate; concrete values
+     on each rule always do. */
+  #app{display:grid;grid-template-columns:var(--lw) 1fr var(--rw);
+       grid-template-rows:56px auto 1fr 26px;height:100%;
+       transition:grid-template-columns .34s var(--ease)}
+  #app.noanim{transition:none}
+  #app[data-left="0"]                   {grid-template-columns:0 1fr var(--rw)}
+  #app[data-right="0"]                  {grid-template-columns:var(--lw) 1fr 0}
+  #app[data-left="0"][data-right="0"]   {grid-template-columns:0 1fr 0}
+  #bar{grid-column:1/4;display:flex;align-items:center;gap:5px;padding:0 12px;
        background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;
-       box-shadow:0 1px 0 rgba(16,24,40,.02)}
-  #bar::-webkit-scrollbar{height:0}
+       overflow-y:hidden;box-shadow:0 1px 0 rgba(16,24,40,.02)}
+  #bar::-webkit-scrollbar{height:4px}
+  #bar::-webkit-scrollbar-thumb{background:#d7dde7;border:none;border-radius:4px}
+  #bar .home{display:flex;align-items:center;gap:7px;text-decoration:none;color:inherit;
+       font-weight:700;white-space:nowrap;font-size:13px;padding:5px 8px;
+       border-radius:var(--r-sm);transition:background .15s}
+  #bar .home:hover{background:var(--line-2)}
+  #bar .home i{width:21px;height:21px;border-radius:6px;display:grid;place-items:center;
+       background:linear-gradient(140deg,var(--accent-2),var(--accent));color:#fff;
+       font-style:normal;font-size:11px;flex:none}
+  .btn.ico{padding:6px 9px;display:grid;place-items:center;line-height:1}
+  .btn.ico svg{width:14px;height:14px;display:block}
+  .btn .caret{width:8px;height:8px;margin-left:5px;opacity:.5;
+              transition:transform .2s var(--ease)}
+  .btn[aria-expanded="true"] .caret{transform:rotate(180deg)}
+  .btn[aria-expanded="true"]{background:var(--accent-soft);border-color:#c9d8fb;
+              color:var(--accent)}
   #bar .sp{flex:1}
   #bar .nm{font-weight:680;margin-right:4px;white-space:nowrap;font-size:14px;
            letter-spacing:-.01em}
   .btn{border:1px solid var(--line);background:#fff;border-radius:var(--r-sm);
-       padding:6px 11px;cursor:pointer;white-space:nowrap;font-weight:520;
-       transition:background .15s ease,border-color .15s ease,transform .08s ease,
-                  box-shadow .15s ease;position:relative}
-  .btn:hover{background:#f5f7fb;border-color:#d3dae6}
-  .btn:active{transform:translateY(1px)}
+       padding:6px 11px;cursor:pointer;white-space:nowrap;font-weight:530;
+       display:inline-flex;align-items:center;
+       transition:background .16s var(--ease),border-color .16s var(--ease),
+                  transform .12s var(--ease),box-shadow .16s var(--ease),color .16s;
+       position:relative}
+  .btn:hover{background:#f6f8fc;border-color:#ccd6e6;transform:translateY(-1px);
+       box-shadow:var(--shadow)}
+  .btn:active{transform:translateY(0);box-shadow:none}
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .btn:disabled{opacity:.38;cursor:default;transform:none}
   .btn.on{background:var(--accent);color:#fff;border-color:var(--accent);
-          box-shadow:0 1px 3px rgba(59,110,240,.35)}
+          box-shadow:0 2px 8px rgba(59,110,240,.32)}
+  .btn.on:hover{background:var(--accent);filter:brightness(1.07)}
   .btn.pri{background:linear-gradient(180deg,var(--accent-2),var(--accent));
            color:#fff;border-color:transparent;
            box-shadow:0 1px 2px rgba(59,110,240,.4),0 4px 12px rgba(59,110,240,.22)}
   .btn.pri:hover{filter:brightness(1.06)}
-  .sep{width:1px;height:22px;background:var(--line);flex:none;margin:0 3px}
+  .sep{width:1px;height:20px;background:var(--line);flex:none;margin:0 4px}
 
-  aside{background:var(--panel);overflow-y:auto;display:flex;flex-direction:column}
-  #left{border-right:1px solid var(--line)}
-  #right{border-left:1px solid var(--line)}
+  aside{background:var(--panel);overflow:hidden;display:flex;flex-direction:column;
+        min-width:0}
+  aside>.pcontent{width:var(--pw);flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+        display:flex;flex-direction:column}
+  #left{border-right:1px solid var(--line);--pw:var(--pad-l)}
+  #right{border-left:1px solid var(--line);--pw:var(--pad-r)}
+  #app[data-left="0"] #left,#app[data-right="0"] #right{border-color:transparent}
+
+  /* edge handles - always reachable, so a folded panel can always come back */
+  .rail{position:absolute;top:50%;transform:translateY(-50%);z-index:6;
+        width:20px;height:62px;border:1px solid var(--line);background:var(--panel);
+        display:grid;place-items:center;cursor:pointer;color:var(--muted);
+        box-shadow:var(--shadow);padding:0;
+        transition:background .16s,color .16s,width .16s var(--ease)}
+  .rail:hover{background:var(--accent);color:#fff;border-color:var(--accent);width:24px}
+  .rail:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rail svg{width:11px;height:11px;transition:transform .3s var(--ease)}
+  #railL{left:0;border-left:none;border-radius:0 9px 9px 0}
+  #railR{right:0;border-right:none;border-radius:9px 0 0 9px}
+  #app[data-left="0"]  #railL svg{transform:rotate(180deg)}
+  #app[data-right="0"] #railR svg{transform:rotate(180deg)}
   .hd{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-      font-weight:700;padding:14px 13px 6px;border-top:1px solid var(--line);
-      position:sticky;top:0;background:var(--panel);z-index:2}
-  .hd:first-child{border-top:none}
+      font-weight:700;padding:12px 13px 10px;border-top:1px solid var(--line);
+      position:sticky;top:0;background:var(--panel);z-index:2;
+      display:flex;align-items:center;gap:7px;width:100%;text-align:left;
+      border-left:none;border-right:none;border-bottom:none;cursor:pointer;
+      font-family:inherit;transition:color .15s}
+  .hd:hover{color:var(--ink)}
+  .hd:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .sec:first-child>.hd{border-top:none}
+  .hd .chev{margin-left:auto;width:9px;height:9px;flex:none;opacity:.55;
+            transition:transform .28s var(--ease)}
+  .sec.closed .hd .chev{transform:rotate(-90deg)}
+  /* Height is driven from JS: it measures the content, pins that as a pixel
+     height, then animates to zero. The grid 0fr trick collapses nothing here,
+     and auto->0 does not transition, so neither is any use. */
+  .secbody{overflow:hidden;transition:height .28s var(--ease),opacity .22s ease}
+  .sec.closed .secbody{opacity:0}
   .pad{padding:10px 13px}
 
   #tools{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:9px}
@@ -62,9 +131,13 @@
         border:1px solid var(--line);background:#fff;border-radius:var(--r-sm);
         padding:7px 9px;cursor:pointer;font-size:12px;font-weight:530;
         transition:all .15s ease}
-  .tool:hover{background:#f5f7fb;border-color:#d3dae6;transform:translateY(-1px)}
+  .tool:hover{background:#f6f8fc;border-color:#ccd6e6;transform:translateY(-1px);
+        box-shadow:var(--shadow)}
+  .tool:active{transform:translateY(0)}
+  .tool:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .tool.on{background:var(--accent);color:#fff;border-color:var(--accent);
-           box-shadow:0 2px 8px rgba(59,110,240,.28)}
+           box-shadow:0 3px 10px rgba(59,110,240,.3);transform:none}
+  .tool.on:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(59,110,240,.34)}
   .tool b{font-size:10px;opacity:.6;font-weight:600}
 
   #search{width:100%;padding:7px 10px;border:1px solid var(--line);
@@ -86,22 +159,27 @@
   .it:active{cursor:grabbing}
   .it .d{color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
 
-  #stage{position:relative;overflow:hidden;background:
-     radial-gradient(circle at 40% 30%,#f6f8fc 0%,#e9edf4 100%)}
+  #stage{position:relative;overflow:hidden;min-width:0;background:
+     radial-gradient(circle at 40% 30%,#f7f9fc 0%,#e8ecf4 100%)}
   svg#cv{width:100%;height:100%;display:block;touch-action:none}
   #cv3{transition:opacity .25s ease}
-  #status{grid-column:1/4;display:flex;align-items:center;gap:16px;padding:0 13px;
+  #status{grid-column:1/4;display:flex;align-items:center;gap:15px;padding:0 13px;
           background:var(--panel);border-top:1px solid var(--line);
-          font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+          font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;
+          white-space:nowrap;overflow:hidden}
+  #status .sp{flex:1}
   #status b{color:var(--ink);font-weight:620}
   #numchip{position:absolute;background:var(--ink);color:#fff;padding:4px 9px;
            border-radius:6px;font-size:12px;font-variant-numeric:tabular-nums;
            pointer-events:none;display:none;z-index:5;box-shadow:var(--shadow)}
-  #toast{position:absolute;left:50%;top:16px;transform:translateX(-50%) translateY(-8px);
-         background:var(--ink);color:#fff;padding:9px 15px;border-radius:9px;
-         font-size:12px;display:none;z-index:9;box-shadow:var(--shadow-lg);
-         opacity:0;transition:opacity .2s ease,transform .2s ease;max-width:70%}
-  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast{position:absolute;left:50%;top:18px;
+         transform:translateX(-50%) translateY(-14px) scale(.96);
+         background:rgba(17,24,35,.95);backdrop-filter:blur(10px);color:#fff;
+         padding:10px 17px;border-radius:10px;
+         font-size:12.5px;display:none;z-index:9;box-shadow:var(--shadow-lg);
+         opacity:0;transition:opacity .24s var(--ease),transform .24s var(--ease);
+         max-width:70%;line-height:1.45}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 
   .row{display:flex;gap:7px;align-items:center;margin:6px 0}
   .row label{width:72px;color:var(--muted);font-size:11px;flex:none}
@@ -118,7 +196,16 @@
   .warn{background:linear-gradient(180deg,#fff8f1,#fff3e8);
         border:1px solid #f3d3b3;color:var(--warn);border-radius:var(--r-sm);
         padding:7px 10px;font-size:11px;margin:5px 13px;line-height:1.45;
-        animation:pop .22s ease}
+        animation:pop .22s ease;transition:transform .14s var(--ease),box-shadow .14s}
+  .warn:hover{transform:translateX(2px);box-shadow:var(--shadow)}
+  .warn{display:flex;align-items:flex-start;gap:6px}
+  .warn .wt{flex:1;cursor:pointer}
+  .warn.err{background:linear-gradient(180deg,#fff1ee,#ffe9e4);border-color:#f2c3b6;
+            color:#b3391a}
+  .wmute{border:none;background:none;color:inherit;opacity:.4;cursor:pointer;
+         font-size:14px;line-height:1;padding:0 2px;flex:none;
+         transition:opacity .15s}
+  .wmute:hover{opacity:1}
   @keyframes pop{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
   .okmsg{color:var(--ok);font-size:12px;padding:2px 13px 11px;font-weight:520}
   #warnCount{background:var(--warn);color:#fff;border-radius:10px;padding:1px 7px;
@@ -159,7 +246,27 @@
   #v3ctl{backdrop-filter:blur(8px);box-shadow:var(--shadow);border-radius:var(--r)!important}
   #v3ctl input[type=range]{accent-color:var(--accent)}
   #hint3,#hint{box-shadow:var(--shadow);backdrop-filter:blur(6px)}
-  #ctx{animation:pop .14s ease}
+  .menu,#ctx{position:fixed;z-index:80;min-width:206px;max-width:290px;
+       background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+       box-shadow:var(--shadow-lg);padding:5px;display:none;
+       transform-origin:top left}
+  #ctx{position:absolute}
+  .menu.open,#ctx[style*="block"]{animation:menuIn .17s var(--ease)}
+  @keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.96)}
+                    to{opacity:1;transform:none}}
+  .menu .mi,#ctx>div:not(.sep){display:flex;align-items:center;gap:9px;width:100%;
+       padding:7px 10px;border:none;background:none;border-radius:7px;cursor:pointer;
+       font:inherit;font-size:12.5px;color:var(--ink);text-align:left;white-space:nowrap;
+       transition:background .13s,color .13s}
+  .menu .mi:hover,#ctx>div:not(.sep):hover{background:var(--accent-soft);color:var(--accent)}
+  .menu .mi:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .menu .mi b,#ctx>div>b{margin-left:auto;font-size:10px;color:var(--muted);
+       font-weight:600;letter-spacing:.02em;padding-left:14px}
+  .menu .mi:disabled,#ctx>div.dis{opacity:.38;pointer-events:none}
+  .menu .mi svg{width:13px;height:13px;flex:none;opacity:.6}
+  .menu .msep,#ctx>.sep{height:1px;background:var(--line);margin:5px 3px;padding:0}
+  .menu .mlbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+       color:var(--muted);font-weight:700;padding:8px 10px 4px}
   #warnbar{grid-column:1/4;background:linear-gradient(180deg,#fff8ec,#fff3e0);
            border-bottom:1px solid #f0d3ad;color:#8a4b12;padding:8px 14px;
            font-size:12px;display:none}
@@ -169,12 +276,32 @@
              transition:background .2s,color .2s}
   #saveBadge.dirty{background:#fdf0e6;color:var(--warn)}
   #saveBadge.none{background:#fdecec;color:#b32020}
+  /* Narrower screens shed toolbar chrome before they shed controls. Below the
+     last of these the bar scrolls - the scrollbar is visible now, which is the
+     part that was actually broken. */
+  @media (max-width:1180px){
+    #bar .home{font-size:0;gap:0;padding:5px 6px}
+    #bar .home i{font-size:11px}
+  }
+  @media (max-width:980px){
+    #bar .nm{display:none}
+    #bar .snaplbl{font-size:0;gap:4px}
+    :root{--pad-l:206px;--pad-r:276px;--lw:206px;--rw:276px}
+  }
+  @media (max-width:760px){
+    :root{--pad-l:190px;--pad-r:250px;--lw:190px;--rw:250px}
+    #bar{gap:4px;padding:0 8px}
+    .btn{padding:6px 9px}
+  }
+
   #print{display:none}
   @page{size:A4 landscape;margin:9mm}
   @media print{
     body{overflow:visible;background:#fff}
     #app{display:block;height:auto}
-    #bar,#left,#right,#status,#numchip,#toast,#v3ctl,#hint3,#warnbar{display:none!important}
+    #bar,#left,#right,#status,#numchip,#toast,#v3ctl,#hint3,#warnbar,
+    #cv3,.rail,.menu,#ctx{display:none!important}
+    svg#cv{visibility:visible!important}
     #stage{overflow:visible;height:auto;background:#fff}
     svg#cv{width:100%;height:172mm}
     #print{display:block}
@@ -195,48 +322,71 @@
 <body>
 <div id="app">
   <div id="bar">
+    <span class="home"><i>&#9636;</i>Floor Plan Studio</span>
     <span class="nm" id="docName">Untitled</span>
-    <span id="saveBadge" title="">–</span>
-    <button class="btn pri" id="bSaveFile">Save to file</button>
-    <button class="btn" id="bOpenFile">Open file…</button>
-    <button class="btn" id="bNew">New design</button>
-    <button class="btn" id="bProjects">My designs…</button>
+    <span id="saveBadge" title="">&ndash;</span>
     <span class="sep"></span>
-    <button class="btn" id="bUndo">↶ Undo</button>
-    <button class="btn" id="bRedo">↷ Redo</button>
+
+    <button class="btn" id="mFile" aria-haspopup="true" aria-expanded="false">File<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    <button class="btn ico" id="bUndo" title="Undo (&#8984;Z)" aria-label="Undo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5A5.5 5.5 0 0 1 20 14.5A5.5 5.5 0 0 1 14.5 20H11"/></svg></button>
+    <button class="btn ico" id="bRedo" title="Redo (&#8984;&#8679;Z)" aria-label="Redo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
     <span class="sep"></span>
-    <button class="btn" id="bImage">Trace image…</button>
-    <button class="btn" id="bCalib">Calibrate</button>
-    <button class="btn" id="bAuto">Auto-trace walls</button>
-    <button class="btn" id="bHeal">Heal walls</button>
-    <span class="sep"></span>
-    <label style="font-size:11px;color:var(--muted);white-space:nowrap;display:flex;
-                  align-items:center;gap:5px">Snap
-      <select id="snapSel" style="padding:4px 6px;border:1px solid var(--line);border-radius:5px">
+    <button class="btn" id="mTrace" aria-haspopup="true" aria-expanded="false">Trace<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    <label class="snaplbl" style="font-size:11px;color:var(--muted);white-space:nowrap;
+                  display:flex;align-items:center;gap:5px;margin-left:2px">Snap
+      <select id="snapSel" style="padding:5px 6px;border:1px solid var(--line);border-radius:var(--r-sm)">
         <option value="0">off</option><option value="1">1 cm</option>
         <option value="5" selected>5 cm</option><option value="10">10 cm</option>
         <option value="25">25 cm</option>
       </select></label>
+
     <span class="sp"></span>
+    <button class="btn ico" id="bFit" title="Fit to view (F)" aria-label="Fit to view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>
     <button class="btn" id="b3d">3D view</button>
-    <button class="btn" id="bFit">Fit</button>
-    <button class="btn" id="bExport">Export</button>
-    <button class="btn" id="bImport">Import</button>
-    <button class="btn" id="bPng">PNG</button>
     <button class="btn pri" id="bPrint">Print / PDF</button>
+  </div>
+
+  <div class="menu" id="menuFile" role="menu">
+    <div class="mlbl">This design</div>
+    <button class="mi" id="bSaveFile" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save to file<b>&#8984;S</b></button>
+    <button class="mi" id="bSaveAs" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/></svg>Save as&#8230;<b>&#8984;&#8679;S</b></button>
+    <button class="mi" id="bOpenFile" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"/></svg>Open file&#8230;<b>&#8984;O</b></button>
+    <div class="msep"></div>
+    <div class="mlbl">Library</div>
+    <button class="mi" id="bNew" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>New design</button>
+    <button class="mi" id="bProjects" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>My designs&#8230;</button>
+    <div class="msep"></div>
+    <div class="mlbl">Share a copy</div>
+    <button class="mi" id="bPng" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Export a PNG image</button>
+    <button class="mi" id="bExport" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export plan data</button>
+    <button class="mi" id="bImport" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>Import plan data&#8230;</button>
+  </div>
+
+  <div class="menu" id="menuTrace" role="menu">
+    <div class="mlbl">Trace from a photo</div>
+    <button class="mi" id="bImage" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Load a trace image&#8230;</button>
+    <button class="mi" id="bCalib" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M5 9v6"/><path d="M12 7v10"/><path d="M19 9v6"/></svg>Calibrate the scale</button>
+    <button class="mi" id="bAuto" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.9 4.9l2.9 2.9"/><path d="M16.2 16.2l2.9 2.9"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>Auto-trace walls&#8230;</button>
+    <div class="msep"></div>
+    <button class="mi" id="bHeal" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6"/><path d="M12 9v6"/><circle cx="12" cy="12" r="9"/></svg>Heal wall corners</button>
   </div>
 
   <div id="warnbar"></div>
 
-  <aside id="left">
-    <div class="hd">Tools</div>
-    <div id="tools"></div>
-    <div class="hd">Electrical</div>
-    <div id="elecs"></div>
-    <div class="hd">Furniture</div>
-    <div class="pad" style="padding-bottom:4px"><input id="search" placeholder="Search…" autocomplete="off"></div>
-    <div id="cats"></div>
-  </aside>
+  <aside id="left"><div class="pcontent">
+    <div class="sec" data-sec="tools">
+      <button class="hd">Tools<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="tools"></div></div></div>
+    </div>
+    <div class="sec" data-sec="elecs">
+      <button class="hd">Electrical<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="elecs"></div></div></div>
+    </div>
+    <div class="sec" data-sec="cats">
+      <button class="hd">Furniture<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div class="pad" style="padding-bottom:4px"><input id="search" placeholder="Search 113 pieces…" autocomplete="off"></div><div id="cats"></div></div></div>
+    </div>
+  </div></aside>
 
   <div id="stage">
     <svg id="cv" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -278,28 +428,44 @@
     <div id="numchip"></div>
     <div id="toast"></div>
     <div id="ctx"></div>
+    <button class="rail" id="railL" title="Hide the tool panel ([)" aria-label="Toggle tool panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button class="rail" id="railR" title="Hide the properties panel (])" aria-label="Toggle properties panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 
-  <aside id="right">
-    <div class="hd">Properties</div>
-    <div id="props"><div class="empty">Nothing selected.</div></div>
-    <div class="hd">Checks <span id="warnCount"></span></div>
-    <div id="warns"></div>
-    <div class="hd">Layers</div>
-    <div id="layers"></div>
-    <div class="hd">Rooms</div>
-    <div id="roomlist"></div>
-    <div class="hd">Electrical</div>
-    <div id="elecList"></div>
-    <div class="hd">Shopping list</div>
-    <div id="bom"></div>
-  </aside>
+  <aside id="right"><div class="pcontent">
+    <div class="sec" data-sec="props">
+      <button class="hd">Properties<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="props"><div class="empty">Nothing selected.</div></div></div></div>
+    </div>
+    <div class="sec" data-sec="warns">
+      <button class="hd">Checks <span id="warnCount"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="warns"></div></div></div>
+    </div>
+    <div class="sec" data-sec="bom">
+      <button class="hd">Shopping list<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="bom"></div></div></div>
+    </div>
+    <div class="sec" data-sec="roomlist">
+      <button class="hd">Rooms<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="roomlist"></div></div></div>
+    </div>
+    <div class="sec" data-sec="elecList">
+      <button class="hd">Electrical<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="elecList"></div></div></div>
+    </div>
+    <div class="sec" data-sec="layers">
+      <button class="hd">Layers<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="layers"></div></div></div>
+    </div>
+  </div></aside>
 
   <div id="status">
     <span>Tool <b id="stTool">Select</b></span>
     <span>X <b id="stX">0</b> cm &nbsp; Y <b id="stY">0</b> cm</span>
     <span>Zoom <b id="stZoom">100</b>%</span>
     <span id="stHint" style="color:var(--accent)"></span>
+    <span class="sp"></span>
+    <span style="opacity:.7">[ ] fold panels</span>
   </div>
 </div>
 
@@ -518,6 +684,15 @@ const S = {
   undo:[], redo:[], projectId:null
 };
 
+/* Every panel is built with innerHTML, so any user-supplied string - a room
+   name, a note, a project name - has to be escaped on the way in. Unescaped, a
+   single double-quote closes the attribute early and truncates the value the
+   next edit writes back; a crafted name in an opened .floorplan.json runs
+   script on this origin and can read every other saved plan. */
+const esc=v=>String(v==null?"":v)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+
 const cv=document.getElementById("cv"), stage=document.getElementById("stage");
 const NS="http://www.w3.org/2000/svg";
 const $=id=>document.getElementById(id);
@@ -658,7 +833,7 @@ function autosave(){
 function loadProject(id){
   try{
     const raw=localStorage.getItem(DK(id)); if(!raw) return false;
-    DOC=JSON.parse(raw); S.projectId=id; S.sel=[]; S.undo=[]; S.redo=[]; rebase();
+    DOC=JSON.parse(raw); reseedIds(); S.projectId=id; S.sel=[]; S.undo=[]; S.redo=[]; rebase();
     localStorage.setItem(LAST,id); fit(); refreshAll(); return true;
   }catch(e){ return false; }
 }
@@ -674,8 +849,18 @@ function toast(msg,ms){
 /* =====================================================================
    4. VIEW
    ===================================================================== */
-const viewH=()=>S.view.w*stage.clientHeight/stage.clientWidth;
-const cmPerPx=()=>S.view.w/stage.clientWidth;
+const stageW=()=>Math.max(1,stage.clientWidth);      // never divide by a folded stage
+const stageH=()=>Math.max(1,stage.clientHeight);
+/* Print and PNG need the drawing rendered to a band of their own proportions,
+   not the screen's - otherwise the grid and scale bar stop partway down the
+   page. renderInto() supplies that height for one pass. */
+let RENDER_H=null;
+const viewH=()=>RENDER_H!==null?RENDER_H:S.view.w*stageH()/stageW();
+function renderInto(w,h){
+  const keep=S.view.w; S.view.w=w; RENDER_H=h;
+  try{ render(); } finally{ RENDER_H=null; S.view.w=keep; }
+}
+const cmPerPx=()=>S.view.w/stageW();
 function el(tag,attrs,parent){
   const n=document.createElementNS(NS,tag);
   for(const k in attrs) if(attrs[k]!=null) n.setAttribute(k,attrs[k]);
@@ -688,7 +873,7 @@ function toCm(e){
   return {x:q.x,y:q.y};
 }
 function fit(){
-  const b=docBBox(), ar=stage.clientWidth/stage.clientHeight;
+  const b=docBBox(), ar=stageW()/stageH();
   S.view.w=(b.w/b.h>ar)?b.w:b.h*ar;
   S.view.x=b.x-(S.view.w-b.w)/2;
   S.view.y=b.y-(viewH()-b.h)/2;
@@ -965,8 +1150,13 @@ function render(){
       const {ux,uy}=wallDir(w), nx=-uy, ny=ux;
       const A=wallPt(w,o.at), B=wallPt(w,o.at+o.w);
       const on=isSel("opening",o.id);
-      // erase the wall across the opening
-      el("line",{x1:A.x,y1:A.y,x2:B.x,y2:B.y,stroke:"#ffffff",
+      // Erase the wall across the opening. Using the room's own fill rather
+      // than a hard white keeps doors from cutting a pale notch through a
+      // balcony or wet-room floor.
+      const mid=wallPt(w,o.at+o.w/2);
+      const rm=roomAt(mid.x,mid.y);
+      const gap=(rm&&(rm.color||ROOMKINDS[rm.kind].fill))||"#ffffff";
+      el("line",{x1:A.x,y1:A.y,x2:B.x,y2:B.y,stroke:gap,
                  "stroke-width":w.t+1.2,"stroke-linecap":"butt"},gO);
       if(o.type==="window"){
         for(const s of [-1,1])
@@ -1044,9 +1234,16 @@ function render(){
     const f=Math.max(9*k,7), r90=(it.rot===90||it.rot===270);
     const along=r90?it.d:it.w, across=r90?it.w:it.d;
     const inside=(across>f*2.5)&&(along>f*0.54*it.name.length);
+    /* The label lives inside the item's rotated group, so it has to be turned
+       back. Counter-rotating by a fixed -90 was right only at 90: at 270 it
+       landed on 180, and at 180 nothing was applied at all - both printed the
+       name upside down. Undo the item's rotation, then lay the text along the
+       piece's long side if that side runs vertically. */
+    const rot=((it.rot%360)+360)%360;
+    const lay=r90?-90:0;                       // read up the piece when it is on end
     const t=el("text",{x:0,y:inside?-f*0.08:-hd-f*0.7,"text-anchor":"middle","font-size":f,
         fill:on?"#2f6fd0":"#46515e","font-weight":on?"700":"600",
-        transform:r90?"rotate(-90)":null,"paint-order":"stroke",stroke:"#fff",
+        transform:`rotate(${lay-rot})`,"paint-order":"stroke",stroke:"#fff",
         "stroke-width":3.2*k,"stroke-linejoin":"round"},g);
     const mx=Math.max(5,Math.floor((inside?along:along*2.2)/(f*0.54)));
     el("tspan",{x:0,dy:0},t).textContent=it.name.length<=mx?it.name:it.name.slice(0,mx-1)+"…";
@@ -1182,6 +1379,9 @@ function render(){
 /* =====================================================================
    6. HIT TESTING
    ===================================================================== */
+/* Only things you can see can be clicked. Turning a layer off is usually a step
+   towards working on what is underneath it, so leaving hidden objects clickable
+   defeated the point of the control. */
 function hit(x,y){
   const tol=8*cmPerPx();
   if(S.layers.electric){
@@ -1191,27 +1391,27 @@ function hit(x,y){
       if(Math.hypot(x-e.x,y-e.y)<R) return{k:"elec",id:e.id};
     }
   }
-  for(let i=DOC.items.length-1;i>=0;i--){
+  if(S.layers.items) for(let i=DOC.items.length-1;i>=0;i--){
     const b=itemBox(DOC.items[i]);
     if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{k:"item",id:DOC.items[i].id};
   }
-  for(const t of DOC.texts)
+  if(S.layers.texts) for(const t of DOC.texts)
     if(Math.abs(x-t.x)<t.size*t.text.length*0.35&&Math.abs(y-t.y)<t.size) return{k:"text",id:t.id};
   for(const n of DOC.notes)
     if(Math.hypot(x-n.tx,y-n.ty)<40||Math.hypot(x-n.x,y-n.y)<tol*2) return{k:"note",id:n.id};
-  for(const d of DOC.dims){
+  if(S.layers.dims) for(const d of DOC.dims){
     const dx=d.x2-d.x1,dy=d.y2-d.y1,L=Math.hypot(dx,dy)||1;
     const nx=-dy/L*d.off, ny=dx/L*d.off;
     if(distToSeg(x,y,d.x1+nx,d.y1+ny,d.x2+nx,d.y2+ny)<tol) return{k:"dim",id:d.id};
   }
-  for(const o of DOC.openings){
+  if(S.layers.walls) for(const o of DOC.openings){
     const w=DOC.walls.find(v=>v.id===o.wall); if(!w) continue;
     const A=wallPt(w,o.at),B=wallPt(w,o.at+o.w);
     if(distToSeg(x,y,A.x,A.y,B.x,B.y)<Math.max(tol,w.t/2)) return{k:"opening",id:o.id};
   }
-  for(const w of DOC.walls)
+  if(S.layers.walls) for(const w of DOC.walls)
     if(distToSeg(x,y,w.x1,w.y1,w.x2,w.y2)<Math.max(tol,w.t/2)) return{k:"wall",id:w.id};
-  const r=roomAt(x,y); if(r) return{k:"room",id:r.id};
+  if(S.layers.rooms){ const r=roomAt(x,y); if(r) return{k:"room",id:r.id}; }
   return null;
 }
 function nearestWall(x,y){
@@ -1244,13 +1444,15 @@ function setTool(t){
   $("stHint").textContent=hints[t]||"";
   document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
   cv.style.cursor=(t==="select")?"default":"crosshair";
+  if(typeof showNumChip==="function") showNumChip();   // clear a half-typed length
   render();
 }
 function buildTools(){
   const h=$("tools"); h.innerHTML="";
   for(const [id,label,key] of TOOLS){
-    const b=document.createElement("div");
-    b.className="tool"; b.dataset.t=id;
+    const b=document.createElement("button");
+    b.className="tool"; b.dataset.t=id; b.type="button";
+    b.title=label+" ("+key+")";
     b.innerHTML=`<span>${label}</span><b>${key}</b>`;
     b.onclick=()=>setTool(id);
     h.appendChild(b);
@@ -1614,7 +1816,7 @@ cv.addEventListener("contextmenu",e=>{
   if(!h){
     S.sel=[]; refreshAll();
     showCtx(e.clientX,e.clientY,[
-      {label:"Paste here",key:"⌘V",disabled:!hasClip,act:()=>pasteClip({x:0,y:0})},
+      {label:"Paste here",key:"⌘V",disabled:!hasClip,act:()=>pasteClip({at:raw})},
       {sep:1},
       {label:"Make a room here",key:"R",act:()=>detectRoom(raw.x,raw.y)},
       {label:"Add a label here",key:"T",act:()=>{
@@ -1631,7 +1833,7 @@ cv.addEventListener("contextmenu",e=>{
   const common=[{sep:1},
     {label:"Copy",key:"⌘C",act:copySel},
     {label:"Duplicate",key:"⌘D",act:dupSel},
-    {label:"Paste",key:"⌘V",disabled:!hasClip,act:()=>pasteClip()},
+    {label:"Paste",key:"⌘V",disabled:!hasClip,act:()=>pasteClip({at:raw})},
     {sep:1},
     {label:"Delete",key:"⌫",act:delSel}];
   let rows=[];
@@ -1672,7 +1874,7 @@ cv.addEventListener("contextmenu",e=>{
       ...common];
   } else if(h.k==="item"){
     rows=[
-      {label:"Rotate 90°",key:"R",act:rotSel},
+      {label:"Rotate 90°",key:"⇧R",act:rotSel},
       {label:"Flip ↔",act:()=>{o.fx=!o.fx;commit();}},
       {label:"Flip ↕",act:()=>{o.fy=!o.fy;commit();}},
       ...common];
@@ -1730,11 +1932,25 @@ function copySel(){
   S.clip=objs;
   toast("Copied "+objs.length+" object"+(objs.length>1?"s":""));
 }
-function pasteClip(at){
+/* `by` nudges the copy by a fixed offset; `at` puts the copy's centre under a
+   point. The context menu used to pass {x:0,y:0} as an offset, so "Paste here"
+   dropped the copy exactly on top of the original - invisibly. */
+function pasteClip(opt){
   let objs=S.clip;
   if(!objs){ try{ objs=JSON.parse(localStorage.getItem(CLIP)); }catch(e){} }
   if(!objs||!objs.length){ toast("Nothing copied yet."); return; }
-  const dx=at?at.x:30, dy=at?at.y:30;
+  let dx=30, dy=30;
+  if(opt&&opt.by){ dx=opt.by.x; dy=opt.by.y; }
+  else if(opt&&opt.at){
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,any=false;
+    const acc=(x,y)=>{any=true;x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
+    for(const {k,o} of objs){
+      if(k==="wall"||k==="dim"){ acc(o.x1,o.y1); acc(o.x2,o.y2); }
+      else if(k==="room") o.poly.forEach(q=>acc(q[0],q[1]));
+      else if(o.x!==undefined) acc(o.x,o.y);
+    }
+    if(any){ dx=opt.at.x-(x0+x1)/2; dy=opt.at.y-(y0+y1)/2; }
+  }
   const remap={}, add=[];
   // walls first so their openings can be re-pointed at the new ids
   const order=[...objs].sort((a,b)=>(a.k==="opening")-(b.k==="opening"));
@@ -1779,7 +1995,7 @@ function rotSel(){
 function dupSel(){
   if(!S.sel.length) return;
   const keep=S.clip;                    // duplicate without clobbering the clipboard
-  copySel(); pasteClip({x:25,y:25});
+  copySel(); pasteClip({by:{x:25,y:25}});
   S.clip=keep;
 }
 function splitWall(){
@@ -1885,7 +2101,7 @@ function showProps(){
   else if(s.k==="room"){
     const b=polyBBox(o.poly);
     box.innerHTML=`<div class="pad"><div style="font-weight:650;margin-bottom:6px">Room</div>
-      <div class="row"><label>Name</label><input id="rN" type="text" value="${o.name}"></div>
+      <div class="row"><label>Name</label><input id="rN" type="text" value="${esc(o.name)}"></div>
       <div class="row"><label>Kind</label><select id="rK">
         ${Object.keys(ROOMKINDS).map(x=>`<option value="${x}" ${x===o.kind?"selected":""}>${ROOMKINDS[x].label}</option>`).join("")}
       </select></div>
@@ -1899,15 +2115,15 @@ function showProps(){
   }
   else if(s.k==="item"){
     const rm=roomAt(o.x,o.y);
-    box.innerHTML=`<div class="pad"><div style="font-weight:650;margin-bottom:6px">${o.name}</div>
+    box.innerHTML=`<div class="pad"><div style="font-weight:650;margin-bottom:6px">${esc(o.name)}</div>
       ${fld("Width","iW",o.w,"cm")}${fld("Depth","iD",o.d,"cm")}
       <div class="row"><label>Rotation</label><select id="iR">
         ${[0,90,180,270].map(a=>`<option value="${a}" ${a===o.rot?"selected":""}>${a}°</option>`).join("")}
       </select></div>
       ${fld("X","iX",Math.round(o.x),"cm")}${fld("Y","iY",Math.round(o.y),"cm")}
-      <div class="row"><label>Room</label><input type="text" value="${rm?rm.name:"— none —"}" disabled></div>
-      <div class="row"><label>Note</label><input id="iN" type="text" value="${o.note||""}" placeholder="colour, shop…"></div>
-      <div class="row"><label>Price</label><input id="iP" type="text" value="${o.price||""}"></div>
+      <div class="row"><label>Room</label><input type="text" value="${esc(rm?rm.name:"— none —")}" disabled></div>
+      <div class="row"><label>Note</label><input id="iN" type="text" value="${esc(o.note)}" placeholder="colour, shop…"></div>
+      <div class="row"><label>Price</label><input id="iP" type="text" value="${esc(o.price)}"></div>
       <div class="row2"><button class="btn" id="pRot">Rotate</button>
         <button class="btn ${o.fx?"on":""}" id="pFX">Flip ↔</button>
         <button class="btn ${o.fy?"on":""}" id="pFY">Flip ↕</button></div>
@@ -1925,10 +2141,10 @@ function showProps(){
   else if(s.k==="elec"){
     const d=ELECBY[o.kind]||{name:o.kind}, rm=roomAt(o.x,o.y);
     const opts=DOC.circuits.map(c=>
-      `<option value="${c.id}" ${c.id===o.circuit?"selected":""}>${c.name}</option>`).join("");
+      `<option value="${esc(c.id)}" ${c.id===o.circuit?"selected":""}>${esc(c.name)}</option>`).join("");
     box.innerHTML=`<div class="pad">
-      <div style="font-weight:650;margin-bottom:6px">${d.name}</div>
-      <div class="row"><label>Room</label><input type="text" value="${rm?rm.name:"— none —"}" disabled></div>
+      <div style="font-weight:650;margin-bottom:6px">${esc(d.name)}</div>
+      <div class="row"><label>Room</label><input type="text" value="${esc(rm?rm.name:"— none —")}" disabled></div>
       <div class="row"><label>Height</label>
         <input id="eM" type="number" step="5" value="${o.mount==null?"":o.mount}"
           placeholder="ceiling"><span class="u">cm</span></div>
@@ -1936,7 +2152,7 @@ function showProps(){
         <option value="">— none —</option>${opts}</select></div>
       <div class="row2"><button class="btn" id="eNew">New circuit</button>
         <button class="btn" id="eRot">Rotate</button></div>
-      <div class="row"><label>Note</label><input id="eN" type="text" value="${o.note||""}"
+      <div class="row"><label>Note</label><input id="eN" type="text" value="${esc(o.note)}"
         placeholder="e.g. above the sink"></div>
       <div class="row2"><button class="btn" id="pDup">Duplicate</button>
         <button class="btn" id="pDel">Delete</button></div></div>`;
@@ -1955,7 +2171,7 @@ function showProps(){
   }
   else if(s.k==="text"){
     box.innerHTML=`<div class="pad"><div style="font-weight:650;margin-bottom:6px">Text</div>
-      <div class="row"><label>Text</label><input id="fText" type="text" value="${o.text}"></div>
+      <div class="row"><label>Text</label><input id="fText" type="text" value="${esc(o.text)}"></div>
       ${fld("Size","tS",o.size,"cm")}${fld("Rotation","tR",o.rot||0,"°")}
       <div class="row2"><button class="btn" id="pDel">Delete</button></div></div>`;
     $("fText").oninput=()=>{o.text=$("fText").value;render();};
@@ -1974,7 +2190,7 @@ function showProps(){
   }
   else if(s.k==="note"){
     box.innerHTML=`<div class="pad"><div style="font-weight:650;margin-bottom:6px">Leader note</div>
-      <div class="row"><label>Text</label><input id="nT" type="text" value="${o.text}"></div>
+      <div class="row"><label>Text</label><input id="nT" type="text" value="${esc(o.text)}"></div>
       <div class="row2"><button class="btn" id="pDel">Delete</button></div></div>`;
     $("nT").oninput=()=>{o.text=$("nT").value;render();};
     $("nT").onchange=commit; $("pDel").onclick=delSel;
@@ -2008,7 +2224,7 @@ function refreshLayers(){
 function refreshTitle(){
   const area=DOC.rooms.reduce((s,r)=>s+polyArea(r.poly),0)/10000;
   $("pTitle").innerHTML=
-    `<span class="t">${DOC.name||"Floor plan"}</span>`+
+    `<span class="t">${esc(DOC.name||"Floor plan")}</span>`+
     `<span class="m">${DOC.rooms.length} room${DOC.rooms.length===1?"":"s"} · `+
     `${area.toFixed(1)} m² total · all sizes in cm · ${new Date().toLocaleDateString()}</span>`;
 }
@@ -2016,11 +2232,11 @@ function refreshRooms(){
   const h=$("roomlist");
   if(!DOC.rooms.length){ h.innerHTML='<div class="empty">No rooms yet — use the Room tool.</div>'; return; }
   h.innerHTML=`<table class="t"><tr><th>Room</th><th class="n">Area</th></tr>`+
-    DOC.rooms.map(r=>`<tr><td>${r.name}</td><td class="n">${(polyArea(r.poly)/10000).toFixed(1)} m²</td></tr>`).join("")+
+    DOC.rooms.map(r=>`<tr><td>${esc(r.name)}</td><td class="n">${(polyArea(r.poly)/10000).toFixed(1)} m²</td></tr>`).join("")+
     `</table>`;
   $("pRooms").innerHTML=`<table><tr><th>Room</th><th>Extent (cm)</th><th class="n">Area</th></tr>`+
     DOC.rooms.map(r=>{const b=polyBBox(r.poly);
-      return `<tr><td>${r.name}</td><td>${Math.round(b.w)} × ${Math.round(b.h)}</td>
+      return `<tr><td>${esc(r.name)}</td><td>${Math.round(b.w)} × ${Math.round(b.h)}</td>
       <td class="n">${(polyArea(r.poly)/10000).toFixed(2)} m²</td></tr>`;}).join("")+`</table>`;
 }
 function bomRows(){
@@ -2051,13 +2267,13 @@ function refreshElec(){
   const rows=elecRows();
   $("elecList").innerHTML = rows.length
     ? `<table class="t"><tr><th>Point</th><th>Room</th><th class="n">Circuit</th><th class="n">Qty</th></tr>`+
-      rows.map(r=>`<tr><td>${r.name}</td><td>${r.room}</td>
-        <td class="n">${r.circuit}</td><td class="n">${r.qty}</td></tr>`).join("")+`</table>`
+      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td>
+        <td class="n">${esc(r.circuit)}</td><td class="n">${r.qty}</td></tr>`).join("")+`</table>`
     : '<div class="empty">Nothing placed. Drag from the Electrical list.</div>';
   $("pElec").innerHTML = rows.length
     ? `<table><tr><th>Point</th><th>Room</th><th>Height</th><th>Circuit</th><th>Qty</th></tr>`+
-      rows.map(r=>`<tr><td>${r.name}</td><td>${r.room}</td><td>${r.mount}</td>
-        <td>${r.circuit}</td><td class="n">${r.qty}</td></tr>`).join("")+
+      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td><td>${esc(r.mount)}</td>
+        <td>${esc(r.circuit)}</td><td class="n">${r.qty}</td></tr>`).join("")+
       `</table><p style="font-size:8pt;color:#555;margin-top:3mm">`+
       `Heights are to centre, from finished floor level.</p>`
     : "<p>No electrical points placed.</p>";
@@ -2066,7 +2282,7 @@ function refreshBom(){
   const rows=bomRows();
   $("bom").innerHTML = rows.length
     ? `<table class="t"><tr><th>Item</th><th>Room</th><th class="n">Size</th><th class="n">Qty</th></tr>`+
-      rows.map(r=>`<tr><td>${r.name}</td><td>${r.room}</td>
+      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td>
         <td class="n">${Math.round(r.w)}×${Math.round(r.d)}</td><td class="n">${r.qty}</td></tr>`).join("")+
       `</table>`
     : '<div class="empty">No furniture placed yet.</div>';
@@ -2074,9 +2290,9 @@ function refreshBom(){
     return s+(isFinite(v)?v*r.qty:0);},0);
   $("pBom").innerHTML = rows.length
     ? `<table><tr><th>Item</th><th>Room</th><th>Size (cm)</th><th>Qty</th><th>Note</th><th>Price</th></tr>`+
-      rows.map(r=>`<tr><td>${r.name}</td><td>${r.room}</td>
+      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td>
         <td class="n">${Math.round(r.w)} × ${Math.round(r.d)}</td><td class="n">${r.qty}</td>
-        <td>${r.note}</td><td class="n">${r.price}</td></tr>`).join("")+
+        <td>${esc(r.note)}</td><td class="n">${esc(r.price)}</td></tr>`).join("")+
       (tot>0?`<tfoot><tr><td colspan="5">Total</td><td class="n">${tot.toFixed(2)}</td></tr></tfoot>`:"")+
       `</table>`
     : "<p>No furniture placed.</p>";
@@ -2146,24 +2362,50 @@ function buildCatalog(filter){
   }
 }
 const WALK=75;                       // minimum comfortable walkway, cm
+/* Does an item's footprint actually foul this wall? The old test compared the
+   item's box against the wall's axis-aligned bounding box, so any diagonal wall
+   flagged everything inside its enclosing rectangle. Measure to the segment. */
+function itemHitsWall(it,w){
+  const b=itemBox(it), m=2;                        // 2 cm slack against a flush wall
+  const x0=b.x+m, y0=b.y+m, x1=b.x+b.w-m, y1=b.y+b.h-m;
+  if(x1<=x0||y1<=y0) return false;
+  const reach=w.t/2;
+  // wall endpoint inside the footprint, or the footprint's edges near the segment
+  const inside=(px,py)=>px>=x0&&px<=x1&&py>=y0&&py<=y1;
+  if(inside(w.x1,w.y1)||inside(w.x2,w.y2)) return true;
+  for(const [ax,ay,bx,by] of [[x0,y0,x1,y0],[x1,y0,x1,y1],[x1,y1,x0,y1],[x0,y1,x0,y0]]){
+    if(segDist(ax,ay,bx,by,w.x1,w.y1,w.x2,w.y2)<=reach) return true;
+  }
+  return false;
+}
+/* shortest distance between two segments */
+function segDist(ax,ay,bx,by,cx,cy,dx,dy){
+  const d1=(bx-ax)*(dy-cy)-(by-ay)*(dx-cx);
+  if(Math.abs(d1)>1e-9){                            // do they cross?
+    const t=((cx-ax)*(dy-cy)-(cy-ay)*(dx-cx))/d1;
+    const u=((cx-ax)*(by-ay)-(cy-ay)*(bx-ax))/d1;
+    if(t>=0&&t<=1&&u>=0&&u<=1) return 0;
+  }
+  return Math.min(distToSeg(ax,ay,cx,cy,dx,dy), distToSeg(bx,by,cx,cy,dx,dy),
+                  distToSeg(cx,cy,ax,ay,bx,by), distToSeg(dx,dy,ax,ay,bx,by));
+}
+/* Each check carries the ids of the objects it is about, so the panel can
+   select them. Keying on ids rather than on the message text also stops three
+   identical chairs collapsing into one warning. */
 function runChecks(){
   const out=[];
-  // 2 cm slack: furniture pushed flat against a wall shouldn't read as a clash
   const shrink=(b,m)=>({x:b.x+m,y:b.y+m,w:b.w-2*m,h:b.h-2*m});
+  const add=(sev,refs,html)=>out.push({sev,refs,html,key:sev+"|"+refs.map(r=>r.k+r.id).join(",")});
   for(const it of DOC.items){
-    const b=itemBox(it), bt=shrink(b,2);
-    // only meaningful once at least one room has been defined
+    const R=[{k:"item",id:it.id}], nm=`<b>${esc(it.name)}</b>`;
     if(DOC.rooms.length && !roomAt(it.x,it.y))
-      out.push(`<b>${it.name}</b> sits outside any room.`);
-    for(const w of DOC.walls){
-      const {ux,uy}=wallDir(w), t=w.t/2;
-      const wb={x:Math.min(w.x1,w.x2)-Math.abs(uy)*t, y:Math.min(w.y1,w.y2)-Math.abs(ux)*t,
-                w:Math.abs(w.x2-w.x1)+Math.abs(uy)*w.t, h:Math.abs(w.y2-w.y1)+Math.abs(ux)*w.t};
-      if(boxOverlap(bt,wb)){ out.push(`<b>${it.name}</b> runs into a wall.`); break; }
-    }
+      add("warn",R,`${nm} sits outside any room.`);
+    for(const w of DOC.walls)
+      if(itemHitsWall(it,w)){ add("err",R,`${nm} runs into a wall.`); break; }
     for(const o of DOC.openings){
       const sb=swingBox(o);
-      if(sb&&boxOverlap(bt,sb)){ out.push(`<b>${it.name}</b> blocks a door swing.`); break; }
+      if(sb&&boxOverlap(shrink(itemBox(it),2),sb)){
+        add("err",[{k:"item",id:it.id},{k:"opening",id:o.id}],`${nm} blocks a door swing.`); break; }
     }
   }
   const rug=n=>/^Rug/.test(n);
@@ -2171,43 +2413,95 @@ function runChecks(){
     const a=DOC.items[i], c=DOC.items[j];
     if(rug(a.name)||rug(c.name)) continue;
     const A=itemBox(a), B=itemBox(c);
-    if(boxOverlap(shrink(A,2),shrink(B,2))){
-      out.push(`<b>${a.name}</b> overlaps <b>${c.name}</b>.`); continue; }
-    // narrow walkway: they face each other with a gap under 75 cm
+    const R=[{k:"item",id:a.id},{k:"item",id:c.id}];
+    const an=`<b>${esc(a.name)}</b>`, cn=`<b>${esc(c.name)}</b>`;
+    if(boxOverlap(shrink(A,2),shrink(B,2))){ add("err",R,`${an} overlaps ${cn}.`); continue; }
     const gx=Math.max(A.x-(B.x+B.w), B.x-(A.x+A.w));
     const gy=Math.max(A.y-(B.y+B.h), B.y-(A.y+A.h));
     const yOv=Math.min(A.y+A.h,B.y+B.h)-Math.max(A.y,B.y);
     const xOv=Math.min(A.x+A.w,B.x+B.w)-Math.max(A.x,B.x);
     if(gx>0&&gx<WALK&&yOv>40&&gy<0)
-      out.push(`Only <b>${Math.round(gx)} cm</b> to walk between ${a.name} and ${c.name}.`);
+      add("warn",R,`Only <b>${Math.round(gx)} cm</b> to walk between ${an} and ${cn}.`);
     else if(gy>0&&gy<WALK&&xOv>40&&gx<0)
-      out.push(`Only <b>${Math.round(gy)} cm</b> to walk between ${a.name} and ${c.name}.`);
+      add("warn",R,`Only <b>${Math.round(gy)} cm</b> to walk between ${an} and ${cn}.`);
   }
   for(const e of DOC.elec){
     const d=ELECBY[e.kind]; if(!d) continue;
-    if(d.load==="light"  && !e.circuit) out.push(`A <b>${d.name}</b> isn't on any circuit.`);
-    if(d.load==="switch" && !e.circuit) out.push(`A <b>${d.name}</b> doesn't control anything.`);
+    const R=[{k:"elec",id:e.id}];
+    if(d.load==="light"  && !e.circuit) add("warn",R,`A <b>${esc(d.name)}</b> isn't on any circuit.`);
+    if(d.load==="switch" && !e.circuit) add("warn",R,`A <b>${esc(d.name)}</b> doesn't control anything.`);
   }
   for(const c of DOC.circuits){
     const on=DOC.elec.filter(e=>e.circuit===c.id);
     if(!on.length) continue;
+    const R=on.map(e=>({k:"elec",id:e.id}));
     if(!on.some(e=>(ELECBY[e.kind]||{}).load==="switch"))
-      out.push(`Circuit <b>${c.name}</b> has no switch.`);
+      add("warn",R,`Circuit <b>${esc(c.name)}</b> has no switch.`);
     if(!on.some(e=>(ELECBY[e.kind]||{}).load==="light"))
-      out.push(`Circuit <b>${c.name}</b> has no light on it.`);
+      add("warn",R,`Circuit <b>${esc(c.name)}</b> has no light on it.`);
   }
-  return [...new Set(out)];
+  const seen=new Set();
+  return out.filter(o=>!seen.has(o.key)&&seen.add(o.key))
+            .filter(o=>!MUTED.has(o.key))
+            .sort((a,b)=>(a.sev==="err"?0:1)-(b.sev==="err"?0:1));
+}
+/* Advisories you have decided to live with. A 60 cm gap beside a wardrobe is
+   sometimes just the flat you have; a warning that cannot be silenced trains
+   people to ignore the panel. Errors cannot be muted. */
+const MUTED=new Set();
+function focusRefs(refs){
+  S.sel=refs.slice();
+  const pts=[];
+  for(const r of refs){
+    const o=getObj(r.k,r.id); if(!o) continue;
+    if(r.k==="item"||r.k==="elec") pts.push([o.x,o.y]);
+    else if(r.k==="opening"){
+      const w=DOC.walls.find(v=>v.id===o.wall);
+      if(w){ const P=wallPt(w,o.at+o.w/2); pts.push([P.x,P.y]); }
+    }
+  }
+  if(pts.length){
+    const cx=pts.reduce((a,p)=>a+p[0],0)/pts.length;
+    const cy=pts.reduce((a,p)=>a+p[1],0)/pts.length;
+    S.view.w=Math.min(S.view.w,900);
+    S.view.x=cx-S.view.w/2; S.view.y=cy-viewH()/2;
+  }
+  refreshAll();
 }
 function refreshWarns(){
   const w=runChecks(), h=$("warns"), c=$("warnCount");
+  const errs=w.filter(x=>x.sev==="err").length;
   c.textContent = w.length?w.length:"";
   c.style.display = w.length?"":"none";
-  h.innerHTML = w.length ? w.slice(0,12).map(x=>`<div class="warn">⚠ ${x}</div>`).join("")
-    : (DOC.items.length?'<div class="okmsg">✓ Nothing fouling walls or doorways.</div>'
-                       :'<div class="empty">No furniture placed yet.</div>');
+  c.style.background = errs?"var(--warn)":"#9aa6b6";
+  if(!w.length){
+    h.innerHTML = DOC.items.length
+      ? '<div class="okmsg">✓ Nothing fouling walls or doorways.</div>'
+      : '<div class="empty">No furniture placed yet.</div>';
+    return;
+  }
+  h.innerHTML="";
+  for(const x of w.slice(0,40)){
+    const d=document.createElement("div");
+    d.className="warn"+(x.sev==="err"?" err":"");
+    d.innerHTML=`<span class="wt">${x.sev==="err"?"⚠":"·"} ${x.html}</span>`+
+                (x.sev==="err"?"":`<button class="wmute" title="Ignore this one">×</button>`);
+    d.querySelector(".wt").onclick=()=>focusRefs(x.refs);
+    const m=d.querySelector(".wmute");
+    if(m) m.onclick=e=>{ e.stopPropagation(); MUTED.add(x.key); refreshWarns(); };
+    h.appendChild(d);
+  }
+  if(MUTED.size){
+    const r=document.createElement("div");
+    r.className="empty"; r.style.cssText="padding-top:6px;cursor:pointer";
+    r.textContent=MUTED.size+" ignored — show again";
+    r.onclick=()=>{ MUTED.clear(); refreshWarns(); };
+    h.appendChild(r);
+  }
 }
 function refreshAll(){
   render(); showProps(); refreshRooms(); refreshBom(); refreshElec(); refreshWarns(); refreshTitle();
+  if(S.sel.length && typeof revealSection==="function") revealSection("props");
   if(is3D) render3();
   $("docName").textContent=DOC.name;
   $("bUndo").disabled=!S.undo.length; $("bRedo").disabled=!S.redo.length;
@@ -2225,14 +2519,20 @@ function loadImageFile(file){
       // Downscale before storing: a phone photo as a data URL will blow the
       // ~5 MB localStorage quota and silently lose the whole project.
       const MAX=1800, sc=Math.min(1,MAX/Math.max(img.naturalWidth,img.naturalHeight));
-      let src=r.result;
+      let src=r.result, W=img.naturalWidth, H=img.naturalHeight;
       if(sc<1){
         const c=document.createElement("canvas");
         c.width=Math.round(img.naturalWidth*sc); c.height=Math.round(img.naturalHeight*sc);
         c.getContext("2d").drawImage(img,0,0,c.width,c.height);
         src=c.toDataURL("image/jpeg",0.82);
+        W=c.width; H=c.height;
       }
-      u.src=src; u.w=img.naturalWidth; u.h=img.naturalHeight;
+      /* Record the dimensions of the image we actually STORED, not the original.
+         u.src is what both the renderer and the auto-tracer read, so if w/h
+         describe a bigger image than src really is, cmPerPx means one thing at
+         render time and another at trace time - and every traced wall comes out
+         short by the downscale factor. */
+      u.src=src; u.w=W; u.h=H;
       if(!u.cmPerPx||u.cmPerPx===1) u.cmPerPx=1.4;
       u.x=0; u.y=0; u.visible=true; u.locked=true;
       commit(); fit();
@@ -2412,6 +2712,9 @@ function healWalls(tol){
     const group=[i]; const a=get(...pts[i]);
     for(let j=i+1;j<pts.length;j++){
       if(used[j]) continue;
+      // never merge a wall's two ends with each other: a wall shorter than the
+      // tolerance would be averaged onto a single point and cease to exist
+      if(pts[j][0]===pts[i][0]) continue;
       const b=get(...pts[j]);
       if(Math.hypot(a.x-b.x,a.y-b.y)<=tol){ group.push(j); used[j]=true; }
     }
@@ -2457,15 +2760,24 @@ function healWalls(tol){
       if(best&&bd>0.5){ set(w,e,best); extended++; }
     }
   }
+  // drop anything that healing (or earlier editing) reduced to nothing
+  const before=DOC.walls.length;
+  DOC.walls=DOC.walls.filter(w=>wallLen(w)>=1);
+  const dropped=before-DOC.walls.length;
+  if(dropped){
+    const live=new Set(DOC.walls.map(w=>w.id));
+    DOC.openings=DOC.openings.filter(o=>live.has(o.wall));
+  }
   for(const w of DOC.walls) clampOpenings(w);
-  return {joined,straightened,extended};
+  return {joined,straightened,extended,dropped};
 }
 $("bHeal").onclick=()=>{
   if(!DOC.walls.length){ toast("No walls to heal."); return; }
   const r=healWalls(30);
   commit();
   toast("Joined "+r.joined+" corners, straightened "+r.straightened+
-        ", extended "+r.extended+" wall ends.",4500);
+        ", extended "+r.extended+" wall ends"+
+        (r.dropped?", removed "+r.dropped+" zero-length":"")+".",4500);
 };
 
 async function runAutoTrace(){
@@ -2831,8 +3143,10 @@ function render3(){
   const drawn=vis.map(q=>{
     const pr=q.p.map(p=>project(p,cam,B));
     const depth=pr.reduce((s,p)=>s+p.z,0)/pr.length;
-    return {pr,depth,c:q.c};
-  }).filter(q=>q.pr.every(p=>p.z>1)).sort((a,b)=>b.depth-a.depth);
+    return {pr,depth,c:q.c,sun:q.sun};        // carry the flag: without it every
+  })                                          // shadow got an outline and no
+    .filter(q=>q.pr.every(p=>p.z>1))          // multiply blending
+    .sort((a,b)=>b.depth-a.depth);
   for(const q of drawn){
     if(q.sun){ g.globalCompositeOperation="multiply"; }
     else { g.globalCompositeOperation="source-over"; }
@@ -3163,8 +3477,11 @@ function adoptDoc(doc,name){
 }
 async function newDesign(){
   if(!await guardSwitch()) return;
-  const n=($("prjRename")&&$("prjRename").value.trim())||("Design "+(projects().length+1));
+  /* The rename field holds the name of the design being left - reading it here
+     gave every new design the previous one's name. */
+  const n="Design "+(projects().length+1);
   adoptDoc(blankDoc(n));
+  const r=$("prjRename"); if(r) r.value=n;
   $("dlgPrj").close();
   toast("Started “"+n+"” — the previous one is safe.");
 }
@@ -3181,7 +3498,7 @@ function renderProjects(){
     'border-radius:7px;padding:9px 11px;font-size:12px;margin-bottom:12px">'+
     '<b>Designs can’t be kept in this browser.</b> Each design lives as a file: '+
     'use <b>Save to file</b> before starting a new one, and <b>Open file…</b> to come '+
-    'back to it. Launching with <b>start-editor.command</b> turns this library on.</div>';
+    'back to it. Serving this folder over http:// turns the library on.</div>';
   const r=$("prjRename"); if(r&&document.activeElement!==r) r.value=DOC.name||"";
   const l=projects().sort((a,b)=>b.updated-a.updated), h=$("prjList");
   if(!STORAGE_OK){ h.innerHTML=""; return; }
@@ -3190,7 +3507,7 @@ function renderProjects(){
     const d=document.createElement("div");
     d.className="prj";
     const cur=(p.id===S.projectId);
-    d.innerHTML=`<div class="g"><div>${p.name}${cur?" · open now":""}</div>
+    d.innerHTML=`<div class="g"><div>${esc(p.name)}${cur?" · open now":""}</div>
       <div>${new Date(p.updated).toLocaleString()}</div></div>
       ${cur?"":'<button class="btn">Open</button>'}<button class="btn">Delete</button>`;
     const btns=d.querySelectorAll("button");
@@ -3206,7 +3523,15 @@ function renderProjects(){
       if(a!=="ok") return;
       try{ localStorage.removeItem(DK(p.id)); }catch(err){}
       setProjects(projects().filter(q=>q.id!==p.id));
-      if(cur){ S.projectId=null; dirty=true; updateBadge(); }
+      if(cur){
+        /* The document is still on screen and still dirty; leaving it there
+           lets the next autosave write it straight back under a new id. */
+        clearTimeout(saveT);
+        S.projectId=null;
+        const rest=projects();
+        if(rest.length && loadProject(rest.sort((x,y)=>y.updated-x.updated)[0].id)){}
+        else { adoptDoc(blankDoc("Design "+(rest.length+1))); }
+      }
       renderProjects(); toast("Deleted “"+p.name+"”"); };
     h.appendChild(d);
   }
@@ -3221,6 +3546,9 @@ function rescaleDoc(f){
   for(const o of DOC.openings){ o.at=S1(o.at); o.w=Math.max(10,S1(o.w)); }
   for(const r of DOC.rooms) r.poly=r.poly.map(p=>[S1(p[0]),S1(p[1])]);
   for(const i of DOC.items){ i.x=S1(i.x); i.y=S1(i.y); }   // furniture keeps its real size
+  // Electrical points are positions on the plan and must move with it. Their
+  // mount heights are real-world centimetres and must NOT be touched.
+  for(const e of DOC.elec){ e.x=S1(e.x); e.y=S1(e.y); }
   for(const t of DOC.texts){ t.x=S1(t.x); t.y=S1(t.y); t.size=Math.max(4,S1(t.size)); }
   for(const d of DOC.dims){ d.x1=S1(d.x1); d.y1=S1(d.y1); d.x2=S1(d.x2); d.y2=S1(d.y2);
                             d.off=S1(d.off); }
@@ -3271,11 +3599,25 @@ async function saveToFile(forceAsk){
   toast("Downloaded — keep this file, then use Open file… to carry on.",4200);
   return true;
 }
+/* An id counter that trails the ids already in the file hands out duplicates:
+   the next wall drawn becomes w1 when a w1 already exists, and from then on
+   getObj returns the wrong object and removeObj deletes both. Never trust the
+   stored value - derive it. */
+function reseedIds(){
+  let hi=0;
+  for(const k of ["walls","openings","rooms","items","texts","dims","notes","elec","circuits"])
+    for(const o of (DOC[k]||[])){
+      const n=parseInt(String(o&&o.id).slice(1),10);
+      if(isFinite(n)&&n>hi) hi=n;
+    }
+  DOC.nextId=Math.max(hi+1, +DOC.nextId||1);
+}
 function loadDocText(text,handle){
   const d=JSON.parse(text);
   if(!d.walls) throw new Error("not a floor plan");
   DOC=Object.assign(blankDoc(),d);
   DOC.elec=DOC.elec||[]; DOC.circuits=DOC.circuits||[];   // documents saved before wiring
+  reseedIds();
   rebase();
   fileHandle=handle||null; S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[];
   if(STORAGE_OK) autosave();
@@ -3320,23 +3662,28 @@ $("bImport").onclick=()=>{
     r.onload=()=>{ try{
         const d=JSON.parse(r.result);
         if(!d.walls) throw 0;
-        DOC=Object.assign(blankDoc(),d); rebase(); S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[];
+        DOC=Object.assign(blankDoc(),d); reseedIds(); rebase();
+        S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[];
         autosave(); fit(); refreshAll(); toast("Imported “"+DOC.name+"”");
       }catch(e){ toast("That file isn't a floor plan export."); } };
     r.readAsText(f); };
   i.click();
 };
 $("bPng").onclick=()=>{
+  if(is3D) set3D(false);
   const b=docBBox(), keep={...S.view}, sel=S.sel;
-  S.sel=[]; S.view={x:b.x,y:b.y,w:b.w}; render();
+  S.sel=[]; S.view={x:b.x,y:b.y,w:b.w};
+  renderInto(b.w,b.h);                       // draw the full document band
   const c=cv.cloneNode(true);
   c.setAttribute("viewBox",`${b.x} ${b.y} ${b.w} ${b.h}`);
-  c.setAttribute("width",b.w*2); c.setAttribute("height",b.h*2);
+  // a mis-scaled plan can ask for a canvas past the browser's limit; cap it
+  const px=Math.min(2, 8000/Math.max(b.w,b.h,1));
+  c.setAttribute("width",Math.round(b.w*px)); c.setAttribute("height",Math.round(b.h*px));
   const s=new XMLSerializer().serializeToString(c);
   const img=new Image();
   img.onload=()=>{
     const cn=document.createElement("canvas");
-    cn.width=b.w*2; cn.height=b.h*2;
+    cn.width=Math.round(b.w*px); cn.height=Math.round(b.h*px);
     const g=cn.getContext("2d");
     g.fillStyle="#fff"; g.fillRect(0,0,cn.width,cn.height); g.drawImage(img,0,0);
     dl(cn.toDataURL("image/png"),"floor-plan.png");
@@ -3345,25 +3692,171 @@ $("bPng").onclick=()=>{
   img.onerror=()=>{ S.view=keep; S.sel=sel; render(); toast("PNG export failed."); };
   img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s);
 };
-$("bPrint").onclick=()=>{ const sel=S.sel; S.sel=[]; render();
-  setTimeout(()=>{ window.print(); S.sel=sel; render(); },80); };
+/* Printing used to output whatever happened to be on screen - zoomed into a
+   bathroom, that is what came out. Fit the whole plan to the A4 landscape
+   proportions of the print stylesheet first, then put the view back. */
+$("bPrint").onclick=()=>{
+  if(is3D) set3D(false);                        // the 3D canvas does not print
+  const sel=S.sel, keep={...S.view};
+  S.sel=[];
+  const b=docBBox(), AR=277/172;                // @page A4 landscape, 9mm margins
+  S.view={x:b.x, y:b.y, w:Math.max(b.w, b.h*AR)};
+  if(S.view.w>b.w) S.view.x=b.x-(S.view.w-b.w)/2;
+  const h=S.view.w/AR;
+  S.view.y=b.y-(h-b.h)/2;
+  cv.setAttribute("viewBox",`${S.view.x} ${S.view.y} ${S.view.w} ${h}`);
+  renderInto(S.view.w, h);
+  const done=()=>{ S.view=keep; S.sel=sel; render();
+                   window.removeEventListener("afterprint",done); };
+  window.addEventListener("afterprint",done);
+  setTimeout(()=>{ window.print(); setTimeout(done,400); },90);
+};
 $("bFit").onclick=fit;
 $("bUndo").onclick=undo; $("bRedo").onclick=redo;
 $("snapSel").onchange=e=>{S.snap=+e.target.value;};
 $("search").addEventListener("input",e=>buildCatalog(e.target.value));
+
+
+/* =====================================================================
+   13b. CHROME  — menus, folding panels, collapsible sections
+   ---------------------------------------------------------------------
+   The toolbar used to carry fifteen controls in one row; below about
+   1500 px the last of them - Print, the whole point of the app - fell off
+   the right edge behind a scrollbar that was styled to zero height. They
+   are grouped now, and both side panels fold away.
+   ===================================================================== */
+const UI_KEY="fp-ui";
+const UI=(()=>{ try{ return JSON.parse(localStorage.getItem(UI_KEY))||{}; }
+                catch(e){ return {}; } })();
+function uiSave(){ try{ localStorage.setItem(UI_KEY,JSON.stringify(UI)); }catch(e){} }
+
+/* ---- drop-down menus ------------------------------------------------- */
+let openMenu=null;
+function closeMenu(){
+  if(!openMenu) return;
+  openMenu.panel.classList.remove("open");
+  openMenu.panel.style.display="none";
+  openMenu.btn.setAttribute("aria-expanded","false");
+  openMenu=null;
+}
+function showMenu(btn,panel){
+  if(openMenu&&openMenu.panel===panel){ closeMenu(); return; }
+  closeMenu();
+  panel.style.display="block";
+  panel.classList.add("open");
+  btn.setAttribute("aria-expanded","true");
+  const r=btn.getBoundingClientRect(), pw=panel.offsetWidth, ph=panel.offsetHeight;
+  let x=r.left, y=r.bottom+6;
+  if(x+pw>innerWidth-8)  x=Math.max(8,innerWidth-pw-8);
+  if(y+ph>innerHeight-8) y=Math.max(8,r.top-ph-6);
+  panel.style.left=x+"px"; panel.style.top=y+"px";
+  openMenu={btn,panel};
+}
+for(const [bid,pid] of [["mFile","menuFile"],["mTrace","menuTrace"]]){
+  const btn=$(bid), panel=$(pid);
+  btn.addEventListener("click",e=>{ e.stopPropagation(); showMenu(btn,panel); });
+  panel.addEventListener("click",e=>{ if(e.target.closest(".mi")) closeMenu(); });
+}
+document.addEventListener("pointerdown",e=>{
+  if(openMenu&&!openMenu.panel.contains(e.target)&&e.target!==openMenu.btn
+     &&!openMenu.btn.contains(e.target)) closeMenu();
+},true);
+window.addEventListener("blur",closeMenu);
+$("bSaveAs").onclick=()=>saveToFile(true);
+
+/* ---- folding side panels --------------------------------------------- */
+const APP=$("app");
+function setPanel(side,open,quiet){
+  UI[side]=open?1:0;
+  APP.dataset[side==="left"?"left":"right"]=open?"1":"0";
+  const btn=$(side==="left"?"railL":"railR");
+  btn.title=(open?"Hide":"Show")+" the "+(side==="left"?"tool":"properties")+
+            " panel ("+(side==="left"?"[":"]")+")";
+  if(!quiet) uiSave();
+}
+function togglePanel(side){ setPanel(side,!UI[side]); }
+$("railL").onclick=()=>togglePanel("left");
+$("railR").onclick=()=>togglePanel("right");
+APP.classList.add("noanim");                       // no slide on first paint
+setPanel("left", UI.left===undefined?true:!!UI.left, true);
+setPanel("right",UI.right===undefined?true:!!UI.right,true);
+requestAnimationFrame(()=>requestAnimationFrame(()=>APP.classList.remove("noanim")));
+
+/* ---- collapsible sections in both panels ----------------------------- */
+UI.sec=UI.sec||{};
+function setSection(sec,closed,instant){
+  const body=sec.querySelector(".secbody"), hd=sec.querySelector(".hd");
+  sec.classList.toggle("closed",closed);
+  hd.setAttribute("aria-expanded",closed?"false":"true");
+  clearTimeout(body._sT);
+  if(instant){ body.style.height=closed?"0px":"auto"; return; }
+  /* Set start, flush, set end - all synchronously. The transition animates it
+     when frames are being produced; when they are not (a background tab, or
+     reduced motion) the element still lands on the correct final height rather
+     than staying pinned at the value it started from. */
+  const h=body.scrollHeight;
+  body.style.height=(closed?h:0)+"px";
+  void body.offsetHeight;
+  body.style.height=(closed?0:h)+"px";
+  if(!closed){
+    /* Release to auto once open so the section can grow with its content -
+       the Checks list changes length constantly. transitionend alone is not
+       enough: it never fires if no frames are drawn. */
+    body._sT=setTimeout(()=>{
+      if(!sec.classList.contains("closed")) body.style.height="auto";
+    },340);
+  }
+}
+document.querySelectorAll(".sec").forEach(sec=>{
+  const key=sec.dataset.sec, hd=sec.querySelector(".hd");
+  hd.type="button";
+  setSection(sec, UI.sec[key]===0, true);
+  hd.addEventListener("click",()=>{
+    const closed=!sec.classList.contains("closed");
+    setSection(sec,closed);
+    UI.sec[key]=closed?0:1; uiSave();
+  });
+});
+/* Selecting something should reveal the panel that describes it. */
+function revealSection(key){
+  const sec=document.querySelector('.sec[data-sec="'+key+'"]');
+  if(sec&&sec.classList.contains("closed")){
+    setSection(sec,false); UI.sec[key]=1; uiSave();
+  }
+}
+
+/* ---- the stage changes size without the window doing so -------------- */
+let roT=0;
+new ResizeObserver(()=>{
+  cancelAnimationFrame(roT);
+  roT=requestAnimationFrame(()=>{
+    if(stage.clientWidth<2||stage.clientHeight<2) return;
+    render(); if(is3D) render3();
+  });
+}).observe(stage);
 
 /* =====================================================================
    14. KEYBOARD
    ===================================================================== */
 document.addEventListener("keydown",e=>{
   if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if(e.target.isContentEditable) return;
+  /* A shortcut must not reach the canvas through an open dialog - Backspace
+     was deleting the selection behind whatever modal was on screen. Escape
+     still passes, so the dialog's own close handling works. */
+  if(document.querySelector("dialog[open]") && e.key!=="Escape") return;
   const k=e.key.toLowerCase();
+  if(openMenu && e.key==="Escape"){ closeMenu(); return; }
   if((e.metaKey||e.ctrlKey)&&k==="z"){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
   if((e.metaKey||e.ctrlKey)&&k==="y"){ e.preventDefault(); redo(); return; }
   if((e.metaKey||e.ctrlKey)&&k==="d"){ e.preventDefault(); dupSel(); return; }
   if((e.metaKey||e.ctrlKey)&&k==="c"){ e.preventDefault(); copySel(); return; }
   if((e.metaKey||e.ctrlKey)&&k==="v"){ e.preventDefault(); pasteClip(); return; }
   if((e.metaKey||e.ctrlKey)&&k==="s"){ e.preventDefault(); saveToFile(e.shiftKey); return; }
+  if((e.metaKey||e.ctrlKey)&&k==="o"){ e.preventDefault(); openFromFile(); return; }
+  if((e.metaKey||e.ctrlKey)&&k==="p"){ e.preventDefault(); $("bPrint").click(); return; }
+  if(e.key==="["){ e.preventDefault(); togglePanel("left");  return; }
+  if(e.key==="]"){ e.preventDefault(); togglePanel("right"); return; }
 
   if(S.draw&&S.tool==="wall"){
     if(/^[0-9.]$/.test(e.key)){ S.numBuf+=e.key; showNumChip(); return; }
@@ -3371,9 +3864,17 @@ document.addEventListener("keydown",e=>{
     if(e.key==="Enter"){
       e.preventDefault();
       const L=parseFloat(S.numBuf);
-      if(L>0&&S.draw.cur){
-        const a=S.draw.pts[S.draw.pts.length-1], c=S.draw.cur;
-        const ang=Math.atan2(c.y-a.y,c.x-a.x);
+      if(L>0){
+        const pts=S.draw.pts, a=pts[pts.length-1], c=S.draw.cur;
+        /* Direction comes from the pointer if it has moved; otherwise carry on
+           along the previous segment, and fall back to horizontal at the very
+           first point. Requiring a mouse wiggle before a typed length would
+           work made the app's headline precision feature feel broken. */
+        let ang;
+        if(c && (c.x!==a.x||c.y!==a.y)) ang=Math.atan2(c.y-a.y,c.x-a.x);
+        else if(pts.length>1){ const q=pts[pts.length-2];
+                               ang=Math.atan2(a.y-q.y,a.x-q.x); }
+        else ang=0;
         S.draw.pts.push({x:+(a.x+Math.cos(ang)*L).toFixed(2),
                          y:+(a.y+Math.sin(ang)*L).toFixed(2)});
         S.numBuf=""; showNumChip(); render();
@@ -3387,7 +3888,10 @@ document.addEventListener("keydown",e=>{
     return;
   }
   if(e.key==="Backspace"||e.key==="Delete"){ e.preventDefault(); delSel(); return; }
-  if(k==="r"&&!e.metaKey&&!e.ctrlKey&&S.sel.length){ rotSel(); return; }
+  /* R used to rotate when something was selected and pick the Room tool when
+     nothing was, while the button advertised R permanently. Rotate moves to
+     Shift+R so R always means Room. */
+  if(k==="r"&&e.shiftKey&&!e.metaKey&&!e.ctrlKey&&S.sel.length){ rotSel(); return; }
 
   const t=TOOLS.find(x=>x[2].toLowerCase()===k);
   if(t){ setTool(t[0]); return; }
@@ -3431,11 +3935,13 @@ window.addEventListener("resize",()=>{ render(); if(is3D) render3(); });
 buildTools(); buildCatalog(""); buildElecPalette(); refreshLayers(); setTool("select"); updateBadge();
 if(!STORAGE_OK){
   const w=$("warnbar"); w.style.display="block";
+  // name the file we are actually running from, not a hard-coded one
+  const me=(location.pathname.split("/").pop()||"app.html");
   w.innerHTML='<b>This page can\'t save to the browser automatically</b> — '+
     'opening it from a file:// address blocks storage. Your work is safe as long as you '+
     'press <b>\u2318S</b> (Save to file) as you go, and <b>Open file…</b> to carry on later. '+
     'To get autosave back, run <code>python3 -m http.server 8731</code> in this folder '+
-    'and open <code>http://localhost:8731/editor.html</code> instead.';
+    'and open <code>http://localhost:8731/'+esc(me)+'</code> instead.';
 }
 (function boot(){
   let id=null;
