@@ -2853,7 +2853,13 @@ let is3D=false;
 const CEIL=()=>DOC.ceiling||280;
 /* Cutaway sections the walls at knee height so you see over them into every
    room, from any angle. */
-const wallCap=()=>(V3.cutaway!==false)?Math.min(CEIL(),Math.round(CEIL()*0.38)):CEIL();
+/* Cut the walls where a floor plan is conventionally cut - about 1.3 m, above
+   a worktop and below the head of a door - so they still read as walls while
+   you see over them into every room. Knee height cleared more but left the
+   building looking like a set of stumps next to 2 m wardrobes. Capped at 60%
+   for a low ceiling. */
+const wallCap=()=>(V3.cutaway!==false)
+  ? Math.round(Math.min(CEIL()*0.6, V3.cutAt||130)) : CEIL();
 
 function shade(hex,f){
   const n=parseInt(hex.slice(1),16);
@@ -3103,7 +3109,10 @@ function buildScene(){
   for(const it of DOC.items) buildItem(q,it);
   for(const e of DOC.elec){
     const d=ELECBY[e.kind]; if(!d) continue;
-    const z=(e.mount==null)?H-8:e.mount;
+    /* Sectioning the walls takes the ceiling with them, so a ceiling light left
+       at 272 cm hangs in the sky over a roofless building. Bring anything above
+       the cut down to it, where it still reads as belonging to its room. */
+    const z=Math.min((e.mount==null)?H-8:e.mount, WH-4);
     const col=d.load==="light"?"#f6d67a":(d.load==="switch"?"#e9edf1":"#e4e8ec");
     const T=localT({x:e.x,y:e.y,rot:e.rot||0});
     quadBox(q,T,-7,-7,z-3,7,7,z+3,col);
