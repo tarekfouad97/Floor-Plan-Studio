@@ -3148,13 +3148,36 @@ function render3(){
     const dx=q.wall[0]-mid[0], dy=q.wall[1]-mid[1];
     return (dx*fwd[0]+dy*fwd[1]) > -20;      // keep far-side walls only
   });
-  const drawn=vis.map(q=>{
-    const pr=q.p.map(p=>project(p,cam,B));
-    const depth=pr.reduce((s,p)=>s+p.z,0)/pr.length;
-    return {pr,depth,c:q.c,sun:q.sun};        // carry the flag: without it every
-  })                                          // shadow got an outline and no
-    .filter(q=>q.pr.every(p=>p.z>1))          // multiply blending
-    .sort((a,b)=>b.depth-a.depth);
+  /* Clip to the near plane rather than discarding. Dropping any quad with a
+     single corner behind the camera threw away up to 128 surfaces a frame once
+     you zoomed in - and which ones changed with every degree of orbit, so
+     furniture flickered and popped out of existence. A surface that is partly
+     in front of the camera has to be cut, not deleted. */
+  const NEAR=1;
+  const clipNear=pr=>{
+    const out=[];
+    for(let i=0;i<pr.length;i++){
+      const a=pr[i], b=pr[(i+1)%pr.length];
+      const ain=a.z>NEAR, bin=b.z>NEAR;
+      if(ain) out.push(a);
+      if(ain!==bin){
+        const t=(NEAR-a.z)/(b.z-a.z);
+        out.push({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:NEAR});
+      }
+    }
+    return out;
+  };
+  const drawn=[];
+  for(const q of vis){
+    let pr=q.p.map(p=>project(p,cam,B));
+    if(pr.some(p=>p.z<=NEAR)){
+      if(pr.every(p=>p.z<=NEAR)) continue;    // wholly behind the camera
+      pr=clipNear(pr);
+      if(pr.length<3) continue;
+    }
+    drawn.push({pr, depth:pr.reduce((s,p)=>s+p.z,0)/pr.length, c:q.c, sun:q.sun});
+  }
+  drawn.sort((a,b)=>b.depth-a.depth);
   for(const q of drawn){
     if(q.sun){ g.globalCompositeOperation="multiply"; }
     else { g.globalCompositeOperation="source-over"; }
