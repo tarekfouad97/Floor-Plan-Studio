@@ -265,6 +265,26 @@
   .menu .mi:disabled,#ctx>div.dis{opacity:.38;pointer-events:none}
   .menu .mi svg{width:13px;height:13px;flex:none;opacity:.6}
   .menu .msep,#ctx>.sep{height:1px;background:var(--line);margin:5px 3px;padding:0}
+  .btn.ai{width:100%;justify-content:center;gap:7px;font-weight:600;
+      background:linear-gradient(180deg,#fff,#f7f9fd);border-color:#d5dff2;color:var(--accent)}
+  .btn.ai:hover{background:var(--accent-soft);border-color:#bcd0f6}
+  .btn.ai::before{content:"✦";font-size:12px}
+  dialog.wide{max-width:760px}
+  .aistep{display:none} .aistep.on{display:block}
+  .aitabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+  .aitab{padding:8px 13px;border:none;background:none;cursor:pointer;font:inherit;
+      font-size:12.5px;color:var(--muted);border-bottom:2px solid transparent;
+      margin-bottom:-1px;transition:color .15s,border-color .15s}
+  .aitab:hover{color:var(--ink)}
+  .aitab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  .ta{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;
+      font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;
+      background:#fbfcfe;color:var(--ink)}
+  .ta:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .aihint{color:var(--muted);font-size:12px;line-height:1.55;margin:0 0 12px}
+  .aihint b{color:var(--ink)}
+  .airesult{font-size:12px;margin-top:10px;line-height:1.6}
+  .airesult .bad{color:var(--warn)} .airesult .good{color:var(--ok)}
   .menu .mlbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;
        color:var(--muted);font-weight:700;padding:8px 10px 4px}
   #warnbar{grid-column:1/4;background:linear-gradient(180deg,#fff8ec,#fff3e0);
@@ -384,7 +404,7 @@
     </div>
     <div class="sec" data-sec="cats">
       <button class="hd">Furniture<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-      <div class="secbody"><div class="secinner"><div class="pad" style="padding-bottom:4px"><input id="search" placeholder="Search 113 pieces…" autocomplete="off"></div><div id="cats"></div></div></div>
+      <div class="secbody"><div class="secinner"><div class="pad" style="padding-bottom:4px"><button class="btn ai" id="bAI">Furnish with Claude</button><input id="search" placeholder="Search 113 pieces…" autocomplete="off" style="margin-top:8px"></div><div id="cats"></div></div></div>
     </div>
   </div></aside>
 
@@ -539,6 +559,45 @@
     <button class="btn" id="askAlt"></button>
     <button class="btn pri" id="askOk"></button>
   </div>
+</dialog>
+
+<dialog id="dlgAI" class="wide">
+  <h3>Furnish with Claude</h3>
+  <div class="body">
+    <div class="aitabs">
+      <button class="aitab on" data-step="1">1 &middot; Copy the prompt</button>
+      <button class="aitab" data-step="2">2 &middot; Paste the answer back</button>
+    </div>
+
+    <div class="aistep on" data-step="1">
+      <p class="aihint">This describes your rooms, their real sizes, the doors and
+      windows, and the furniture catalogue, then asks for a layout. Paste it into
+      <b>Claude</b>, then bring the answer back on the next tab.</p>
+      <div class="row"><label>Brief</label>
+        <input id="aiBrief" type="text" placeholder="e.g. couple with a baby, both work from home">
+      </div>
+      <div class="row"><label>Rooms</label><select id="aiRooms"></select></div>
+      <textarea id="aiPrompt" class="ta" rows="13" readonly></textarea>
+      <div class="row2" style="margin-top:10px">
+        <button class="btn pri" id="aiCopy">Copy the prompt</button>
+        <span id="aiCopied" style="font-size:12px;color:var(--ok);align-self:center"></span>
+      </div>
+    </div>
+
+    <div class="aistep" data-step="2">
+      <p class="aihint">Paste Claude's reply here. It should be a JSON list of
+      pieces. Anything it got wrong &mdash; a name that isn't in the catalogue, a
+      room that doesn't exist &mdash; is reported rather than guessed at.</p>
+      <textarea id="aiReply" class="ta" rows="13" placeholder='[{"item":"Sofa 3-seat","room":"Living","x":300,"y":250,"rot":0}]'></textarea>
+      <div class="row2" style="margin-top:10px">
+        <button class="btn pri" id="aiApply">Place the furniture</button>
+        <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="aiReplace"> replace what's already there</label>
+      </div>
+      <div class="airesult" id="aiResult"></div>
+    </div>
+  </div>
+  <div class="foot"><button class="btn" id="aiClose">Close</button></div>
 </dialog>
 
 <dialog id="dlgCal">
@@ -3912,6 +3971,206 @@ new ResizeObserver(()=>{
     render(); if(is3D) render3();
   });
 }).observe(stage);
+
+
+/* =====================================================================
+   13c. FURNISH WITH CLAUDE
+   ---------------------------------------------------------------------
+   The page has no network access and no API key, so this is a round trip
+   the user carries: we write a prompt describing the rooms at their real
+   sizes, they paste it into Claude, and we read the answer back. Every
+   number handed over is centimetres, and every piece Claude may use comes
+   from the same catalogue the palette uses - so nothing it proposes can
+   be a size that does not exist.
+   ===================================================================== */
+function roomOpenings(r){
+  /* Doors and windows on this room's boundary: an opening counts if its
+     midpoint sits within a wall's thickness of the room's outline. */
+  const out=[];
+  for(const o of DOC.openings){
+    const w=DOC.walls.find(v=>v.id===o.wall); if(!w) continue;
+    const M=wallPt(w,o.at+o.w/2);
+    let d=1e9;
+    for(let i=0,j=r.poly.length-1;i<r.poly.length;j=i++)
+      d=Math.min(d,distToSeg(M.x,M.y,r.poly[j][0],r.poly[j][1],r.poly[i][0],r.poly[i][1]));
+    if(d<=Math.max(30,w.t)) {
+      const A=wallPt(w,o.at), B=wallPt(w,o.at+o.w);
+      out.push({o,w,A,B});
+    }
+  }
+  return out;
+}
+function buildPrompt(){
+  const brief=($("aiBrief").value||"").trim();
+  const pick=$("aiRooms").value;
+  const rooms=DOC.rooms.filter(r=>pick==="*"||r.id===pick);
+  const L=[];
+  L.push("I have drawn my flat to scale in Floor Plan Studio. Please lay out the furniture.");
+  L.push("");
+  L.push("## What I want");
+  L.push(brief||"A practical, comfortable layout that suits the size of each room.");
+  L.push("");
+  L.push("## How to read the plan");
+  L.push("Every number is CENTIMETRES. x runs left to right, y runs top to bottom");
+  L.push("(y increases downward, like a screen). A piece is positioned by its CENTRE.");
+  L.push("rot is 0, 90, 180 or 270 degrees clockwise. At rot 0 a piece's width runs");
+  L.push("along x and its depth along y, and its front - the seat, the opening, the");
+  L.push("side you approach from - faces +y, i.e. down the plan. So a sofa against the");
+  L.push("top wall of a room should be rot 0; against the bottom wall, rot 180.");
+  L.push("");
+  L.push("## The rooms");
+  for(const r of rooms){
+    const b=polyBBox(r.poly), area=(polyArea(r.poly)/10000).toFixed(1);
+    L.push("");
+    L.push("### "+r.name+"  ("+(ROOMKINDS[r.kind]||{label:r.kind}).label.toLowerCase()+")");
+    L.push("  usable floor: x "+Math.round(b.x)+" to "+Math.round(b.x+b.w)+
+           ", y "+Math.round(b.y)+" to "+Math.round(b.y+b.h)+
+           "   ("+Math.round(b.w)+" x "+Math.round(b.h)+" cm, "+area+" m2)");
+    const rect=r.poly.length===4;
+    if(!rect) L.push("  outline: "+r.poly.map(q=>"("+Math.round(q[0])+","+Math.round(q[1])+")").join(" "));
+    const ops=roomOpenings(r);
+    if(ops.length){
+      for(const {o,A,B} of ops){
+        const horiz=Math.abs(A.y-B.y)<Math.abs(A.x-B.x);
+        L.push("  "+o.type+" "+Math.round(o.w)+" cm wide: "+
+               (horiz?("along y="+Math.round((A.y+B.y)/2)+", from x "+
+                       Math.round(Math.min(A.x,B.x))+" to "+Math.round(Math.max(A.x,B.x)))
+                     :("along x="+Math.round((A.x+B.x)/2)+", from y "+
+                       Math.round(Math.min(A.y,B.y))+" to "+Math.round(Math.max(A.y,B.y))))+
+               (o.type==="door"?"  - keep its swing clear":""));
+      }
+    } else L.push("  (no doors or windows recorded on this room)");
+    const has=DOC.items.filter(i=>{const rm=roomAt(i.x,i.y); return rm&&rm.id===r.id;});
+    if(has.length) L.push("  already in the room: "+has.map(i=>
+      i.name+" "+Math.round(i.w)+"x"+Math.round(i.d)+" at ("+Math.round(i.x)+","+
+      Math.round(i.y)+") rot "+(i.rot||0)).join("; "));
+  }
+  L.push("");
+  L.push("## Furniture you may use");
+  L.push("Only these, spelled exactly as written. The sizes are fixed - never resize a");
+  L.push("piece, and never invent one that is not on this list.");
+  for(const c of CATS){
+    const items=CATALOG.filter(i=>i.cat===c.key);
+    if(!items.length) continue;
+    L.push("");
+    L.push(c.name+":");
+    L.push("  "+items.map(i=>i.name+" "+i.w+"x"+i.d).join("; "));
+  }
+  L.push("");
+  L.push("## Rules");
+  L.push("- Leave a walking route of at least 75 cm anywhere someone passes; 90 cm in");
+  L.push("  a route used often.");
+  L.push("- Nothing inside a wall, across a doorway, or in the arc a door swings through.");
+  L.push("- Anchor the big pieces flat against the longest uninterrupted wall.");
+  L.push("- Bed: at least 60 cm down one side to get in. Wardrobe: 70 cm in front to");
+  L.push("  open the doors. Chest of drawers: 90 cm in front.");
+  L.push("- Coffee table 40-45 cm from the sofa front. Sofa to TV about 2.5-3x the");
+  L.push("  screen width. Dining table: 100 cm clear all round so chairs pull out.");
+  L.push("- Do not overlap two pieces. A rug may sit under other furniture.");
+  L.push("- Keep every piece fully inside its room's usable floor.");
+  L.push("");
+  L.push("## How to reply");
+  L.push("Give me one JSON array and nothing else. One object per piece:");
+  L.push('[');
+  L.push('  {"item":"Sofa 3-seat","room":"'+(rooms[0]?rooms[0].name:"Living")+
+         '","x":300,"y":250,"rot":0,"why":"against the top wall, facing the TV"}');
+  L.push(']');
+  L.push('"item" must match the catalogue exactly. "room" must be one of: '+
+         rooms.map(r=>r.name).join(", ")+".");
+  L.push('"x" and "y" are the centre of the piece, in centimetres, on the same grid as');
+  L.push("the rooms above. Keep \"why\" to a short phrase.");
+  return L.join("\n");
+}
+function refreshPrompt(){ $("aiPrompt").value=buildPrompt(); }
+
+function openAI(){
+  if(!DOC.rooms.length){
+    toast("Draw your walls and make at least one room first — use the Room tool.",5000);
+    return;
+  }
+  const sel=$("aiRooms");
+  sel.innerHTML='<option value="*">every room ('+DOC.rooms.length+')</option>'+
+    DOC.rooms.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join("");
+  $("aiResult").innerHTML=""; $("aiCopied").textContent="";
+  aiStep(1); refreshPrompt();
+  $("dlgAI").showModal();
+}
+function aiStep(n){
+  document.querySelectorAll(".aitab").forEach(b=>b.classList.toggle("on",+b.dataset.step===n));
+  document.querySelectorAll(".aistep").forEach(d=>d.classList.toggle("on",+d.dataset.step===n));
+}
+$("bAI").onclick=openAI;
+$("aiClose").onclick=()=>$("dlgAI").close();
+document.querySelectorAll(".aitab").forEach(b=>b.onclick=()=>aiStep(+b.dataset.step));
+$("aiBrief").oninput=refreshPrompt;
+$("aiRooms").onchange=refreshPrompt;
+$("aiCopy").onclick=async()=>{
+  const t=$("aiPrompt");
+  try{ await navigator.clipboard.writeText(t.value); }
+  catch(e){ t.removeAttribute("readonly"); t.select();
+            try{ document.execCommand("copy"); }catch(x){}
+            t.setAttribute("readonly",""); }
+  $("aiCopied").textContent="Copied — now paste it into Claude.";
+  setTimeout(()=>{ $("aiCopied").textContent=""; },4000);
+};
+
+/* Claude answers in prose as often as not, so dig the array out rather than
+   demanding a bare document. */
+function extractJSON(text){
+  let t=(text||"").trim();
+  const fence=t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if(fence) t=fence[1].trim();
+  const a=t.indexOf("["), b=t.lastIndexOf("]");
+  if(a<0||b<a) return null;
+  try{ return JSON.parse(t.slice(a,b+1)); }catch(e){ return null; }
+}
+function applyAIPlan(){
+  const res=$("aiResult");
+  const rows=extractJSON($("aiReply").value);
+  if(!Array.isArray(rows)||!rows.length){
+    res.innerHTML='<span class="bad">Could not find a JSON list in that. Paste Claude\'s whole reply — the list on its own is fine too.</span>';
+    return;
+  }
+  const byName=new Map(CATALOG.map(c=>[c.name.toLowerCase(),c]));
+  const roomByName=new Map(DOC.rooms.map(r=>[r.name.toLowerCase(),r]));
+  const made=[], bad=[], warn2=[];
+  for(const row of rows){
+    const nm=String(row&&(row.item||row.name)||"").trim();
+    const c=byName.get(nm.toLowerCase());
+    if(!c){ bad.push("“"+(nm||"(no name)")+"” is not in the catalogue"); continue; }
+    let x=+row.x, y=+row.y;
+    if(!isFinite(x)||!isFinite(y)){ bad.push(nm+" has no usable x/y"); continue; }
+    let rot=Math.round((+row.rot||0)/90)*90; rot=((rot%360)+360)%360;
+    const want=String(row.room||"").trim().toLowerCase();
+    // a room name we don't recognise is worth saying, but x/y still place it
+    if(want && !roomByName.has(want))
+      warn2.push(nm+" names a room “"+row.room+"” that isn't on the plan");
+    made.push({id:nid("i"),catalogId:c.id,name:c.name,color:c.color,shape:c.shape,
+               w:c.w,d:c.d,x:Math.round(x),y:Math.round(y),rot,
+               note:String(row.why||row.note||"").slice(0,120),price:""});
+  }
+  if(!made.length){
+    res.innerHTML='<span class="bad">Nothing usable in that reply.</span><br>'+
+      bad.slice(0,8).map(esc).join("<br>");
+    return;
+  }
+  if($("aiReplace").checked) DOC.items=[];
+  DOC.items.push(...made);
+  S.sel=made.map(i=>({k:"item",id:i.id}));
+  commit(); fit();
+  const warn=runChecks();
+  const outside=made.filter(i=>!roomAt(i.x,i.y)).length;
+  res.innerHTML='<span class="good">Placed '+made.length+' piece'+(made.length>1?"s":"")+'.</span>'+
+    (outside?'<br><span class="bad">'+outside+' landed outside any room.</span>':"")+
+    (bad.length?'<br><span class="bad">Skipped '+bad.length+':</span><br>'+
+       bad.slice(0,8).map(esc).join("<br>"):"")+
+    (warn2.length?'<br><span class="bad">Placed, but worth a look:</span><br>'+
+       warn2.slice(0,6).map(esc).join("<br>"):"")+
+    '<br>The Checks panel now reports '+warn.length+' issue'+(warn.length===1?"":"s")+
+    '. Undo puts it all back.';
+  toast("Placed "+made.length+" pieces from Claude — check the Checks panel.",5000);
+}
+$("aiApply").onclick=applyAIPlan;
 
 /* =====================================================================
    14. KEYBOARD
