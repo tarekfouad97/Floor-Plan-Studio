@@ -5,32 +5,80 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Floor Plan Editor</title>
 <style>
+  /* ---------------------------------------------------------------
+     Design tokens. The chrome - toolbar, panels, dialogs - follows the
+     theme. The drawing canvas deliberately does not: a plan is ink on
+     paper, it is what prints and exports, and it stays legible on a dark
+     desk the way a drawing board does.
+     --------------------------------------------------------------- */
   :root{
-    --bg:#eceff5; --panel:#ffffff; --ink:#111823; --muted:#68748a; --line:#e5e9f0;
-    --line-2:#eef1f6;
-    --accent:#3b6ef0; --accent-2:#6b8ffb; --accent-soft:#eef3ff; --warn:#d1620b;
-    --ok:#0f9960;
-    --shadow:0 1px 2px rgba(16,24,40,.05),0 3px 10px rgba(16,24,40,.05);
-    --shadow-md:0 4px 12px rgba(16,24,40,.09),0 1px 3px rgba(16,24,40,.05);
-    --shadow-lg:0 16px 48px rgba(16,24,40,.17),0 3px 10px rgba(16,24,40,.07);
-    --r:11px; --r-sm:8px;
-    --ease:cubic-bezier(.22,.85,.28,1);
-    --lw:236px; --rw:316px;
-    --pad-l:236px; --pad-r:316px;
+    color-scheme:light;
+    --bg:#eef1f6; --panel:#ffffff; --panel-2:#f7f9fc; --sunk:#f2f5fa;
+    --ink:#0f1720; --ink-2:#3d4a5c; --muted:#6b7a8f; --faint:#93a1b5;
+    --line:#e4e9f1; --line-2:#eff3f8; --line-3:#f5f8fb;
+    --accent:#3b6ef0; --accent-2:#6b8ffb; --accent-3:#2451c9;
+    --accent-soft:#eef3ff; --accent-line:#c9d8fb;
+    --claude:#c86a3a; --claude-2:#e08a54; --claude-soft:#fdf3ec;
+    --claude-line:#f0d5c0;
+    --warn:#c2610b; --warn-soft:#fff6ec; --warn-line:#f2d5b4;
+    --err:#c0392b; --err-soft:#fdf0ee; --err-line:#f0cdc7;
+    --ok:#0f9960; --ok-soft:#e9f7f0;
+    --shadow-1:0 1px 2px rgba(13,22,38,.05);
+    --shadow-2:0 2px 4px rgba(13,22,38,.05),0 4px 12px rgba(13,22,38,.06);
+    --shadow-3:0 8px 20px rgba(13,22,38,.10),0 2px 6px rgba(13,22,38,.06);
+    --shadow-4:0 24px 60px rgba(13,22,38,.20),0 6px 18px rgba(13,22,38,.10);
+    --ring:0 0 0 3px var(--accent-soft);
+    --r:12px; --r-sm:9px; --r-xs:6px; --r-lg:16px;
+    /* motion */
+    --e-out:cubic-bezier(.22,.85,.28,1);
+    --e-in-out:cubic-bezier(.65,0,.35,1);
+    --e-spring:cubic-bezier(.34,1.4,.5,1);
+    --t-1:.12s; --t-2:.2s; --t-3:.3s; --t-4:.45s;
+    --lw:236px; --rw:316px; --pad-l:236px; --pad-r:316px;
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#0d1117; --panel:#151b24; --panel-2:#1b222d; --sunk:#11171f;
+    --ink:#e9eef6; --ink-2:#b8c4d4; --muted:#8695aa; --faint:#5f6d81;
+    --line:#242c39; --line-2:#1e2530; --line-3:#1a212b;
+    --accent:#5b8cff; --accent-2:#84a8ff; --accent-3:#3f74f0;
+    --accent-soft:#182338; --accent-line:#2c3f63;
+    --claude:#e08a54; --claude-2:#f0a273; --claude-soft:#241a13;
+    --claude-line:#3d2b1e;
+    --warn:#e0a05c; --warn-soft:#231b12; --warn-line:#3a2c1a;
+    --err:#e88070; --err-soft:#261614; --err-line:#3d2320;
+    --ok:#4cc38a; --ok-soft:#12241c;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4);
+    --shadow-2:0 2px 4px rgba(0,0,0,.35),0 4px 12px rgba(0,0,0,.3);
+    --shadow-3:0 8px 20px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);
+    --shadow-4:0 24px 60px rgba(0,0,0,.6),0 6px 18px rgba(0,0,0,.4);
+    --ring:0 0 0 3px var(--accent-soft);
   }
   @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
-                         transition-duration:.01ms!important;scroll-behavior:auto!important}
+    *,*::before,*::after{animation-duration:.01ms!important;
+      animation-iteration-count:1!important;transition-duration:.01ms!important}
   }
+
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
   body{font:13px/1.5 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",
        Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);
-       overflow:hidden;-webkit-font-smoothing:antialiased}
+       overflow:hidden;-webkit-font-smoothing:antialiased;
+       transition:background .3s var(--e-out),color .3s var(--e-out)}
+  /* the app assembles itself on first paint, once */
+  @keyframes barIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+  @keyframes leftIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+  @keyframes rightIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+  @keyframes stageIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+  body.boot #bar   {animation:barIn   .5s var(--e-out) both}
+  body.boot #left  {animation:leftIn  .5s var(--e-out) .06s both}
+  body.boot #right {animation:rightIn .5s var(--e-out) .06s both}
+  body.boot #stage {animation:stageIn .6s var(--e-out) .1s both}
+  body.boot #status{animation:barIn   .5s var(--e-out) .14s both}
   button,input,select,textarea{font:inherit;color:inherit}
   ::-webkit-scrollbar{width:10px;height:10px}
-  ::-webkit-scrollbar-thumb{background:#d3dae4;border-radius:8px;border:3px solid var(--panel)}
-  ::-webkit-scrollbar-thumb:hover{background:#bcc6d4}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:3px solid var(--panel)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
   ::-webkit-scrollbar-track{background:transparent}
 
   /* Track widths are written out per state rather than driven through a var().
@@ -39,16 +87,17 @@
      on each rule always do. */
   #app{display:grid;grid-template-columns:var(--lw) 1fr var(--rw);
        grid-template-rows:56px auto 1fr 26px;height:100%;
-       transition:grid-template-columns .34s var(--ease)}
+       transition:grid-template-columns .34s var(--e-out)}
   #app.noanim{transition:none}
   #app[data-left="0"]                   {grid-template-columns:0 1fr var(--rw)}
   #app[data-right="0"]                  {grid-template-columns:var(--lw) 1fr 0}
   #app[data-left="0"][data-right="0"]   {grid-template-columns:0 1fr 0}
   #bar{grid-column:1/4;display:flex;align-items:center;gap:5px;padding:0 12px;
        background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;
-       overflow-y:hidden;box-shadow:0 1px 0 rgba(16,24,40,.02)}
+       overflow-y:hidden;position:relative;z-index:10;
+       transition:background .3s var(--e-out),border-color .3s var(--e-out)}
   #bar::-webkit-scrollbar{height:4px}
-  #bar::-webkit-scrollbar-thumb{background:#d7dde7;border:none;border-radius:4px}
+  #bar::-webkit-scrollbar-thumb{background:var(--line);border:none;border-radius:4px}
   #bar .home{display:flex;align-items:center;gap:7px;text-decoration:none;color:inherit;
        font-weight:700;white-space:nowrap;font-size:13px;padding:5px 8px;
        border-radius:var(--r-sm);transition:background .15s}
@@ -56,25 +105,27 @@
   #bar .home i{width:21px;height:21px;border-radius:6px;display:grid;place-items:center;
        background:linear-gradient(140deg,var(--accent-2),var(--accent));color:#fff;
        font-style:normal;font-size:11px;flex:none}
+  a.btn{text-decoration:none;color:inherit}
   .btn.ico{padding:6px 9px;display:grid;place-items:center;line-height:1}
   .btn.ico svg{width:14px;height:14px;display:block}
   .btn .caret{width:8px;height:8px;margin-left:5px;opacity:.5;
-              transition:transform .2s var(--ease)}
+              transition:transform .2s var(--e-out)}
   .btn[aria-expanded="true"] .caret{transform:rotate(180deg)}
   .btn[aria-expanded="true"]{background:var(--accent-soft);border-color:#c9d8fb;
               color:var(--accent)}
   #bar .sp{flex:1}
   #bar .nm{font-weight:680;margin-right:4px;white-space:nowrap;font-size:14px;
            letter-spacing:-.01em}
-  .btn{border:1px solid var(--line);background:#fff;border-radius:var(--r-sm);
+  .btn{border:1px solid var(--line);background:var(--panel);border-radius:var(--r-sm);
        padding:6px 11px;cursor:pointer;white-space:nowrap;font-weight:530;
        display:inline-flex;align-items:center;
-       transition:background .16s var(--ease),border-color .16s var(--ease),
-                  transform .12s var(--ease),box-shadow .16s var(--ease),color .16s;
+       transition:background .16s var(--e-out),border-color .16s var(--e-out),
+                  transform .12s var(--e-out),box-shadow .16s var(--e-out),color .16s;
        position:relative}
-  .btn:hover{background:#f6f8fc;border-color:#ccd6e6;transform:translateY(-1px);
-       box-shadow:var(--shadow)}
-  .btn:active{transform:translateY(0);box-shadow:none}
+  .btn:hover{background:var(--panel-2);border-color:var(--accent-line);
+       transform:translateY(-1px);box-shadow:var(--shadow-2)}
+  .btn:active{transform:translateY(0) scale(.97);box-shadow:none;
+       transition-duration:.06s}
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .btn:disabled{opacity:.38;cursor:default;transform:none}
   .btn.on{background:var(--accent);color:#fff;border-color:var(--accent);
@@ -82,12 +133,25 @@
   .btn.on:hover{background:var(--accent);filter:brightness(1.07)}
   .btn.pri{background:linear-gradient(180deg,var(--accent-2),var(--accent));
            color:#fff;border-color:transparent;
-           box-shadow:0 1px 2px rgba(59,110,240,.4),0 4px 12px rgba(59,110,240,.22)}
-  .btn.pri:hover{filter:brightness(1.06)}
+           box-shadow:0 1px 2px rgba(59,110,240,.35),0 4px 14px rgba(59,110,240,.28)}
+  .btn.pri:hover{filter:brightness(1.07);
+           box-shadow:0 2px 4px rgba(59,110,240,.35),0 8px 22px rgba(59,110,240,.34)}
+
+  /* the Claude action: the one warm thing in a cool interface, so the eye
+     finds it without a banner shouting about it */
+  .btn.spark{background:linear-gradient(180deg,var(--claude-2),var(--claude));
+       color:#fff;border-color:transparent;font-weight:620;gap:6px;
+       box-shadow:0 1px 2px rgba(200,106,58,.35),0 4px 14px rgba(200,106,58,.3)}
+  .btn.spark:hover{filter:brightness(1.06);transform:translateY(-1px);
+       box-shadow:0 2px 4px rgba(200,106,58,.35),0 9px 24px rgba(200,106,58,.38)}
+  .btn.spark .sp-star{display:inline-block;font-size:11px;line-height:1;
+       animation:twinkle 3.4s var(--e-in-out) infinite}
+  @keyframes twinkle{0%,72%,100%{opacity:.85;transform:scale(1) rotate(0)}
+                     82%{opacity:1;transform:scale(1.35) rotate(18deg)}}
   .sep{width:1px;height:20px;background:var(--line);flex:none;margin:0 4px}
 
   aside{background:var(--panel);overflow:hidden;display:flex;flex-direction:column;
-        min-width:0}
+        min-width:0;transition:background .3s var(--e-out),border-color .3s var(--e-out)}
   aside>.pcontent{width:var(--pw);flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
         display:flex;flex-direction:column}
   #left{border-right:1px solid var(--line);--pw:var(--pad-l)}
@@ -98,11 +162,11 @@
   .rail{position:absolute;top:50%;transform:translateY(-50%);z-index:6;
         width:20px;height:62px;border:1px solid var(--line);background:var(--panel);
         display:grid;place-items:center;cursor:pointer;color:var(--muted);
-        box-shadow:var(--shadow);padding:0;
-        transition:background .16s,color .16s,width .16s var(--ease)}
+        box-shadow:var(--shadow-2);padding:0;
+        transition:background .16s,color .16s,width .16s var(--e-out)}
   .rail:hover{background:var(--accent);color:#fff;border-color:var(--accent);width:24px}
   .rail:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .rail svg{width:11px;height:11px;transition:transform .3s var(--ease)}
+  .rail svg{width:11px;height:11px;transition:transform .3s var(--e-out)}
   #railL{left:0;border-left:none;border-radius:0 9px 9px 0}
   #railR{right:0;border-right:none;border-radius:9px 0 0 9px}
   #app[data-left="0"]  #railL svg{transform:rotate(180deg)}
@@ -117,27 +181,29 @@
   .hd:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
   .sec:first-child>.hd{border-top:none}
   .hd .chev{margin-left:auto;width:9px;height:9px;flex:none;opacity:.55;
-            transition:transform .28s var(--ease)}
+            transition:transform .28s var(--e-out)}
   .sec.closed .hd .chev{transform:rotate(-90deg)}
   /* Height is driven from JS: it measures the content, pins that as a pixel
      height, then animates to zero. The grid 0fr trick collapses nothing here,
      and auto->0 does not transition, so neither is any use. */
-  .secbody{overflow:hidden;transition:height .28s var(--ease),opacity .22s ease}
+  .secbody{overflow:hidden;transition:height .28s var(--e-out),opacity .22s ease}
   .sec.closed .secbody{opacity:0}
   .pad{padding:10px 13px}
 
   #tools{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:9px}
   .tool{display:flex;align-items:center;justify-content:space-between;gap:6px;
-        border:1px solid var(--line);background:#fff;border-radius:var(--r-sm);
+        border:1px solid var(--line);background:var(--panel);border-radius:var(--r-sm);
         padding:7px 9px;cursor:pointer;font-size:12px;font-weight:530;
         transition:all .15s ease}
-  .tool:hover{background:#f6f8fc;border-color:#ccd6e6;transform:translateY(-1px);
-        box-shadow:var(--shadow)}
+  .tool:hover{background:var(--panel-2);border-color:var(--accent-line);
+        transform:translateY(-1px);box-shadow:var(--shadow-2)}
   .tool:active{transform:translateY(0)}
   .tool:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-  .tool.on{background:var(--accent);color:#fff;border-color:var(--accent);
-           box-shadow:0 3px 10px rgba(59,110,240,.3);transform:none}
-  .tool.on:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(59,110,240,.34)}
+  .tool.on{background:linear-gradient(180deg,var(--accent-2),var(--accent));color:#fff;
+           border-color:transparent;box-shadow:0 3px 12px rgba(59,110,240,.34);transform:none}
+  .tool.on:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(59,110,240,.4)}
+  .tool.on b{opacity:.8}
+  .tool:active{transform:scale(.96);transition-duration:.06s}
   .tool b{font-size:10px;opacity:.6;font-weight:600}
 
   #search{width:100%;padding:7px 10px;border:1px solid var(--line);
@@ -147,10 +213,10 @@
   .grp>summary{cursor:pointer;padding:7px 13px;font-weight:640;font-size:12px;
        list-style:none;display:flex;align-items:center;gap:8px;
        transition:background .15s}
-  .grp>summary:hover{background:#f7f9fc}
+  .grp>summary:hover{background:var(--panel-2)}
   .grp>summary::-webkit-details-marker{display:none}
   .grp>summary::before{content:"";width:8px;height:8px;border-radius:3px;
-       background:var(--sw,#999);flex:none}
+       background:var(--sw,var(--faint));flex:none}
   .grp[open]>summary{color:var(--accent)}
   .it{display:flex;justify-content:space-between;gap:6px;align-items:center;
       padding:5px 13px 5px 29px;cursor:grab;font-size:12px;border-radius:6px;
@@ -160,7 +226,7 @@
   .it .d{color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
 
   #stage{position:relative;overflow:hidden;min-width:0;background:
-     radial-gradient(circle at 40% 30%,#f7f9fc 0%,#e8ecf4 100%)}
+     radial-gradient(circle at 42% 28%,#fafcff 0%,#e6ebf3 100%)}
   svg#cv{width:100%;height:100%;display:block;touch-action:none}
   #cv3{transition:opacity .25s ease}
   #status{grid-column:1/4;display:flex;align-items:center;gap:15px;padding:0 13px;
@@ -169,22 +235,60 @@
           white-space:nowrap;overflow:hidden}
   #status .sp{flex:1}
   #status b{color:var(--ink);font-weight:620}
-  #numchip{position:absolute;background:var(--ink);color:#fff;padding:4px 9px;
+  /* Canvas empty state. Two jobs: give a new visitor somewhere to start, and
+     once the walls are up, offer the Claude route at the moment it is useful
+     rather than hiding it in a panel. */
+  #empty{position:absolute;inset:0;display:none;place-items:center;z-index:4;
+     pointer-events:none}
+  #empty.on{display:grid}
+  /* Once there is a plan to look at, get out of its way: sit low so the
+     drawing stays visible behind the invitation. */
+  #empty.claude{place-items:end center;padding-bottom:34px}
+  #empty .ecard{pointer-events:auto;text-align:center;max-width:400px;padding:22px 28px;
+     background:color-mix(in srgb,var(--panel) 88%,transparent);
+     backdrop-filter:blur(14px) saturate(1.2);
+     border:1px solid var(--line);border-radius:var(--r-lg);
+     box-shadow:var(--shadow-3);animation:eIn .5s var(--e-spring) both}
+  @keyframes eIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+  #empty .eicon{width:46px;height:46px;margin:0 auto 14px;border-radius:14px;
+     display:grid;place-items:center;font-size:20px;color:#fff;
+     background:linear-gradient(150deg,var(--accent-2),var(--accent));
+     box-shadow:0 6px 18px rgba(59,110,240,.32)}
+  /* icon | title over body | actions - placed explicitly, or the four
+     children fall through a three-column grid and wrap */
+  #empty.claude .ecard{display:grid;
+     grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;
+     align-items:center;column-gap:15px;row-gap:2px;text-align:left;
+     max-width:640px;padding:15px 19px}
+  #empty.claude .eicon{grid-area:1/1/3/2;margin:0;width:40px;height:40px;
+     border-radius:12px;font-size:17px;
+     background:linear-gradient(150deg,var(--claude-2),var(--claude));
+     box-shadow:0 6px 18px rgba(200,106,58,.34);animation:float 4s var(--e-in-out) infinite}
+  #empty.claude .etitle{grid-area:1/2/2/3;margin:0;font-size:14.5px}
+  #empty.claude .ebody{grid-area:2/2/3/3;margin:0;font-size:12px;line-height:1.5}
+  #empty.claude .eacts{grid-area:1/3/3/4;white-space:nowrap;flex-wrap:nowrap}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  #empty .etitle{font-size:16.5px;font-weight:680;letter-spacing:-.015em;margin-bottom:7px}
+  #empty .ebody{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+  #empty .eacts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+  #numchip{position:absolute;background:var(--ink);color:var(--panel);padding:4px 9px;
            border-radius:6px;font-size:12px;font-variant-numeric:tabular-nums;
-           pointer-events:none;display:none;z-index:5;box-shadow:var(--shadow)}
+           pointer-events:none;display:none;z-index:5;box-shadow:var(--shadow-2)}
   #toast{position:absolute;left:50%;top:18px;
          transform:translateX(-50%) translateY(-14px) scale(.96);
-         background:rgba(17,24,35,.95);backdrop-filter:blur(10px);color:#fff;
+         background:color-mix(in srgb,var(--ink) 94%,transparent);
+         backdrop-filter:blur(12px) saturate(1.3);color:var(--panel);
          padding:10px 17px;border-radius:10px;
-         font-size:12.5px;display:none;z-index:9;box-shadow:var(--shadow-lg);
-         opacity:0;transition:opacity .24s var(--ease),transform .24s var(--ease);
+         font-size:12.5px;display:none;z-index:9;box-shadow:var(--shadow-4);
+         opacity:0;transition:opacity .24s var(--e-out),transform .24s var(--e-out);
          max-width:70%;line-height:1.45}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 
   .row{display:flex;gap:7px;align-items:center;margin:6px 0}
   .row label{width:72px;color:var(--muted);font-size:11px;flex:none}
   .row input,.row select,.row textarea{flex:1;min-width:0;padding:6px 9px;
-      border:1px solid var(--line);border-radius:var(--r-sm);background:#fff;
+      border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);
       transition:border-color .15s,box-shadow .15s}
   .row input:focus,.row select:focus{outline:none;border-color:var(--accent);
       box-shadow:0 0 0 3px var(--accent-soft)}
@@ -193,15 +297,14 @@
   .row2{display:flex;gap:5px;margin:8px 0;flex-wrap:wrap}
   .empty{color:var(--muted);font-size:12px;padding:2px 13px 12px;line-height:1.5}
 
-  .warn{background:linear-gradient(180deg,#fff8f1,#fff3e8);
-        border:1px solid #f3d3b3;color:var(--warn);border-radius:var(--r-sm);
+  .warn{background:var(--warn-soft);
+        border:1px solid var(--warn-line);color:var(--warn);border-radius:var(--r-sm);
         padding:7px 10px;font-size:11px;margin:5px 13px;line-height:1.45;
-        animation:pop .22s ease;transition:transform .14s var(--ease),box-shadow .14s}
-  .warn:hover{transform:translateX(2px);box-shadow:var(--shadow)}
+        animation:pop .22s ease;transition:transform .14s var(--e-out),box-shadow .14s}
+  .warn:hover{transform:translateX(2px);box-shadow:var(--shadow-2)}
   .warn{display:flex;align-items:flex-start;gap:6px}
   .warn .wt{flex:1;cursor:pointer}
-  .warn.err{background:linear-gradient(180deg,#fff1ee,#ffe9e4);border-color:#f2c3b6;
-            color:#b3391a}
+  .warn.err{background:var(--err-soft);border-color:var(--err-line);color:var(--err)}
   .wmute{border:none;background:none;color:inherit;opacity:.4;cursor:pointer;
          font-size:14px;line-height:1;padding:0 2px;flex:none;
          transition:opacity .15s}
@@ -212,27 +315,30 @@
              font-size:10px;margin-left:5px;font-weight:700}
   .lay{display:flex;align-items:center;gap:8px;padding:4px 13px;font-size:12px;
        cursor:pointer;border-radius:6px;margin:0 5px;transition:background .12s}
-  .lay:hover{background:#f7f9fc}
+  .lay:hover{background:var(--panel-2)}
   .lay input{margin:0;accent-color:var(--accent)}
 
   table.t{width:100%;border-collapse:collapse;font-size:11px}
   table.t th,table.t td{border-bottom:1px solid var(--line);padding:5px 7px;
        text-align:left;vertical-align:top}
-  table.t tr:hover td{background:#f7f9fc}
+  table.t tr:hover td{background:var(--panel-2)}
   table.t th{color:var(--muted);font-weight:640;font-size:10px;text-transform:uppercase;
        letter-spacing:.05em}
   table.t td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 
-  dialog{border:none;border-radius:14px;padding:0;box-shadow:var(--shadow-lg);
-         max-width:470px;width:92vw;animation:dlg .2s cubic-bezier(.2,.9,.3,1)}
-  @keyframes dlg{from{opacity:0;transform:translateY(10px) scale(.98)}
+  dialog{border:none;border-radius:var(--r-lg);padding:0;box-shadow:var(--shadow-4);
+         max-width:470px;width:92vw;background:var(--panel);color:var(--ink);
+         animation:dlg .34s var(--e-spring)}
+  @keyframes dlg{from{opacity:0;transform:translateY(18px) scale(.965)}
                  to{opacity:1;transform:none}}
-  dialog::backdrop{background:rgba(14,20,30,.44);backdrop-filter:blur(2px)}
+  dialog::backdrop{background:rgba(8,13,22,.5);backdrop-filter:blur(4px) saturate(.9);
+         animation:fadeIn .3s var(--e-out)}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   dialog h3{margin:0;padding:16px 18px;border-bottom:1px solid var(--line);
             font-size:15px;font-weight:660}
   dialog .body{padding:16px 18px;max-height:62vh;overflow:auto}
   dialog .foot{padding:12px 18px;border-top:1px solid var(--line);display:flex;
-       gap:8px;justify-content:flex-end;background:#fafbfd;
+       gap:8px;justify-content:flex-end;background:var(--panel-2);
        border-radius:0 0 14px 14px}
   .prj{display:flex;align-items:center;gap:10px;padding:9px 11px;
        border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:7px;
@@ -243,15 +349,15 @@
   .prj .g div:first-child{font-weight:620}
   .prj .g div:last-child{color:var(--muted);font-size:11px}
 
-  #v3ctl{backdrop-filter:blur(8px);box-shadow:var(--shadow);border-radius:var(--r)!important}
+  #v3ctl{backdrop-filter:blur(8px);box-shadow:var(--shadow-2);border-radius:var(--r)!important}
   #v3ctl input[type=range]{accent-color:var(--accent)}
-  #hint3,#hint{box-shadow:var(--shadow);backdrop-filter:blur(6px)}
+  #hint3,#hint{box-shadow:var(--shadow-2);backdrop-filter:blur(6px)}
   .menu,#ctx{position:fixed;z-index:80;min-width:206px;max-width:290px;
        background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
-       box-shadow:var(--shadow-lg);padding:5px;display:none;
+       box-shadow:var(--shadow-4);padding:5px;display:none;
        transform-origin:top left}
   #ctx{position:absolute}
-  .menu.open,#ctx[style*="block"]{animation:menuIn .17s var(--ease)}
+  .menu.open,#ctx[style*="block"]{animation:menuIn .17s var(--e-out)}
   @keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.96)}
                     to{opacity:1;transform:none}}
   .menu .mi,#ctx>div:not(.sep){display:flex;align-items:center;gap:9px;width:100%;
@@ -265,21 +371,33 @@
   .menu .mi:disabled,#ctx>div.dis{opacity:.38;pointer-events:none}
   .menu .mi svg{width:13px;height:13px;flex:none;opacity:.6}
   .menu .msep,#ctx>.sep{height:1px;background:var(--line);margin:5px 3px;padding:0}
-  .btn.ai{width:100%;justify-content:center;gap:7px;font-weight:600;
-      background:linear-gradient(180deg,#fff,#f7f9fd);border-color:#d5dff2;color:var(--accent)}
-  .btn.ai:hover{background:var(--accent-soft);border-color:#bcd0f6}
-  .btn.ai::before{content:"✦";font-size:12px}
   dialog.wide{max-width:760px}
-  .aistep{display:none} .aistep.on{display:block}
-  .aitabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--line)}
-  .aitab{padding:8px 13px;border:none;background:none;cursor:pointer;font:inherit;
-      font-size:12.5px;color:var(--muted);border-bottom:2px solid transparent;
-      margin-bottom:-1px;transition:color .15s,border-color .15s}
-  .aitab:hover{color:var(--ink)}
-  .aitab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  /* a stepper, not tabs: this is a sequence, and saying so stops people
+     landing on step 2 with nothing to paste */
+  .aistep{display:none}
+  .aistep.on{display:block;animation:stepIn .34s var(--e-out) both}
+  @keyframes stepIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+  .aitabs{display:flex;gap:0;margin-bottom:18px;align-items:center}
+  .aitab{padding:0;border:none;background:none;cursor:pointer;font:inherit;
+      display:flex;align-items:center;gap:9px;color:var(--muted);
+      transition:color var(--t-2) var(--e-out)}
+  .aitab + .aitab{margin-left:10px;padding-left:10px}
+  .aitab + .aitab::before{content:"";width:26px;height:1px;background:var(--line);
+      margin-right:12px}
+  .aitab .n{width:24px;height:24px;flex:none;border-radius:50%;display:grid;
+      place-items:center;font-size:11.5px;font-weight:700;
+      background:var(--line-2);color:var(--muted);
+      transition:all var(--t-3) var(--e-spring)}
+  .aitab .t{font-size:12.5px;font-weight:530;white-space:nowrap}
+  .aitab:hover{color:var(--ink-2)}
+  .aitab.on{color:var(--ink)}
+  .aitab.on .n{background:linear-gradient(150deg,var(--claude-2),var(--claude));
+      color:#fff;transform:scale(1.12);box-shadow:0 3px 10px rgba(200,106,58,.35)}
+  .aitab.done .n{background:var(--ok-soft);color:var(--ok)}
+  .aitab.on .t{font-weight:640}
   .ta{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;
       font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;
-      background:#fbfcfe;color:var(--ink)}
+      background:var(--sunk);color:var(--ink)}
   .ta:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
   .aihint{color:var(--muted);font-size:12px;line-height:1.55;margin:0 0 12px}
   .aihint b{color:var(--ink)}
@@ -287,15 +405,15 @@
   .airesult .bad{color:var(--warn)} .airesult .good{color:var(--ok)}
   .menu .mlbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;
        color:var(--muted);font-weight:700;padding:8px 10px 4px}
-  #warnbar{grid-column:1/4;background:linear-gradient(180deg,#fff8ec,#fff3e0);
-           border-bottom:1px solid #f0d3ad;color:#8a4b12;padding:8px 14px;
+  #warnbar{grid-column:1/4;background:var(--warn-soft);
+           border-bottom:1px solid var(--warn-line);color:var(--warn);padding:8px 14px;
            font-size:12px;display:none}
-  #warnbar b{color:#6d3a0c}
+  #warnbar b{color:var(--ink)}
   #saveBadge{font-size:11px;padding:3px 9px;border-radius:20px;margin-right:8px;
-             white-space:nowrap;background:#e6f6ee;color:var(--ok);font-weight:620;
+             white-space:nowrap;background:var(--ok-soft);color:var(--ok);font-weight:620;
              transition:background .2s,color .2s}
-  #saveBadge.dirty{background:#fdf0e6;color:var(--warn)}
-  #saveBadge.none{background:#fdecec;color:#b32020}
+  #saveBadge.dirty{background:var(--warn-soft);color:var(--warn)}
+  #saveBadge.none{background:var(--err-soft);color:var(--err)}
   /* Narrower screens shed toolbar chrome before they shed controls. Below the
      last of these the bar scrolls - the scrollbar is visible now, which is the
      part that was actually broken. */
@@ -363,7 +481,9 @@
     <span class="sp"></span>
     <button class="btn ico" id="bFit" title="Fit to view (F)" aria-label="Fit to view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>
     <button class="btn" id="b3d">3D view</button>
+    <button class="btn spark" id="bAI"><span class="sp-star">&#10022;</span>Furnish</button>
     <button class="btn pri" id="bPrint">Print / PDF</button>
+    <button class="btn ico" id="bTheme" title="Switch theme" aria-label="Switch theme"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg></button>
   </div>
 
   <div class="menu" id="menuFile" role="menu">
@@ -404,7 +524,7 @@
     </div>
     <div class="sec" data-sec="cats">
       <button class="hd">Furniture<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-      <div class="secbody"><div class="secinner"><div class="pad" style="padding-bottom:4px"><button class="btn ai" id="bAI">Furnish with Claude</button><input id="search" placeholder="Search 113 pieces…" autocomplete="off" style="margin-top:8px"></div><div id="cats"></div></div></div>
+      <div class="secbody"><div class="secinner"><div class="pad" style="padding-bottom:4px"><input id="search" placeholder="Search 113 pieces…" autocomplete="off"></div><div id="cats"></div></div></div>
     </div>
   </div></aside>
 
@@ -445,6 +565,12 @@
     <div id="hint3" style="display:none;position:absolute;left:12px;bottom:10px;
          background:rgba(255,255,255,.92);padding:5px 9px;border-radius:6px;font-size:12px;
          color:var(--muted)">Drag to orbit · right-drag or space to pan · scroll to zoom · double-click to fit</div>
+    <div id="empty"><div class="ecard">
+      <div class="eicon"></div>
+      <div class="etitle"></div>
+      <div class="ebody"></div>
+      <div class="eacts"></div>
+    </div></div>
     <div id="numchip"></div>
     <div id="toast"></div>
     <div id="ctx"></div>
@@ -565,32 +691,33 @@
   <h3>Furnish with Claude</h3>
   <div class="body">
     <div class="aitabs">
-      <button class="aitab on" data-step="1">1 &middot; Copy the prompt</button>
-      <button class="aitab" data-step="2">2 &middot; Paste the answer back</button>
+      <button class="aitab on" data-step="1"><span class="n">1</span><span class="t">Copy the prompt</span></button>
+      <button class="aitab" data-step="2"><span class="n">2</span><span class="t">Paste the answer</span></button>
     </div>
 
     <div class="aistep on" data-step="1">
-      <p class="aihint">This describes your rooms, their real sizes, the doors and
-      windows, and the furniture catalogue, then asks for a layout. Paste it into
-      <b>Claude</b>, then bring the answer back on the next tab.</p>
+      <p class="aihint">This describes your rooms at their real sizes, the doors and
+      windows, and the whole furniture catalogue, then asks for a layout. Copy it,
+      paste it into <b>Claude</b>, and bring the answer back to step&nbsp;2.</p>
       <div class="row"><label>Brief</label>
         <input id="aiBrief" type="text" placeholder="e.g. couple with a baby, both work from home">
       </div>
       <div class="row"><label>Rooms</label><select id="aiRooms"></select></div>
       <textarea id="aiPrompt" class="ta" rows="13" readonly></textarea>
-      <div class="row2" style="margin-top:10px">
-        <button class="btn pri" id="aiCopy">Copy the prompt</button>
+      <div class="row2" style="margin-top:12px;align-items:center">
+        <button class="btn spark" id="aiCopy"><span class="sp-star">&#10022;</span>Copy the prompt</button>
+        <a class="btn" href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Open Claude &#8599;</a>
         <span id="aiCopied" style="font-size:12px;color:var(--ok);align-self:center"></span>
       </div>
     </div>
 
     <div class="aistep" data-step="2">
-      <p class="aihint">Paste Claude's reply here. It should be a JSON list of
-      pieces. Anything it got wrong &mdash; a name that isn't in the catalogue, a
-      room that doesn't exist &mdash; is reported rather than guessed at.</p>
+      <p class="aihint">Paste Claude's whole reply here &mdash; prose and code fences
+      are fine. Anything it got wrong, a name that isn't in the catalogue or a room
+      that isn't on your plan, is reported rather than guessed at.</p>
       <textarea id="aiReply" class="ta" rows="13" placeholder='[{"item":"Sofa 3-seat","room":"Living","x":300,"y":250,"rot":0}]'></textarea>
-      <div class="row2" style="margin-top:10px">
-        <button class="btn pri" id="aiApply">Place the furniture</button>
+      <div class="row2" style="margin-top:12px;align-items:center">
+        <button class="btn spark" id="aiApply"><span class="sp-star">&#10022;</span>Place the furniture</button>
         <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
           <input type="checkbox" id="aiReplace"> replace what's already there</label>
       </div>
@@ -2561,6 +2688,7 @@ function refreshWarns(){
 function refreshAll(){
   render(); showProps(); refreshRooms(); refreshBom(); refreshElec(); refreshWarns(); refreshTitle();
   if(S.sel.length && typeof revealSection==="function") revealSection("props");
+  if(typeof refreshEmpty==="function") refreshEmpty();
   if(is3D) render3();
   $("docName").textContent=DOC.name;
   $("bUndo").disabled=!S.undo.length; $("bRedo").disabled=!S.redo.length;
@@ -3320,6 +3448,7 @@ function set3D(on){
   $("v3ctl").style.display=on?"flex":"none";
   if(on) $("v3ceil").value=CEIL();
   $("b3d").classList.toggle("on",on);
+  if(typeof refreshEmpty==="function") refreshEmpty();
   $("b3d").textContent=on?"2D plan":"3D view";
   if(on){ if(!V3.cx && !V3.cy) fit3D(); else render3(); }
 }
@@ -3962,6 +4091,58 @@ function revealSection(key){
   }
 }
 
+/* ---- theme ----------------------------------------------------------
+   Chrome only. The drawing keeps its paper palette in both themes: it is
+   what gets printed and exported, and a plan reads as ink on paper. */
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme",t);
+  UI.theme=t; uiSave();
+  const b=$("bTheme");
+  if(b) b.title = t==="dark" ? "Switch to light" : "Switch to dark";
+}
+applyTheme(UI.theme==="dark" ? "dark"
+  : UI.theme==="light" ? "light"
+  : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+$("bTheme").onclick=()=>applyTheme(
+  document.documentElement.getAttribute("data-theme")==="dark" ? "light" : "dark");
+
+/* ---- canvas empty state ---------------------------------------------
+   A blank grid tells a first-time visitor nothing, and once the walls are
+   up the Claude route is the thing most people want next - so offer it at
+   that moment instead of leaving it to be discovered. */
+function refreshEmpty(){
+  const host=$("empty"); if(!host) return;
+  const noWalls=!DOC.walls.length, rooms=DOC.rooms.length, items=DOC.items.length;
+  let mode=null;
+  if(is3D) mode=null;
+  else if(noWalls) mode="start";
+  else if(rooms&&!items) mode="claude";
+  if(!mode){ host.className=""; return; }
+  if(host.dataset.mode===mode && host.className) return;   // don't restart the animation
+  host.dataset.mode=mode;
+  host.className="on"+(mode==="claude"?" claude":"");
+  const ic=host.querySelector(".eicon"), ti=host.querySelector(".etitle"),
+        bo=host.querySelector(".ebody"), ac=host.querySelector(".eacts");
+  ac.innerHTML="";
+  const act=(label,cls,fn)=>{ const b=document.createElement("button");
+    b.className="btn"+(cls?" "+cls:""); b.textContent=label; b.onclick=fn; ac.appendChild(b); };
+  if(mode==="start"){
+    ic.textContent="▤";
+    ti.textContent="Start your floor plan";
+    bo.textContent="Trace a photo of an existing plan, or draw the walls yourself. "+
+                   "Every length you type is real centimetres.";
+    act("Trace a photo","pri",()=>$("bImage").click());
+    act("Draw walls","",()=>setTool("wall"));
+  }else{
+    ic.textContent="✦";
+    ti.textContent=rooms+" room"+(rooms===1?"":"s")+" ready to furnish";
+    bo.textContent="Claude can lay out the furniture at real sizes, keeping walkways "+
+                   "clear and doors unblocked — or drag pieces from the catalogue yourself.";
+    act("Furnish with Claude","spark",()=>openAI());
+    act("I'll do it myself","",()=>{ $("empty").className=""; revealSection("cats"); });
+  }
+}
+
 /* ---- the stage changes size without the window doing so -------------- */
 let roT=0;
 new ResizeObserver(()=>{
@@ -4096,7 +4277,11 @@ function openAI(){
   $("dlgAI").showModal();
 }
 function aiStep(n){
-  document.querySelectorAll(".aitab").forEach(b=>b.classList.toggle("on",+b.dataset.step===n));
+  document.querySelectorAll(".aitab").forEach(b=>{
+    const i=+b.dataset.step;
+    b.classList.toggle("on",i===n);
+    b.classList.toggle("done",i<n);
+  });
   document.querySelectorAll(".aistep").forEach(d=>d.classList.toggle("on",+d.dataset.step===n));
 }
 $("bAI").onclick=openAI;
@@ -4110,8 +4295,9 @@ $("aiCopy").onclick=async()=>{
   catch(e){ t.removeAttribute("readonly"); t.select();
             try{ document.execCommand("copy"); }catch(x){}
             t.setAttribute("readonly",""); }
-  $("aiCopied").textContent="Copied — now paste it into Claude.";
-  setTimeout(()=>{ $("aiCopied").textContent=""; },4000);
+  $("aiCopied").textContent="Copied.";
+  setTimeout(()=>aiStep(2),450);          // hand straight over to the paste step
+  setTimeout(()=>{ $("aiCopied").textContent=""; },5000);
 };
 
 /* Claude answers in prose as often as not, so dig the array out rather than
@@ -4280,6 +4466,8 @@ if(!STORAGE_OK){
     'To get autosave back, run <code>python3 -m http.server 8731</code> in this folder '+
     'and open <code>http://localhost:8731/'+esc(me)+'</code> instead.';
 }
+document.body.classList.add("boot");
+setTimeout(()=>document.body.classList.remove("boot"),1400);
 (function boot(){
   let id=null;
   if(STORAGE_OK){ try{ id=localStorage.getItem(LAST); }catch(e){} }
