@@ -1,7 +1,8 @@
 # Floor Plan Studio — deploy notes
 
 `app.html` is the whole application: one file, no build step, no dependencies, no
-network calls at runtime. `index.html` is the landing page that links to it.
+network calls at runtime. `index.html` is the landing page that links to it. Both
+sit at the repository root, which is what GitHub Pages serves by default.
 Everything a visitor draws stays in their own browser — nothing is sent anywhere.
 
 ## Deploying

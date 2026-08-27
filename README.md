@@ -10,9 +10,9 @@ dependencies, no server, nothing uploaded.
 
 | Path | What it is |
 |---|---|
-| `docs/index.html` | Landing page — this is what GitHub Pages serves |
-| `docs/app.html` | The planner itself. The whole application, in one file |
-| `docs/privacy.html` | Privacy policy (still a draft — fill in the bracketed parts) |
+| `index.html` | Landing page — this is what GitHub Pages serves |
+| `app.html` | The planner itself. The whole application, in one file |
+| `privacy.html` | Privacy policy |
 | `editor.html` | Working copy of the app, opened directly from disk |
 | `PLAN.md` | Design notes: why standalone HTML, why SVG, why cm-only |
 | `trace/` | Python tooling used once to extract walls from the original sketch |
@@ -20,14 +20,15 @@ dependencies, no server, nothing uploaded.
 
 ## Publishing
 
-GitHub Pages is set to serve **main / docs**. Push to `main` and the site updates.
+GitHub Pages serves **main / (root)** — the default, nothing to configure. Push to
+`main` and the site updates.
 
 To work on it locally with browser autosave enabled (a `file://` page cannot use
 local storage):
 
-    python3 -m http.server 8731 --directory docs
+    python3 -m http.server 8731
     # then open http://localhost:8731/app.html
 
 ## Before switching ads on
 
-See `docs/README.md` — privacy policy, cookie consent and content requirements.
+See `DEPLOYING.md` — cookie consent and content requirements if you add ads.
