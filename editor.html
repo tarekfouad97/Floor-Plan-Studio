@@ -14,15 +14,27 @@
   :root{
     color-scheme:light;
     --bg:#eef1f6; --panel:#ffffff; --panel-2:#f7f9fc; --sunk:#f2f5fa;
-    --ink:#0f1720; --ink-2:#3d4a5c; --muted:#6b7a8f; --faint:#93a1b5;
+    /* --muted is body-sized text, so it has to clear 4.5:1 on the panel:
+       #6b7a8f measured 4.37. --faint is decorative only, never text. */
+    --ink:#0f1720; --ink-2:#3d4a5c; --muted:#59677a; --faint:#8593a8;
     --line:#e4e9f1; --line-2:#eff3f8; --line-3:#f5f8fb;
     --accent:#3b6ef0; --accent-2:#6b8ffb; --accent-3:#2451c9;
     --accent-soft:#eef3ff; --accent-line:#c9d8fb;
     --claude:#c86a3a; --claude-2:#e08a54; --claude-soft:#fdf3ec;
     --claude-line:#f0d5c0;
-    --warn:#c2610b; --warn-soft:#fff6ec; --warn-line:#f2d5b4;
-    --err:#c0392b; --err-soft:#fdf0ee; --err-line:#f0cdc7;
-    --ok:#0f9960; --ok-soft:#e9f7f0;
+    /* Filled controls: the gradient a label sits on, and the ink for it.
+       White on the display accents measured 3.0:1 and 2.7:1 - under the 4.5
+       a 13px label needs - so filled buttons use these deeper stops, and the
+       bright accents stay for borders, links and focus rings. */
+    --fill-accent-a:#2f62e0; --fill-accent-b:#2451c9;   /* 5.3:1 / 6.8:1 on white */
+    --fill-claude-a:#b25628; --fill-claude-b:#9c451b;   /* 4.9:1 / 6.4:1 on white */
+    --on-fill:#ffffff;
+    --fill-warn:#a8540a;
+    --accent-text:#2451c9;   /* accent used AS text needs to clear 4.5 on panel */
+    /* semantic text measured against its own soft background, not white */
+    --warn:#a8540a; --warn-soft:#fff6ec; --warn-line:#f2d5b4;
+    --err:#b8362a; --err-soft:#fdf0ee; --err-line:#f0cdc7;
+    --ok:#0b7d4e; --ok-soft:#e9f7f0;
     --shadow-1:0 1px 2px rgba(13,22,38,.05);
     --shadow-2:0 2px 4px rgba(13,22,38,.05),0 4px 12px rgba(13,22,38,.06);
     --shadow-3:0 8px 20px rgba(13,22,38,.10),0 2px 6px rgba(13,22,38,.06);
@@ -45,6 +57,13 @@
     --accent-soft:#182338; --accent-line:#2c3f63;
     --claude:#e08a54; --claude-2:#f0a273; --claude-soft:#241a13;
     --claude-line:#3d2b1e;
+    /* On dark the accents are bright, so a filled control reads better with
+       dark ink on them than white - and passes comfortably either way. */
+    --fill-accent-a:#84a8ff; --fill-accent-b:#5b8cff;
+    --fill-claude-a:#f0a273; --fill-claude-b:#e08a54;
+    --on-fill:#0d1117;
+    --fill-warn:#e0a05c;
+    --accent-text:#84a8ff;   /* on a dark panel that means the lighter end */
     --warn:#e0a05c; --warn-soft:#231b12; --warn-line:#3a2c1a;
     --err:#e88070; --err-soft:#261614; --err-line:#3d2320;
     --ok:#4cc38a; --ok-soft:#12241c;
@@ -103,7 +122,8 @@
        border-radius:var(--r-sm);transition:background .15s}
   #bar .home:hover{background:var(--line-2)}
   #bar .home i{width:21px;height:21px;border-radius:6px;display:grid;place-items:center;
-       background:linear-gradient(140deg,var(--accent-2),var(--accent));color:#fff;
+       background:linear-gradient(140deg,var(--fill-accent-a),var(--fill-accent-b));
+       color:var(--on-fill);
        font-style:normal;font-size:11px;flex:none}
   a.btn{text-decoration:none;color:inherit}
   .btn.ico{padding:6px 9px;display:grid;place-items:center;line-height:1}
@@ -128,19 +148,19 @@
        transition-duration:.06s}
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .btn:disabled{opacity:.38;cursor:default;transform:none}
-  .btn.on{background:var(--accent);color:#fff;border-color:var(--accent);
+  .btn.on{background:var(--fill-accent-b);color:var(--on-fill);border-color:transparent;
           box-shadow:0 2px 8px rgba(59,110,240,.32)}
   .btn.on:hover{background:var(--accent);filter:brightness(1.07)}
-  .btn.pri{background:linear-gradient(180deg,var(--accent-2),var(--accent));
-           color:#fff;border-color:transparent;
+  .btn.pri{background:linear-gradient(180deg,var(--fill-accent-a),var(--fill-accent-b));
+           color:var(--on-fill);border-color:transparent;
            box-shadow:0 1px 2px rgba(59,110,240,.35),0 4px 14px rgba(59,110,240,.28)}
   .btn.pri:hover{filter:brightness(1.07);
            box-shadow:0 2px 4px rgba(59,110,240,.35),0 8px 22px rgba(59,110,240,.34)}
 
   /* the Claude action: the one warm thing in a cool interface, so the eye
      finds it without a banner shouting about it */
-  .btn.spark{background:linear-gradient(180deg,var(--claude-2),var(--claude));
-       color:#fff;border-color:transparent;font-weight:620;gap:6px;
+  .btn.spark{background:linear-gradient(180deg,var(--fill-claude-a),var(--fill-claude-b));
+       color:var(--on-fill);border-color:transparent;font-weight:620;gap:6px;
        box-shadow:0 1px 2px rgba(200,106,58,.35),0 4px 14px rgba(200,106,58,.3)}
   .btn.spark:hover{filter:brightness(1.06);transform:translateY(-1px);
        box-shadow:0 2px 4px rgba(200,106,58,.35),0 9px 24px rgba(200,106,58,.38)}
@@ -160,11 +180,12 @@
 
   /* edge handles - always reachable, so a folded panel can always come back */
   .rail{position:absolute;top:50%;transform:translateY(-50%);z-index:6;
-        width:20px;height:62px;border:1px solid var(--line);background:var(--panel);
+        width:24px;height:64px;border:1px solid var(--line);background:var(--panel);
         display:grid;place-items:center;cursor:pointer;color:var(--muted);
         box-shadow:var(--shadow-2);padding:0;
         transition:background .16s,color .16s,width .16s var(--e-out)}
-  .rail:hover{background:var(--accent);color:#fff;border-color:var(--accent);width:24px}
+  .rail:hover{background:var(--fill-accent-b);color:var(--on-fill);
+        border-color:transparent;width:28px}
   .rail:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .rail svg{width:11px;height:11px;transition:transform .3s var(--e-out)}
   #railL{left:0;border-left:none;border-radius:0 9px 9px 0}
@@ -199,7 +220,8 @@
         transform:translateY(-1px);box-shadow:var(--shadow-2)}
   .tool:active{transform:translateY(0)}
   .tool:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-  .tool.on{background:linear-gradient(180deg,var(--accent-2),var(--accent));color:#fff;
+  .tool.on{background:linear-gradient(180deg,var(--fill-accent-a),var(--fill-accent-b));
+           color:var(--on-fill);
            border-color:transparent;box-shadow:0 3px 12px rgba(59,110,240,.34);transform:none}
   .tool.on:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(59,110,240,.4)}
   .tool.on b{opacity:.8}
@@ -217,10 +239,12 @@
   .grp>summary::-webkit-details-marker{display:none}
   .grp>summary::before{content:"";width:8px;height:8px;border-radius:3px;
        background:var(--sw,var(--faint));flex:none}
-  .grp[open]>summary{color:var(--accent)}
+  .grp[open]>summary{color:var(--accent-text)}
   .it{display:flex;justify-content:space-between;gap:6px;align-items:center;
-      padding:5px 13px 5px 29px;cursor:grab;font-size:12px;border-radius:6px;
-      margin:0 5px;transition:background .12s,transform .12s}
+      padding:6px 13px 6px 29px;cursor:grab;font-size:12px;border-radius:6px;
+      margin:0 5px;transition:background .12s,transform .12s;
+      width:calc(100% - 10px);border:none;background:none;font-family:inherit;
+      color:inherit;text-align:left}
   .it:hover{background:var(--accent-soft);transform:translateX(2px)}
   .it:active{cursor:grabbing}
   .it .d{color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
@@ -251,8 +275,8 @@
      box-shadow:var(--shadow-3);animation:eIn .5s var(--e-spring) both}
   @keyframes eIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
   #empty .eicon{width:46px;height:46px;margin:0 auto 14px;border-radius:14px;
-     display:grid;place-items:center;font-size:20px;color:#fff;
-     background:linear-gradient(150deg,var(--accent-2),var(--accent));
+     display:grid;place-items:center;font-size:20px;color:var(--on-fill);
+     background:linear-gradient(150deg,var(--fill-accent-a),var(--fill-accent-b));
      box-shadow:0 6px 18px rgba(59,110,240,.32)}
   /* icon | title over body | actions - placed explicitly, or the four
      children fall through a three-column grid and wrap */
@@ -262,7 +286,7 @@
      max-width:640px;padding:15px 19px}
   #empty.claude .eicon{grid-area:1/1/3/2;margin:0;width:40px;height:40px;
      border-radius:12px;font-size:17px;
-     background:linear-gradient(150deg,var(--claude-2),var(--claude));
+     background:linear-gradient(150deg,var(--fill-claude-a),var(--fill-claude-b));
      box-shadow:0 6px 18px rgba(200,106,58,.34);animation:float 4s var(--e-in-out) infinite}
   #empty.claude .etitle{grid-area:1/2/2/3;margin:0;font-size:14.5px}
   #empty.claude .ebody{grid-area:2/2/3/3;margin:0;font-size:12px;line-height:1.5}
@@ -305,13 +329,17 @@
   .warn{display:flex;align-items:flex-start;gap:6px}
   .warn .wt{flex:1;cursor:pointer}
   .warn.err{background:var(--err-soft);border-color:var(--err-line);color:var(--err)}
-  .wmute{border:none;background:none;color:inherit;opacity:.4;cursor:pointer;
-         font-size:14px;line-height:1;padding:0 2px;flex:none;
-         transition:opacity .15s}
-  .wmute:hover{opacity:1}
+  /* was a 13x14 hit area - too small to aim at. The glyph stays the same
+     size; the target grows around it. */
+  .wmute{border:none;background:none;color:inherit;opacity:.45;cursor:pointer;
+         font-size:14px;line-height:1;flex:none;
+         width:26px;height:26px;margin:-4px -6px -4px 0;border-radius:var(--r-xs);
+         display:grid;place-items:center;
+         transition:opacity .15s,background .15s}
+  .wmute:hover{opacity:1;background:color-mix(in srgb,var(--warn) 14%,transparent)}
   @keyframes pop{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
   .okmsg{color:var(--ok);font-size:12px;padding:2px 13px 11px;font-weight:520}
-  #warnCount{background:var(--warn);color:#fff;border-radius:10px;padding:1px 7px;
+  #warnCount{background:var(--fill-warn);color:var(--on-fill);border-radius:10px;padding:1px 7px;
              font-size:10px;margin-left:5px;font-weight:700}
   .scenes{display:flex;flex-wrap:wrap;gap:6px;padding:8px 13px 12px}
   .scn{border:1px solid var(--line);background:var(--panel);border-radius:100px;
@@ -321,10 +349,10 @@
   .scn:hover{border-color:var(--accent-line);transform:translateY(-1px)}
   .scn .dot{width:9px;height:9px;border-radius:50%;flex:none;
             box-shadow:0 0 0 2px color-mix(in srgb,var(--panel) 70%,transparent)}
-  .scn.on{border-color:transparent;color:#fff;font-weight:600;
-          background:linear-gradient(180deg,var(--claude-2),var(--claude));
+  .scn.on{border-color:transparent;color:var(--on-fill);font-weight:600;
+          background:linear-gradient(180deg,var(--fill-claude-a),var(--fill-claude-b));
           box-shadow:0 2px 8px rgba(200,106,58,.32)}
-  .scn.all.on{background:linear-gradient(180deg,var(--accent-2),var(--accent));
+  .scn.all.on{background:linear-gradient(180deg,var(--fill-accent-a),var(--fill-accent-b));
           box-shadow:0 2px 8px rgba(59,110,240,.32)}
   .scnNote{padding:0 13px 10px;font-size:11.5px;color:var(--muted);line-height:1.5}
   .lay{display:flex;align-items:center;gap:8px;padding:4px 13px;font-size:12px;
@@ -380,6 +408,15 @@
        transition:background .13s,color .13s}
   .menu .mi:hover,#ctx>div:not(.sep):hover{background:var(--accent-soft);color:var(--accent)}
   .menu .mi:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  /* Everything else that takes focus. Missing rings were the largest gap in
+     the audit: five classes had one, the wizard steps, mood chips, catalogue
+     rows, layer toggles and form fields did not. */
+  .aitab:focus-visible,.scn:focus-visible,.wmute:focus-visible,.it:focus-visible,
+  .prj:focus-visible,.grp>summary:focus-visible,a:focus-visible,
+  input:focus-visible,select:focus-visible,textarea:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-xs)}
+  .lay:focus-within{outline:2px solid var(--accent);outline-offset:-2px;
+    border-radius:var(--r-xs)}
   .menu .mi b,#ctx>div>b{margin-left:auto;font-size:10px;color:var(--muted);
        font-weight:600;letter-spacing:.02em;padding-left:14px}
   .menu .mi:disabled,#ctx>div.dis{opacity:.38;pointer-events:none}
@@ -405,8 +442,8 @@
   .aitab .t{font-size:12.5px;font-weight:530;white-space:nowrap}
   .aitab:hover{color:var(--ink-2)}
   .aitab.on{color:var(--ink)}
-  .aitab.on .n{background:linear-gradient(150deg,var(--claude-2),var(--claude));
-      color:#fff;transform:scale(1.12);box-shadow:0 3px 10px rgba(200,106,58,.35)}
+  .aitab.on .n{background:linear-gradient(150deg,var(--fill-claude-a),var(--fill-claude-b));
+      color:var(--on-fill);transform:scale(1.12);box-shadow:0 3px 10px rgba(200,106,58,.35)}
   .aitab.done .n{background:var(--ok-soft);color:var(--ok)}
   .aitab.on .t{font-weight:640}
   .ta{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;
@@ -2647,8 +2684,9 @@ function buildElecPalette(){
     d.className="grp"; d.open=(grp==="Lights"); d.style.setProperty("--sw","#c2410c");
     d.innerHTML=`<summary>${grp} <span style="color:var(--muted);font-weight:400">(${list.length})</span></summary>`;
     for(const e of list){
-      const row=document.createElement("div");
-      row.className="it"; row.draggable=true;
+      const row=document.createElement("button");
+      row.type="button"; row.className="it"; row.draggable=true;
+      row.title="Add "+e.name;
       row.innerHTML=`<span>${e.name}</span><span class="d">${e.mount==null?"ceiling":e.mount+" cm"}</span>`;
       row.addEventListener("dragstart",ev=>ev.dataTransfer.setData("text/plain","E:"+e.k));
       row.addEventListener("click",()=>addElec(e.k));
@@ -2667,8 +2705,9 @@ function buildCatalog(filter){
     d.className="grp"; d.open=!!f; d.style.setProperty("--sw",c.color);
     d.innerHTML=`<summary>${c.name} <span style="color:var(--muted);font-weight:400">(${items.length})</span></summary>`;
     for(const i of items){
-      const row=document.createElement("div");
-      row.className="it"; row.draggable=true;
+      const row=document.createElement("button");
+      row.type="button"; row.className="it"; row.draggable=true;
+      row.title="Add "+i.name+" ("+i.w+"×"+i.d+" cm)";
       row.innerHTML=`<span>${i.name}</span><span class="d">${i.w}×${i.d}</span>`;
       row.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",i.id));
       row.addEventListener("click",()=>addItem(i.id));

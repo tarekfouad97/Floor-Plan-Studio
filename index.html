@@ -146,11 +146,14 @@
   .feat h3{margin:0 0 6px;font-size:16.5px;font-weight:660;display:flex;align-items:center;gap:9px}
   .feat{transition:transform .22s var(--e-out)}
   .feat:hover{transform:translateX(3px)}
-  .feat h3 span{width:26px;height:26px;border-radius:8px;background:var(--soft);
-     display:grid;place-items:center;font-size:14px;
-     transition:transform .22s var(--e-spring)}
-  .feat:hover h3 span{transform:scale(1.15) rotate(-6deg)}
-  section.alt .feat h3 span{background:var(--panel)}
+  /* SVG rather than emoji: emoji render differently on every platform and
+     cannot take a theme colour. These inherit currentColor. */
+  .feat h3 span.ic{width:28px;height:28px;border-radius:8px;background:var(--soft);
+     display:grid;place-items:center;color:var(--accent);flex:none;
+     transition:transform .22s var(--e-spring),background .2s var(--e-out)}
+  .feat h3 span.ic svg{width:15px;height:15px;display:block}
+  .feat:hover h3 span.ic{transform:scale(1.12) rotate(-5deg)}
+  section.alt .feat h3 span.ic{background:var(--panel)}
   .feat p{margin:0;color:var(--muted);font-size:14.5px}
 
   .faq details{border-bottom:1px solid var(--line);padding:15px 0}
@@ -313,26 +316,26 @@
   <h2>What you get</h2>
   <p class="lede">Built around one idea: the numbers have to be right, or none of it helps.</p>
   <div class="feats">
-    <div class="feat"><h3><span>📐</span>Everything in centimetres</h3>
+    <div class="feat"><h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21 21 3"/><path d="M3 21h18V3"/><path d="M8 21v-4"/><path d="M13 21v-6"/></svg></span>Everything in centimetres</h3>
       <p>Every wall, every gap, every piece of furniture. Sizes are shown on the
          drawing and on the printout, so you can check before you buy.</p></div>
-    <div class="feat"><h3><span>⚠️</span>It tells you what won't work</h3>
+    <div class="feat"><h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>It tells you what won't work</h3>
       <p>Furniture through a wall, a wardrobe blocking a door, under 75 cm to
          squeeze past the sofa — flagged as you go.</p></div>
-    <div class="feat"><h3><span>🛒</span>A shopping list that builds itself</h3>
+    <div class="feat"><h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 7H6"/></svg></span>A shopping list that builds itself</h3>
       <p>Item, room, size, quantity, your notes and prices. Print it and take it
          to the shop.</p></div>
-    <div class="feat"><h3><span>&#10022;</span>Claude lays it out</h3>
+    <div class="feat"><h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.1 5.6L20 10.5l-5.9 2L12 18l-2.1-5.5L4 10.5l5.9-1.9z"/></svg></span>Claude lays it out</h3>
       <p>Describe who lives there and let Claude place the furniture at real sizes,
          plan the lighting and its colour temperature, and write you moods to
          switch between. You approve every piece.</p></div>
-    <div class="feat"><h3><span>🧊</span>See it in 3D</h3>
+    <div class="feat"><h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="M3 7l9 5 9-5"/><path d="M12 12v10"/></svg></span>See it in 3D</h3>
       <p>Walls stand up, doors and windows cut through, furniture takes shape,
          and the sun casts real shadows at any hour of the day.</p></div>
-    <div class="feat"><h3><span>💡</span>Sockets and lighting</h3>
+    <div class="feat"><h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.1 14a5 5 0 1 0-6.2 0c.6.5 1.1 1.2 1.1 2h4c0-.8.5-1.5 1.1-2z"/></svg></span>Sockets and lighting</h3>
       <p>Place switches, sockets and lights at proper heights, wire switches to
          the lights they control, and print a schedule for the electrician.</p></div>
-    <div class="feat"><h3><span>🔒</span>Yours, and only yours</h3>
+    <div class="feat"><h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>Yours, and only yours</h3>
       <p>Nothing is uploaded. Plans are saved in your browser or to a file on
          your computer. No account, no cloud.</p></div>
   </div>
