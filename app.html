@@ -313,6 +313,20 @@
   .okmsg{color:var(--ok);font-size:12px;padding:2px 13px 11px;font-weight:520}
   #warnCount{background:var(--warn);color:#fff;border-radius:10px;padding:1px 7px;
              font-size:10px;margin-left:5px;font-weight:700}
+  .scenes{display:flex;flex-wrap:wrap;gap:6px;padding:8px 13px 12px}
+  .scn{border:1px solid var(--line);background:var(--panel);border-radius:100px;
+       padding:5px 12px;font:inherit;font-size:11.5px;cursor:pointer;color:var(--ink-2);
+       display:flex;align-items:center;gap:7px;
+       transition:all .16s var(--e-out)}
+  .scn:hover{border-color:var(--accent-line);transform:translateY(-1px)}
+  .scn .dot{width:9px;height:9px;border-radius:50%;flex:none;
+            box-shadow:0 0 0 2px color-mix(in srgb,var(--panel) 70%,transparent)}
+  .scn.on{border-color:transparent;color:#fff;font-weight:600;
+          background:linear-gradient(180deg,var(--claude-2),var(--claude));
+          box-shadow:0 2px 8px rgba(200,106,58,.32)}
+  .scn.all.on{background:linear-gradient(180deg,var(--accent-2),var(--accent));
+          box-shadow:0 2px 8px rgba(59,110,240,.32)}
+  .scnNote{padding:0 13px 10px;font-size:11.5px;color:var(--muted);line-height:1.5}
   .lay{display:flex;align-items:center;gap:8px;padding:4px 13px;font-size:12px;
        cursor:pointer;border-radius:6px;margin:0 5px;transition:background .12s}
   .lay:hover{background:var(--panel-2)}
@@ -595,6 +609,10 @@
       <button class="hd">Rooms<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="secbody"><div class="secinner"><div id="roomlist"></div></div></div>
     </div>
+    <div class="sec" data-sec="scenes">
+      <button class="hd">Moods<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="sceneList"></div></div></div>
+    </div>
     <div class="sec" data-sec="elecList">
       <button class="hd">Electrical<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="secbody"><div class="secinner"><div id="elecList"></div></div></div>
@@ -839,6 +857,51 @@ const ELEC = [
   {k:"meter",    name:"Meter",           grp:"Supply", mount:170}
 ];
 const ELECBY = Object.fromEntries(ELEC.map(e=>[e.k,e]));
+
+/* ---------------------------------------------------------------------
+   LIGHTING: colour temperature, output, and scenes.
+   A fitting carries the two numbers you actually buy it by - kelvin and
+   lumens - and a scene is a named set of levels across the fittings, which
+   is how lighting is really specified: not "a light here" but "these at
+   30% in the evening".
+   --------------------------------------------------------------------- */
+const KELVIN=[
+  {k:2200,name:"Candle",     use:"very warm, evening only"},
+  {k:2700,name:"Warm white", use:"living rooms, bedrooms"},
+  {k:3000,name:"Soft white", use:"hallways, dining"},
+  {k:4000,name:"Cool white", use:"kitchens, bathrooms, work"},
+  {k:5000,name:"Daylight",   use:"utility, garages, tasks"}
+];
+/* Typical output per fitting, so a room can be checked against the rough
+   200-300 lumens per square metre a living space wants. */
+const LUMENS={ceiling:1200,pendant:800,spot:400,walllight:400,strip:600,fan:800};
+
+/* Planckian approximation - close enough to show warm against cool. */
+function kelvinRGB(kv){
+  const t=Math.max(1500,Math.min(9000,kv||2700))/100;
+  let r,g,b;
+  if(t<=66){ r=255; g=99.4708*Math.log(t)-161.1196; }
+  else { r=329.6987*Math.pow(t-60,-0.1332); g=288.1222*Math.pow(t-60,-0.0755); }
+  if(t>=66) b=255; else if(t<=19) b=0; else b=138.5177*Math.log(t-10)-305.0448;
+  const c=v=>Math.max(0,Math.min(255,Math.round(v)||0));
+  return [c(r),c(g),c(b)];
+}
+const kelvinCSS=(kv,a)=>{ const [r,g,b]=kelvinRGB(kv);
+  return a==null?`rgb(${r},${g},${b})`:`rgba(${r},${g},${b},${a})`; };
+const lightKelvin=e=>e&&e.kelvin!=null?e.kelvin:2700;
+const lightLumens=e=>e&&e.lm!=null?e.lm:(LUMENS[e&&e.kind]||600);
+
+/* The active scene. No scene selected means everything on - that is the
+   plan as drawn, and the state you want when wiring it up. */
+function activeScene(){
+  if(!S.scene) return null;
+  return (DOC.scenes||[]).find(x=>x.id===S.scene)||null;
+}
+function sceneLevel(id){
+  const sc=activeScene(); if(!sc) return 100;
+  const v=sc.levels&&sc.levels[id];
+  return v==null?0:Math.max(0,Math.min(100,+v));   // absent from a scene = off
+}
 const ELECGRPS = ["Lights","Switches","Power","Data","Supply"];
 const CIRCOL = ["#c2410c","#1f8a54","#2f6fd0","#7a67c8","#c98a3a","#3f9bb5","#b32020","#5b6a7c"];
 
@@ -853,7 +916,7 @@ function blankDoc(name){
   return { version:3, name:name||"Untitled", nextId:1,
            underlay:{src:null,x:0,y:0,cmPerPx:1,opacity:.45,locked:true,visible:true,w:0,h:0},
            walls:[], openings:[], rooms:[], items:[], texts:[], dims:[], notes:[],
-           elec:[], circuits:[] };
+           elec:[], circuits:[], scenes:[] };
 }
 let DOC = blankDoc();
 const nid = p => p + (DOC.nextId++);
@@ -866,7 +929,7 @@ const S = {
   numBuf:"", angBuf:null,
   drag:null, pan:null, marquee:null,
   cal:null,                        // calibration clicks
-  hover:null, mouse:{x:0,y:0},
+  hover:null, mouse:{x:0,y:0}, scene:null,
   undo:[], redo:[], projectId:null
 };
 
@@ -1491,8 +1554,21 @@ function render(){
     for(const e of DOC.elec){
       const d=ELECBY[e.kind]; if(!d) continue;
       const on=isSel("elec",e.id);
+      const isLight=d.load==="light";
+      const lvl=isLight?sceneLevel(e.id):100;
       const col=on?"#2f6fd0":(e.circuit?circuitColor(e.circuit):"#33404e");
-      const g=el("g",{transform:`translate(${e.x} ${e.y}) rotate(${e.rot||0})`},gA);
+      const g=el("g",{transform:`translate(${e.x} ${e.y}) rotate(${e.rot||0})`,
+                      opacity:(isLight&&!lvl)?.32:1},gA);
+      /* A lit fitting throws a pool of its own colour temperature, sized by
+         its output and faded by the scene level - so a warm evening scene
+         reads warm on the plan, not just in a table. */
+      if(isLight&&lvl){
+        const spread=Math.sqrt(lightLumens(e)/600)*90;
+        el("circle",{cx:0,cy:0,r:spread,fill:kelvinCSS(lightKelvin(e),.13*lvl/100),
+                     stroke:"none"},g);
+        el("circle",{cx:0,cy:0,r:spread*.55,
+                     fill:kelvinCSS(lightKelvin(e),.16*lvl/100),stroke:"none"},g);
+      }
       el("circle",{cx:0,cy:0,r:R*1.5,fill:"#fff",opacity:.75},g);
       drawElec(g,e.kind,R,col,on);
       if(on) el("circle",{cx:0,cy:0,r:R*1.9,fill:"none",stroke:"#2f6fd0","stroke-width":1.4,
@@ -2336,6 +2412,16 @@ function showProps(){
           placeholder="ceiling"><span class="u">cm</span></div>
       <div class="row"><label>Circuit</label><select id="eC">
         <option value="">— none —</option>${opts}</select></div>
+      ${d.load==="light"?`
+      <div class="row"><label>Colour</label><select id="eK">
+        ${KELVIN.map(t=>`<option value="${t.k}" ${t.k===lightKelvin(o)?"selected":""}>${
+          t.k}K · ${t.name}</option>`).join("")}
+      </select></div>
+      <div class="row"><label>Output</label>
+        <input id="eL" type="number" step="50" value="${lightLumens(o)}"><span class="u">lm</span></div>
+      <div class="row"><label></label><span style="flex:1;height:16px;border-radius:4px;
+        background:linear-gradient(90deg,${KELVIN.map(t=>kelvinCSS(t.k)).join(",")});
+        border:1px solid var(--line)"></span></div>`:""}
       <div class="row2"><button class="btn" id="eNew">New circuit</button>
         <button class="btn" id="eRot">Rotate</button></div>
       <div class="row"><label>Note</label><input id="eN" type="text" value="${esc(o.note)}"
@@ -2344,6 +2430,8 @@ function showProps(){
         <button class="btn" id="pDel">Delete</button></div></div>`;
     $("eM").onchange=()=>{ const v=$("eM").value.trim(); o.mount=(v===""?null:+v); commit(); };
     $("eC").onchange=()=>{ o.circuit=$("eC").value||null; commit(); };
+    if($("eK")) $("eK").onchange=()=>{ o.kelvin=+$("eK").value; commit(); };
+    if($("eL")) $("eL").onchange=()=>{ o.lm=Math.max(0,+$("eL").value||0); commit(); };
     $("eNew").onclick=()=>{
       const n=DOC.circuits.length;
       const c={id:nid("c"),name:"C"+(n+1),color:CIRCOL[n%CIRCOL.length]};
@@ -2441,25 +2529,66 @@ function elecRows(){
   for(const e of DOC.elec){
     const d=ELECBY[e.kind]; if(!d) continue;
     const rm=roomAt(e.x,e.y), c=e.circuit?circuitOf(e.circuit):null;
-    const key=[d.name,rm?rm.name:"—",e.mount==null?"ceiling":e.mount,c?c.name:"—"].join("|");
+    const lit=d.load==="light";
+    const lamp=lit?(lightKelvin(e)+"K · "+lightLumens(e)+" lm"):"—";
+    const key=[d.name,rm?rm.name:"—",e.mount==null?"ceiling":e.mount,c?c.name:"—",lamp].join("|");
     if(m.has(key)) m.get(key).qty++;
     else m.set(key,{name:d.name,room:rm?rm.name:"—",
                     mount:e.mount==null?"ceiling":e.mount+" cm",
-                    circuit:c?c.name:"—",qty:1});
+                    circuit:c?c.name:"—",lamp,qty:1});
   }
   return [...m.values()].sort((a,b)=>a.room.localeCompare(b.room)||a.name.localeCompare(b.name));
+}
+/* Moods. A scene is a named set of levels across the fittings; picking one
+   dims the plan and the 3D view to match, so you can see the room at 8pm
+   rather than reading it off a table. */
+function refreshScenes(){
+  const h=$("sceneList"); if(!h) return;
+  const lights=DOC.elec.filter(e=>(ELECBY[e.kind]||{}).load==="light");
+  if(!lights.length){
+    h.innerHTML='<div class="empty">No lights yet. Drag from Electrical, or let '+
+                'Claude lay the lighting out.</div>';
+    return;
+  }
+  const list=DOC.scenes||[];
+  h.innerHTML="";
+  const wrap=document.createElement("div"); wrap.className="scenes";
+  const chip=(label,tint,on,fn,cls)=>{
+    const b=document.createElement("button");
+    b.className="scn"+(on?" on":"")+(cls?" "+cls:""); b.type="button";
+    if(tint){ const d=document.createElement("span"); d.className="dot";
+              d.style.background=tint; b.appendChild(d); }
+    b.appendChild(document.createTextNode(label));
+    b.onclick=fn; wrap.appendChild(b);
+  };
+  chip("All on",null,!S.scene,()=>{ S.scene=null; refreshAll(); },"all");
+  for(const sc of list){
+    // the chip shows the average colour of whatever that scene turns on
+    const lit=lights.filter(e=>(sc.levels&&sc.levels[e.id]));
+    const avg=lit.length?Math.round(lit.reduce((a,e)=>a+lightKelvin(e),0)/lit.length):2700;
+    chip(sc.name, kelvinCSS(avg), S.scene===sc.id,
+         ()=>{ S.scene=(S.scene===sc.id?null:sc.id); refreshAll(); });
+  }
+  h.appendChild(wrap);
+  const sc=activeScene();
+  if(sc){
+    const n=document.createElement("div"); n.className="scnNote";
+    const lit=lights.filter(e=>sceneLevel(e.id)>0).length;
+    n.textContent=(sc.note?sc.note+" — ":"")+lit+" of "+lights.length+" lights on.";
+    h.appendChild(n);
+  }
 }
 function refreshElec(){
   const rows=elecRows();
   $("elecList").innerHTML = rows.length
-    ? `<table class="t"><tr><th>Point</th><th>Room</th><th class="n">Circuit</th><th class="n">Qty</th></tr>`+
+    ? `<table class="t"><tr><th>Point</th><th>Room</th><th class="n">Lamp</th><th class="n">Qty</th></tr>`+
       rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td>
-        <td class="n">${esc(r.circuit)}</td><td class="n">${r.qty}</td></tr>`).join("")+`</table>`
+        <td class="n">${esc(r.lamp)}</td><td class="n">${r.qty}</td></tr>`).join("")+`</table>`
     : '<div class="empty">Nothing placed. Drag from the Electrical list.</div>';
   $("pElec").innerHTML = rows.length
-    ? `<table><tr><th>Point</th><th>Room</th><th>Height</th><th>Circuit</th><th>Qty</th></tr>`+
+    ? `<table><tr><th>Point</th><th>Room</th><th>Height</th><th>Lamp</th><th>Circuit</th><th>Qty</th></tr>`+
       rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td><td>${esc(r.mount)}</td>
-        <td>${esc(r.circuit)}</td><td class="n">${r.qty}</td></tr>`).join("")+
+        <td>${esc(r.lamp)}</td><td>${esc(r.circuit)}</td><td class="n">${r.qty}</td></tr>`).join("")+
       `</table><p style="font-size:8pt;color:#555;margin-top:3mm">`+
       `Heights are to centre, from finished floor level.</p>`
     : "<p>No electrical points placed.</p>";
@@ -2488,6 +2617,7 @@ function addElec(kind,at){
   const p=at||{x:S.view.x+S.view.w/2,y:S.view.y+viewH()/2};
   const e={id:nid("e"),kind,x:Math.round(p.x),y:Math.round(p.y),rot:0,
            circuit:null,mount:d.mount,note:""};
+  if(d.load==="light"){ e.kelvin=2700; e.lm=LUMENS[kind]||600; }
   // switches and sockets belong on a wall - find one generously, then face it
   // into the room (nearestWall's 20 cm reach is too tight for dropping by hand)
   let w=null, bd=90;
@@ -2686,7 +2816,8 @@ function refreshWarns(){
   }
 }
 function refreshAll(){
-  render(); showProps(); refreshRooms(); refreshBom(); refreshElec(); refreshWarns(); refreshTitle();
+  render(); showProps(); refreshRooms(); refreshBom(); refreshElec(); refreshScenes();
+  refreshWarns(); refreshTitle();
   if(S.sel.length && typeof revealSection==="function") revealSection("props");
   if(typeof refreshEmpty==="function") refreshEmpty();
   if(is3D) render3();
@@ -3300,9 +3431,22 @@ function buildScene(){
        at 272 cm hangs in the sky over a roofless building. Bring anything above
        the cut down to it, where it still reads as belonging to its room. */
     const z=Math.min((e.mount==null)?H-8:e.mount, WH-4);
-    const col=d.load==="light"?"#f6d67a":(d.load==="switch"?"#e9edf1":"#e4e8ec");
+    const isLight=d.load==="light";
+    const lvl=isLight?sceneLevel(e.id):100;
+    const [kr,kg,kb]=kelvinRGB(lightKelvin(e));
+    const col=isLight
+      ? (lvl?"#"+[kr,kg,kb].map(v=>v.toString(16).padStart(2,"0")).join(""):"#6f7681")
+      : (d.load==="switch"?"#e9edf1":"#e4e8ec");
     const T=localT({x:e.x,y:e.y,rot:e.rot||0});
     quadBox(q,T,-7,-7,z-3,7,7,z+3,col);
+    // the light it actually casts, as a soft pool on the floor
+    if(isLight&&lvl){
+      const rad=Math.sqrt(lightLumens(e)/600)*95;
+      const seg=14, ring=[];
+      for(let i=0;i<seg;i++){ const a=i/seg*Math.PI*2;
+        ring.push(W3(e.x+Math.cos(a)*rad, e.y+Math.sin(a)*rad, 0.8)); }
+      q.push({p:ring, c:`rgba(${kr},${kg},${kb},${(0.16*lvl/100).toFixed(3)})`, sun:1});
+    }
   }
   return q;
 }
@@ -3883,6 +4027,7 @@ function loadDocText(text,handle){
   if(!d.walls) throw new Error("not a floor plan");
   DOC=Object.assign(blankDoc(),d);
   DOC.elec=DOC.elec||[]; DOC.circuits=DOC.circuits||[];   // documents saved before wiring
+  DOC.scenes=DOC.scenes||[];                             // ...and before lighting scenes
   reseedIds();
   rebase();
   fileHandle=handle||null; S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[];
@@ -4238,6 +4383,26 @@ function buildPrompt(){
     L.push("  "+items.map(i=>i.name+" "+i.w+"x"+i.d).join("; "));
   }
   L.push("");
+  L.push("## Lighting");
+  L.push("Also plan the lighting. Fittings you may use, with their typical output:");
+  L.push("  "+ELEC.filter(e=>e.grp==="Lights")
+    .map(e=>e.name+" ("+(LUMENS[e.k]||600)+" lm"+(e.mount==null?", ceiling":", "+e.mount+" cm")+")")
+    .join("; "));
+  L.push("Switches: "+ELEC.filter(e=>e.grp==="Switches").map(e=>e.name).join("; ")+".");
+  L.push("");
+  L.push("Colour temperature is a number in kelvin. Use:");
+  for(const t of KELVIN) L.push("  "+t.k+"K "+t.name+" — "+t.use);
+  L.push("");
+  L.push("Aim for roughly 200-300 lumens per square metre in a living space, less in a");
+  L.push("bedroom, more over a worktop. Layer it: a general light plus something local -");
+  L.push("bedside, over the table, along the counter - rather than one fitting in the");
+  L.push("middle of the ceiling. Put the switch by the door on the handle side. Every");
+  L.push("light belongs to a named circuit, and every circuit needs a switch.");
+  L.push("");
+  L.push("Then give me a few MOODS: named scenes setting each light to a level from 0");
+  L.push("to 100. Something like an everyday bright setting, a low evening one, and one");
+  L.push("for cooking or working. A light you leave out of a scene is off in that scene.");
+  L.push("");
   L.push("## Rules");
   L.push("- Leave a walking route of at least 75 cm anywhere someone passes; 90 cm in");
   L.push("  a route used often.");
@@ -4250,16 +4415,31 @@ function buildPrompt(){
   L.push("- Do not overlap two pieces. A rug may sit under other furniture.");
   L.push("- Keep every piece fully inside its room's usable floor.");
   L.push("");
+  const r0=rooms[0]?rooms[0].name:"Living";
   L.push("## How to reply");
-  L.push("Give me one JSON array and nothing else. One object per piece:");
-  L.push('[');
-  L.push('  {"item":"Sofa 3-seat","room":"'+(rooms[0]?rooms[0].name:"Living")+
-         '","x":300,"y":250,"rot":0,"why":"against the top wall, facing the TV"}');
-  L.push(']');
-  L.push('"item" must match the catalogue exactly. "room" must be one of: '+
-         rooms.map(r=>r.name).join(", ")+".");
-  L.push('"x" and "y" are the centre of the piece, in centimetres, on the same grid as');
-  L.push("the rooms above. Keep \"why\" to a short phrase.");
+  L.push("Give me one JSON object and nothing else, with these three keys:");
+  L.push("");
+  L.push("{");
+  L.push('  "furniture": [');
+  L.push('    {"item":"Sofa 3-seat","room":"'+r0+'","x":300,"y":250,"rot":0,'+
+         '"why":"against the top wall, facing the TV"}');
+  L.push("  ],");
+  L.push('  "lighting": [');
+  L.push('    {"fitting":"Pendant","room":"'+r0+'","x":300,"y":250,'+
+         '"kelvin":2700,"lumens":800,"circuit":"Living","why":"over the table"},');
+  L.push('    {"fitting":"Switch 1-gang","room":"'+r0+'","x":120,"y":480,'+
+         '"circuit":"Living","why":"by the door, handle side"}');
+  L.push("  ],");
+  L.push('  "moods": [');
+  L.push('    {"name":"Evening","note":"low and warm","levels":{"Living":30}}');
+  L.push("  ]");
+  L.push("}");
+  L.push("");
+  L.push('"item" and "fitting" must match the lists above exactly. "room" must be one');
+  L.push("of: "+rooms.map(r=>r.name).join(", ")+".");
+  L.push('"x" and "y" are the centre of the piece, in centimetres, on the grid above.');
+  L.push('In "moods", the keys of "levels" are circuit names and the values are 0-100.');
+  L.push('Leave a circuit out of a mood to have it off. Keep "why" to a short phrase.');
   return L.join("\n");
 }
 function refreshPrompt(){ $("aiPrompt").value=buildPrompt(); }
@@ -4302,59 +4482,139 @@ $("aiCopy").onclick=async()=>{
 
 /* Claude answers in prose as often as not, so dig the array out rather than
    demanding a bare document. */
+/* Claude answers in prose as often as not, so dig the payload out rather than
+   demanding a bare document. Accepts either the object form with furniture,
+   lighting and moods, or - as the first version asked for - a plain array of
+   furniture on its own. */
 function extractJSON(text){
   let t=(text||"").trim();
   const fence=t.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if(fence) t=fence[1].trim();
-  const a=t.indexOf("["), b=t.lastIndexOf("]");
-  if(a<0||b<a) return null;
-  try{ return JSON.parse(t.slice(a,b+1)); }catch(e){ return null; }
+  const tryParse=(open,close)=>{
+    const i=t.indexOf(open), j=t.lastIndexOf(close);
+    if(i<0||j<i) return null;
+    try{ return JSON.parse(t.slice(i,j+1)); }catch(e){ return null; }
+  };
+  const obj=tryParse("{","}");
+  if(obj && (obj.furniture||obj.lighting||obj.moods)) return obj;
+  const arr=tryParse("[","]");
+  if(Array.isArray(arr)) return {furniture:arr};
+  return obj&&typeof obj==="object" ? obj : null;
 }
 function applyAIPlan(){
   const res=$("aiResult");
-  const rows=extractJSON($("aiReply").value);
-  if(!Array.isArray(rows)||!rows.length){
-    res.innerHTML='<span class="bad">Could not find a JSON list in that. Paste Claude\'s whole reply — the list on its own is fine too.</span>';
+  const plan=extractJSON($("aiReply").value);
+  const furn=Array.isArray(plan&&plan.furniture)?plan.furniture:[];
+  const lights=Array.isArray(plan&&plan.lighting)?plan.lighting:[];
+  const moods=Array.isArray(plan&&plan.moods)?plan.moods:[];
+  if(!furn.length&&!lights.length&&!moods.length){
+    res.innerHTML='<span class="bad">Could not find a plan in that. Paste Claude\'s whole reply — the JSON on its own is fine too.</span>';
     return;
   }
   const byName=new Map(CATALOG.map(c=>[c.name.toLowerCase(),c]));
+  const elecByName=new Map(ELEC.map(e=>[e.name.toLowerCase(),e]));
   const roomByName=new Map(DOC.rooms.map(r=>[r.name.toLowerCase(),r]));
-  const made=[], bad=[], warn2=[];
-  for(const row of rows){
+  const bad=[], warn2=[], made=[], madeElec=[];
+
+  for(const row of furn){
     const nm=String(row&&(row.item||row.name)||"").trim();
     const c=byName.get(nm.toLowerCase());
-    if(!c){ bad.push("“"+(nm||"(no name)")+"” is not in the catalogue"); continue; }
+    if(!c){ bad.push("“"+(nm||"(no name)")+"” is not in the furniture catalogue"); continue; }
     let x=+row.x, y=+row.y;
     if(!isFinite(x)||!isFinite(y)){ bad.push(nm+" has no usable x/y"); continue; }
     let rot=Math.round((+row.rot||0)/90)*90; rot=((rot%360)+360)%360;
     const want=String(row.room||"").trim().toLowerCase();
-    // a room name we don't recognise is worth saying, but x/y still place it
     if(want && !roomByName.has(want))
       warn2.push(nm+" names a room “"+row.room+"” that isn't on the plan");
     made.push({id:nid("i"),catalogId:c.id,name:c.name,color:c.color,shape:c.shape,
                w:c.w,d:c.d,x:Math.round(x),y:Math.round(y),rot,
                note:String(row.why||row.note||"").slice(0,120),price:""});
   }
-  if(!made.length){
+
+  /* Circuits are named in the reply; mint them on demand so a mood can refer
+     to them by the same name. */
+  const circByName=new Map(DOC.circuits.map(c=>[c.name.toLowerCase(),c]));
+  const circuitFor=name=>{
+    const key=String(name||"").trim(); if(!key) return null;
+    const found=circByName.get(key.toLowerCase());
+    if(found) return found;
+    const c={id:nid("c"),name:key.slice(0,24),
+             color:CIRCOL[DOC.circuits.length%CIRCOL.length]};
+    DOC.circuits.push(c); circByName.set(c.name.toLowerCase(),c);
+    return c;
+  };
+
+  for(const row of lights){
+    const nm=String(row&&(row.fitting||row.item||row.name)||"").trim();
+    const d=elecByName.get(nm.toLowerCase());
+    if(!d){ bad.push("“"+(nm||"(no name)")+"” is not an electrical fitting"); continue; }
+    let x=+row.x, y=+row.y;
+    if(!isFinite(x)||!isFinite(y)){ bad.push(nm+" has no usable x/y"); continue; }
+    const want=String(row.room||"").trim().toLowerCase();
+    if(want && !roomByName.has(want))
+      warn2.push(nm+" names a room “"+row.room+"” that isn't on the plan");
+    const c=circuitFor(row.circuit);
+    const e={id:nid("e"),kind:d.k,x:Math.round(x),y:Math.round(y),rot:0,
+             circuit:c?c.id:null,mount:d.mount,
+             note:String(row.why||row.note||"").slice(0,120)};
+    if(d.load==="light"){
+      const kv=+row.kelvin;
+      e.kelvin=isFinite(kv)&&kv>=1500&&kv<=9000?Math.round(kv):2700;
+      const lm=+row.lumens;
+      e.lm=isFinite(lm)&&lm>0?Math.round(lm):(LUMENS[d.k]||600);
+    }
+    madeElec.push(e);
+  }
+
+  if(!made.length&&!madeElec.length&&!moods.length){
     res.innerHTML='<span class="bad">Nothing usable in that reply.</span><br>'+
       bad.slice(0,8).map(esc).join("<br>");
     return;
   }
-  if($("aiReplace").checked) DOC.items=[];
+  if($("aiReplace").checked){ DOC.items=[]; DOC.elec=[]; DOC.scenes=[]; }
   DOC.items.push(...made);
+  DOC.elec.push(...madeElec);
+
+  /* Moods arrive keyed by circuit name; store them keyed by fitting id so a
+     scene survives someone renaming or re-wiring a circuit afterwards. */
+  const madeScenes=[];
+  for(const m of moods){
+    const name=String(m&&m.name||"").trim(); if(!name) continue;
+    const levels={};
+    const src=(m&&m.levels)||{};
+    for(const key in src){
+      const lvl=Math.max(0,Math.min(100,+src[key]));
+      if(!isFinite(lvl)) continue;
+      const c=circByName.get(String(key).trim().toLowerCase());
+      const hit=DOC.elec.filter(e=>(ELECBY[e.kind]||{}).load==="light" &&
+        (c ? e.circuit===c.id
+           : (roomAt(e.x,e.y)||{}).name===String(key).trim()));
+      if(!hit.length){ warn2.push('Mood “'+name+'” mentions “'+key+'”, which has no lights'); continue; }
+      for(const e of hit) levels[e.id]=lvl;
+    }
+    const sc={id:nid("s"),name:name.slice(0,24),
+              note:String(m.note||"").slice(0,80),levels};
+    DOC.scenes.push(sc); madeScenes.push(sc);
+  }
+
   S.sel=made.map(i=>({k:"item",id:i.id}));
   commit(); fit();
-  const warn=runChecks();
+  const warnCount=runChecks().length;
   const outside=made.filter(i=>!roomAt(i.x,i.y)).length;
-  res.innerHTML='<span class="good">Placed '+made.length+' piece'+(made.length>1?"s":"")+'.</span>'+
+  const bits=[];
+  if(made.length)      bits.push(made.length+" piece"+(made.length>1?"s":"")+" of furniture");
+  if(madeElec.length)  bits.push(madeElec.length+" electrical point"+(madeElec.length>1?"s":""));
+  if(madeScenes.length)bits.push(madeScenes.length+" mood"+(madeScenes.length>1?"s":""));
+  res.innerHTML='<span class="good">Placed '+bits.join(", ")+'.</span>'+
     (outside?'<br><span class="bad">'+outside+' landed outside any room.</span>':"")+
     (bad.length?'<br><span class="bad">Skipped '+bad.length+':</span><br>'+
        bad.slice(0,8).map(esc).join("<br>"):"")+
     (warn2.length?'<br><span class="bad">Placed, but worth a look:</span><br>'+
        warn2.slice(0,6).map(esc).join("<br>"):"")+
-    '<br>The Checks panel now reports '+warn.length+' issue'+(warn.length===1?"":"s")+
+    (madeScenes.length?'<br>Try the moods in the <b>Moods</b> panel.':"")+
+    '<br>The Checks panel now reports '+warnCount+' issue'+(warnCount===1?"":"s")+
     '. Undo puts it all back.';
-  toast("Placed "+made.length+" pieces from Claude — check the Checks panel.",5000);
+  toast("Placed "+bits.join(", ")+" from Claude.",5000);
 }
 $("aiApply").onclick=applyAIPlan;
 
