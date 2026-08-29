@@ -932,7 +932,9 @@ const lightLumens=e=>e&&e.lm!=null?e.lm:(LUMENS[e&&e.kind]||600);
    plan as drawn, and the state you want when wiring it up. */
 function activeScene(){
   if(!S.scene) return null;
-  return (DOC.scenes||[]).find(x=>x.id===S.scene)||null;
+  const sc=(DOC.scenes||[]).find(x=>x.id===S.scene);
+  if(!sc) S.scene=null;          // scene deleted or a different document loaded
+  return sc||null;
 }
 function sceneLevel(id){
   const sc=activeScene(); if(!sc) return 100;
@@ -1119,7 +1121,8 @@ function autosave(){
 function loadProject(id){
   try{
     const raw=localStorage.getItem(DK(id)); if(!raw) return false;
-    DOC=JSON.parse(raw); reseedIds(); S.projectId=id; S.sel=[]; S.undo=[]; S.redo=[]; rebase();
+    DOC=JSON.parse(raw); normalizeDoc();
+    S.projectId=id; S.sel=[]; S.undo=[]; S.redo=[]; S.scene=null; rebase();
     localStorage.setItem(LAST,id); fit(); refreshAll(); return true;
   }catch(e){ return false; }
 }
@@ -4061,13 +4064,28 @@ function reseedIds(){
     }
   DOC.nextId=Math.max(hi+1, +DOC.nextId||1);
 }
+/* Every collection the app expects, guaranteed to exist.
+   A document saved before a feature shipped simply has no key for it, and
+   loadProject - the path taken on every page load - parsed the stored JSON
+   raw, so DOC.elec / DOC.circuits / DOC.scenes came back undefined. The next
+   thing to touch one threw, which is why applying a plan looked like it
+   needed "replace" ticked: that branch happened to assign the arrays first
+   and repaired the document on its way past. */
+function normalizeDoc(){
+  for(const k of ["walls","openings","rooms","items","texts","dims",
+                  "notes","elec","circuits","scenes"])
+    if(!Array.isArray(DOC[k])) DOC[k]=[];
+  if(!DOC.underlay||typeof DOC.underlay!=="object")
+    DOC.underlay={src:null,x:0,y:0,cmPerPx:1,opacity:.45,locked:true,
+                  visible:true,w:0,h:0};
+  if(typeof DOC.name!=="string"||!DOC.name) DOC.name="Untitled";
+  reseedIds();
+}
 function loadDocText(text,handle){
   const d=JSON.parse(text);
   if(!d.walls) throw new Error("not a floor plan");
-  DOC=Object.assign(blankDoc(),d);
-  DOC.elec=DOC.elec||[]; DOC.circuits=DOC.circuits||[];   // documents saved before wiring
-  DOC.scenes=DOC.scenes||[];                             // ...and before lighting scenes
-  reseedIds();
+  DOC=Object.assign(blankDoc(),d); normalizeDoc();
+  S.scene=null;
   rebase();
   fileHandle=handle||null; S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[];
   if(STORAGE_OK) autosave();
@@ -4112,8 +4130,8 @@ $("bImport").onclick=()=>{
     r.onload=()=>{ try{
         const d=JSON.parse(r.result);
         if(!d.walls) throw 0;
-        DOC=Object.assign(blankDoc(),d); reseedIds(); rebase();
-        S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[];
+        DOC=Object.assign(blankDoc(),d); normalizeDoc(); rebase();
+        S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[]; S.scene=null;
         autosave(); fit(); refreshAll(); toast("Imported “"+DOC.name+"”");
       }catch(e){ toast("That file isn't a floor plan export."); } };
     r.readAsText(f); };
@@ -4550,6 +4568,7 @@ function applyAIPlan(){
     res.innerHTML='<span class="bad">Could not find a plan in that. Paste Claude\'s whole reply — the JSON on its own is fine too.</span>';
     return;
   }
+  normalizeDoc();          // never trust the document's shape here
   const byName=new Map(CATALOG.map(c=>[c.name.toLowerCase(),c]));
   const elecByName=new Map(ELEC.map(e=>[e.name.toLowerCase(),e]));
   const roomByName=new Map(DOC.rooms.map(r=>[r.name.toLowerCase(),r]));
