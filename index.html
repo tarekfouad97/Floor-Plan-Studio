@@ -106,9 +106,11 @@
     font-size:14.5px;font-weight:520;
     transition:background var(--m-fast) var(--e-out),color var(--m-fast) var(--e-out)}
   nav a:hover{background:var(--soft);color:var(--ink)}
+  /* .cta is used inside the nav and twice outside it; without this the two
+     outside kept the browser's default underline. */
   .cta{background:linear-gradient(180deg,var(--fill-a),var(--fill-b));
     color:var(--on-fill)!important;padding:10px 19px!important;
-    border-radius:var(--r-sm)!important;font-weight:640;
+    border-radius:var(--r-sm)!important;font-weight:640;text-decoration:none;
     box-shadow:0 2px 6px rgba(59,110,240,.3),0 8px 22px rgba(59,110,240,.22);
     transition:transform var(--m-fast) var(--e-out),filter var(--m-fast),
                box-shadow var(--m-fast)}
@@ -184,28 +186,6 @@
   @keyframes fade{from{opacity:0}to{opacity:1}}
   @keyframes drop{from{opacity:0;transform:translateY(-14px) scale(.96)}
                   to{opacity:1;transform:none}}
-
-  /* ==================================================================
-     PROOF STRIP
-     ================================================================== */
-  .proof{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-    background:var(--soft);margin-top:70px}
-  .proof .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
-    padding-top:0;padding-bottom:0}
-  .pf{padding:30px 18px;text-align:center;position:relative}
-  .pf + .pf::before{content:"";position:absolute;left:0;top:26%;bottom:26%;
-    width:1px;background:var(--line)}
-  .pf b{display:flex;align-items:baseline;justify-content:center;gap:3px;
-    font-size:clamp(26px,3.4vw,36px);font-weight:800;
-    letter-spacing:-.04em;color:var(--ink);font-variant-numeric:tabular-nums;
-    line-height:1;white-space:nowrap}
-  .pf b u{font-size:.5em;font-weight:700;text-decoration:none;margin-left:3px;
-    color:var(--muted);letter-spacing:-.01em}
-  .pf span{display:block;font-size:13.5px;color:var(--muted);margin-top:8px}
-  @media (max-width:760px){
-    .proof .wrap{grid-template-columns:repeat(2,1fr)}
-    .pf:nth-child(3)::before{display:none}
-  }
 
   /* ==================================================================
      SECTIONS
@@ -464,17 +444,6 @@
     </svg>
   </div>
 </div>
-
-<div class="proof"><div class="wrap">
-  <div class="pf rise"><b><span class="count" data-to="113">113</span></b>
-    <span>pieces at real sizes</span></div>
-  <div class="pf rise d1"><b><span class="count" data-to="24">24</span></b>
-    <span>electrical fittings</span></div>
-  <div class="pf rise d2"><b><span class="count" data-to="75">75</span><u>cm</u></b>
-    <span>minimum walkway, enforced</span></div>
-  <div class="pf rise d3"><b>0</b>
-    <span>bytes uploaded, ever</span></div>
-</div></div>
 
 <section id="how"><div class="wrap">
   <div class="head rise">
@@ -799,29 +768,6 @@ if(!reduced && "IntersectionObserver" in window && rise.length){
   setTimeout(showAll,1800);                    // a backgrounded tab may never call back
   addEventListener("load",()=>setTimeout(showAll,600));
 }else showAll();
-
-/* ---- counters, once, when the proof strip arrives -------------------
-   These are factual claims, so a stalled animation must never be able to
-   leave a wrong number on screen. requestAnimationFrame stops in a
-   backgrounded tab; a timer set for just after the run forces the true
-   value whether the frames arrived or not.                             */
-const counters=[...document.querySelectorAll(".count")];
-const runCount=el=>{
-  const to=+el.dataset.to, t0=performance.now(), dur=900;
-  const settle=()=>{ el.textContent=to; };
-  const tick=now=>{ const p=Math.min(1,(now-t0)/dur);
-    el.textContent=Math.round(to*(1-Math.pow(1-p,3)));
-    if(p<1) requestAnimationFrame(tick); else settle(); };
-  requestAnimationFrame(tick);
-  setTimeout(settle,dur+250);
-  document.addEventListener("visibilitychange",settle,{once:true});
-};
-if(!reduced && "IntersectionObserver" in window){
-  const co=new IntersectionObserver(es=>es.forEach(e=>{
-    if(e.isIntersecting){ runCount(e.target); co.unobserve(e.target); }
-  }),{threshold:.6});
-  counters.forEach(el=>co.observe(el));
-}
 
 /* ---- mood switcher ---------------------------------------------------
    The same three zones relit. Colours are the app's own kelvin values,
