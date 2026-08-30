@@ -6,335 +6,308 @@
 <title>Floor Plan Studio — plan your flat and know what fits</title>
 <meta name="description" content="Draw your flat to scale, let Claude furnish and light it, and get a shopping list with every size in centimetres. Free, works in your browser, nothing uploaded.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233b6ef0'/><path d='M8 9h16M8 16h16M8 23h16' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
   /* ==================================================================
-     TOKENS
+     TOKENS — the same system the editor uses, so the site and the tool
+     read as one product. Dark by default; light is a remembered choice.
      ================================================================== */
   :root{
-    color-scheme:light;
-    --ink:#0f1720; --ink-2:#39465a; --muted:#59677a; --faint:#8593a8;
-    --line:#e4e9f1; --line-2:#eef2f7;
-    --bg:#ffffff; --panel:#ffffff; --soft:#f5f7fb; --sunk:#eef2f8;
-    --accent:#3b6ef0; --accent-2:#6b8ffb; --accent-text:#2451c9;
-    --fill-a:#2f62e0; --fill-b:#2451c9; --on-fill:#ffffff;
-    --claude:#c86a3a; --claude-2:#e08a54; --claude-text:#a8501f;
-    --claude-soft:#fdf3ec; --claude-line:#f0d5c0;
-    --cfill-a:#b25628; --cfill-b:#9c451b;
-    --warn:#a8540a; --warn-soft:#fff6ec; --warn-line:#f2d5b4;
-    --r:14px; --r-sm:10px; --r-xs:7px; --r-lg:20px;
-    --sh-1:0 1px 2px rgba(15,23,34,.05);
-    --sh-2:0 2px 6px rgba(15,23,34,.06),0 8px 24px rgba(15,23,34,.06);
-    --sh-3:0 10px 30px rgba(15,23,34,.10),0 2px 8px rgba(15,23,34,.05);
-    /* motion — one rhythm for the whole page */
-    --m-fast:140ms; --m-base:260ms; --m-slow:420ms; --m-exit:170ms;
-    --e-out:cubic-bezier(.22,.85,.28,1);
-    --e-in:cubic-bezier(.55,0,1,.45);
-    --e-spring:cubic-bezier(.34,1.4,.5,1);
-    /* the kelvin scale the app uses, from its own kelvinRGB() */
+    color-scheme:dark;
+    --app:#0B0D10; --panel:#14171C; --raised:#1C2027; --sunk:#0E1116;
+    --line:rgba(255,255,255,.06); --line-2:rgba(255,255,255,.10);
+    --line-3:rgba(255,255,255,.16);
+    --fg:#E6E9EF; --fg-2:#9BA3B0; --fg-3:#8A93A2; --fg-4:#6B7381;
+    --accent:#4F5FE6; --accent-2:#7C8AF7; --accent-ink:#FFFFFF;
+    --accent-wash:rgba(91,108,240,.15); --accent-line:rgba(91,108,240,.45);
+    --warn:#E0A264; --warn-wash:rgba(224,162,100,.11); --warn-line:rgba(224,162,100,.26);
+    --err:#E8806E;  --err-wash:rgba(232,128,110,.11);  --err-line:rgba(232,128,110,.26);
+    --ok:#5FC08A;
+    --paper:#FAFAF8;
+    --sh-1:0 1px 2px rgba(0,0,0,.45);
+    --sh-2:0 2px 6px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.34);
+    --sh-3:0 10px 34px rgba(0,0,0,.5),0 3px 10px rgba(0,0,0,.36);
+    --r:12px; --r-sm:8px; --r-xs:6px; --r-lg:16px;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px;
+    --enter:cubic-bezier(.16,1,.3,1);
+    --exit:cubic-bezier(.4,0,.2,1);
+    --spring:cubic-bezier(.34,1.56,.5,1);
+    --t-in:200ms; --t-out:120ms; --t-slow:420ms;
     --k2200:255,146,39; --k2700:255,167,87;
     --k3000:255,177,110; --k4000:255,206,166;
   }
-  :root[data-theme="dark"]{
-    color-scheme:dark;
-    --ink:#e9eef6; --ink-2:#b8c4d4; --muted:#95a3b8; --faint:#66748a;
-    --line:#242c39; --line-2:#1c232e;
-    --bg:#0d1117; --panel:#151b24; --soft:#131a23; --sunk:#0f151d;
-    --accent:#5b8cff; --accent-2:#84a8ff; --accent-text:#84a8ff;
-    --fill-a:#84a8ff; --fill-b:#5b8cff; --on-fill:#0d1117;
-    --claude:#e08a54; --claude-2:#f0a273; --claude-text:#f0a273;
-    --claude-soft:#211710; --claude-line:#3d2b1e;
-    --cfill-a:#f0a273; --cfill-b:#e08a54;
-    --warn:#e0a05c; --warn-soft:#231b12; --warn-line:#3a2c1a;
-    --sh-1:0 1px 2px rgba(0,0,0,.4);
-    --sh-2:0 2px 6px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.34);
-    --sh-3:0 10px 30px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);
+  :root[data-theme="light"]{
+    color-scheme:light;
+    --app:#FFFFFF; --panel:#FFFFFF; --raised:#F7F9FC; --sunk:#F2F5F9;
+    --line:rgba(12,18,28,.09); --line-2:rgba(12,18,28,.14); --line-3:rgba(12,18,28,.22);
+    --fg:#0F1720; --fg-2:#4A5563; --fg-3:#5F6875; --fg-4:#828B99;
+    --accent:#3E4FD8; --accent-2:#4453D6;
+    --accent-wash:rgba(62,79,216,.08); --accent-line:rgba(62,79,216,.3);
+    --warn:#9A5A12; --warn-wash:rgba(154,90,18,.07); --warn-line:rgba(154,90,18,.2);
+    --err:#B33B2A;  --err-wash:rgba(179,59,42,.06);  --err-line:rgba(179,59,42,.18);
+    --ok:#12794E;
+    --sh-1:0 1px 2px rgba(12,18,28,.06);
+    --sh-2:0 2px 6px rgba(12,18,28,.07),0 8px 20px rgba(12,18,28,.06);
+    --sh-3:0 10px 34px rgba(12,18,28,.11),0 3px 10px rgba(12,18,28,.06);
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;
+      animation-iteration-count:1!important;transition-duration:.01ms!important}
+    html{scroll-behavior:auto!important}
   }
 
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font:16px/1.65 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",
-         Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;letter-spacing:-.005em;
-    transition:background var(--m-slow) var(--e-out),color var(--m-slow) var(--e-out)}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-  a{color:var(--accent-text)}
-  h1,h2,h3{letter-spacing:-.032em;text-wrap:balance;margin:0}
-  h2{font-size:clamp(27px,3.6vw,40px);font-weight:780;line-height:1.12}
-  .lede{color:var(--muted);max-width:40rem;font-size:17px}
+  body{margin:0;background:var(--app);color:var(--fg);
+    font:16px/1.6 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
+         "Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    -webkit-font-smoothing:antialiased;letter-spacing:-.006em;
+    transition:background var(--t-slow) var(--enter),color var(--t-slow) var(--enter)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 var(--s6)}
+  a{color:var(--accent-2)}
+  h1,h2,h3{letter-spacing:-.028em;text-wrap:balance;margin:0}
+  h2{font-size:clamp(26px,3.4vw,38px);font-weight:700;line-height:1.14}
+  .lede{color:var(--fg-3);max-width:40rem;font-size:16.5px}
+  .tnum{font-variant-numeric:tabular-nums}
 
-  /* reduced motion: everything still arrives, just instantly */
-  @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{animation-duration:.01ms!important;
-      animation-iteration-count:1!important;transition-duration:.01ms!important}
-    html{scroll-behavior:auto}
-  }
-
-  /* ---------- reveal on scroll -------------------------------------
-     The hidden state is gated on html.anim, which JS sets only once the
-     observer is wired, and a timeout reveals everything regardless. An
-     animation must never be able to leave a page blank.               */
-  html.anim .rise{opacity:0;transform:translateY(20px);
-    transition:opacity var(--m-slow) var(--e-out),transform var(--m-slow) var(--e-out)}
+  html.anim .rise{opacity:0;transform:translateY(18px);
+    transition:opacity var(--t-slow) var(--enter),transform var(--t-slow) var(--enter)}
   html.anim .rise.in{opacity:1;transform:none}
   .d1{transition-delay:40ms} .d2{transition-delay:80ms}
   .d3{transition-delay:120ms} .d4{transition-delay:160ms}
 
-  /* ==================================================================
-     HEADER
-     ================================================================== */
+  /* ---------- header ---------- */
   header{position:sticky;top:0;z-index:30;
-    background:color-mix(in srgb,var(--bg) 82%,transparent);
+    background:color-mix(in srgb,var(--app) 84%,transparent);
+    -webkit-backdrop-filter:blur(16px) saturate(1.4);
     backdrop-filter:blur(16px) saturate(1.4);
     border-bottom:1px solid transparent;
-    transition:border-color var(--m-base) var(--e-out),
-               background var(--m-base) var(--e-out)}
+    transition:border-color var(--t-in) var(--enter),background var(--t-in) var(--enter)}
   header.stuck{border-bottom-color:var(--line)}
-  header .wrap{display:flex;align-items:center;gap:14px;height:66px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:16.5px;
-    text-decoration:none;color:var(--ink);letter-spacing:-.02em}
-  .brand i{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
-    background:linear-gradient(140deg,var(--fill-a),var(--fill-b));color:var(--on-fill);
-    font-style:normal;font-size:14px;
-    transition:transform var(--m-base) var(--e-spring)}
+  header .wrap{display:flex;align-items:center;gap:var(--s3);height:62px}
+  .brand{display:flex;align-items:center;gap:var(--s2);font-weight:620;font-size:15px;
+    text-decoration:none;color:var(--fg);letter-spacing:-.02em}
+  .brand i{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;
+    background:var(--accent);color:var(--accent-ink);font-style:normal;font-size:12px;
+    transition:transform var(--t-in) var(--spring)}
   .brand:hover i{transform:rotate(-8deg) scale(1.08)}
-  nav{margin-left:auto;display:flex;gap:4px;align-items:center}
-  nav a{color:var(--muted);text-decoration:none;padding:9px 13px;border-radius:var(--r-sm);
-    font-size:14.5px;font-weight:520;
-    transition:background var(--m-fast) var(--e-out),color var(--m-fast) var(--e-out)}
-  nav a:hover{background:var(--soft);color:var(--ink)}
-  /* .cta is used inside the nav and twice outside it; without this the two
-     outside kept the browser's default underline. */
-  .cta{background:linear-gradient(180deg,var(--fill-a),var(--fill-b));
-    color:var(--on-fill)!important;padding:10px 19px!important;
-    border-radius:var(--r-sm)!important;font-weight:640;text-decoration:none;
-    box-shadow:0 2px 6px rgba(59,110,240,.3),0 8px 22px rgba(59,110,240,.22);
-    transition:transform var(--m-fast) var(--e-out),filter var(--m-fast),
-               box-shadow var(--m-fast)}
-  .cta:hover{filter:brightness(1.07);transform:translateY(-1px);
-    box-shadow:0 4px 10px rgba(59,110,240,.34),0 14px 32px rgba(59,110,240,.28)}
+  nav{margin-left:auto;display:flex;gap:2px;align-items:center}
+  nav a{color:var(--fg-3);text-decoration:none;padding:8px var(--s3);
+    border-radius:var(--r-sm);font-size:13.5px;font-weight:500;
+    transition:background var(--t-out) var(--exit),color var(--t-out) var(--exit)}
+  nav a:hover{background:var(--raised);color:var(--fg)}
+  .cta{background:var(--accent);color:var(--accent-ink)!important;
+    padding:9px var(--s4)!important;border-radius:var(--r-sm)!important;font-weight:600;
+    text-decoration:none;box-shadow:0 2px 10px rgba(79,95,230,.3);
+    transition:transform var(--t-out) var(--exit),background var(--t-out) var(--exit),
+               box-shadow var(--t-out) var(--exit)}
+  .cta:hover{background:var(--accent-2);transform:translateY(-1px);
+    box-shadow:0 6px 20px rgba(79,95,230,.4)}
   .cta:active{transform:translateY(0) scale(.98)}
-  .themeBtn{border:1px solid var(--line);background:var(--panel);color:var(--muted);
-    width:36px;height:36px;border-radius:var(--r-sm);display:grid;place-items:center;
+  .themeBtn{border:1px solid var(--line-2);background:var(--raised);color:var(--fg-3);
+    width:34px;height:34px;border-radius:var(--r-sm);display:grid;place-items:center;
     cursor:pointer;padding:0;flex:none;
-    transition:color var(--m-fast) var(--e-out),border-color var(--m-fast) var(--e-out),transform var(--m-fast) var(--e-out)}
-  .themeBtn:hover{color:var(--ink);border-color:var(--faint);transform:translateY(-1px)}
-  .themeBtn svg{width:15px;height:15px}
+    transition:color var(--t-out) var(--exit),border-color var(--t-out) var(--exit),
+               transform var(--t-out) var(--exit)}
+  .themeBtn:hover{color:var(--fg);border-color:var(--line-3);transform:translateY(-1px)}
+  .themeBtn svg{width:15px;height:15px;stroke-width:1.5}
   :where(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:3px;
     border-radius:var(--r-xs)}
 
-  /* ==================================================================
-     HERO
-     ================================================================== */
-  .hero{padding:76px 0 20px;text-align:center}
-  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;
-    color:var(--claude-text);background:var(--claude-soft);
-    border:1px solid var(--claude-line);padding:6px 14px;border-radius:100px;
-    margin-bottom:22px;text-decoration:none;
-    transition:transform var(--m-fast) var(--e-out)}
-  .eyebrow:hover{transform:translateY(-1px)}
-  .eyebrow b{color:var(--claude-text)}
-  .hero h1{font-size:clamp(38px,6.4vw,68px);line-height:1.02;font-weight:800;
-    margin-bottom:20px}
-  .hero h1 em{font-style:normal;
-    background:linear-gradient(105deg,var(--accent),var(--accent-2));
-    -webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero p.sub{font-size:19px;color:var(--muted);max-width:37rem;margin:0 auto 30px}
-  .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-  .ghost{border:1px solid var(--line);padding:10px 19px;border-radius:var(--r-sm);
-    text-decoration:none;color:var(--ink);font-weight:560;background:var(--panel);
-    transition:border-color var(--m-fast) var(--e-out),transform var(--m-fast) var(--e-out)}
-  .ghost:hover{border-color:var(--faint);transform:translateY(-1px)}
-  .note{font-size:13.5px;color:var(--muted);margin-top:18px}
+  /* ---------- hero ---------- */
+  .hero{padding:82px 0 var(--s5);text-align:center;position:relative}
+  /* one soft bloom behind the headline so the dark shell has depth */
+  .hero::before{content:"";position:absolute;left:50%;top:0;width:min(760px,90vw);
+    height:340px;transform:translateX(-50%);pointer-events:none;z-index:-1;
+    background:radial-gradient(ellipse at center,var(--accent-wash),transparent 70%)}
+  .eyebrow{display:inline-flex;align-items:center;gap:var(--s2);font-size:12.5px;
+    font-weight:560;color:var(--accent-2);background:var(--accent-wash);
+    border:1px solid var(--accent-line);padding:5px var(--s3);border-radius:100px;
+    margin-bottom:var(--s5);text-decoration:none;
+    transition:transform var(--t-out) var(--exit),background var(--t-out) var(--exit)}
+  .eyebrow:hover{transform:translateY(-1px);background:var(--accent-line)}
+  .eyebrow b{color:var(--accent-2);font-weight:680}
+  .hero h1{font-size:clamp(38px,6.2vw,64px);line-height:1.04;font-weight:730;
+    margin-bottom:var(--s5);letter-spacing:-.038em}
+  .hero h1 em{font-style:normal;color:var(--accent-2)}
+  .hero p.sub{font-size:18px;color:var(--fg-3);max-width:37rem;margin:0 auto var(--s6)}
+  .btns{display:flex;gap:var(--s2);justify-content:center;flex-wrap:wrap}
+  .ghost{border:1px solid var(--line-2);padding:9px var(--s4);border-radius:var(--r-sm);
+    text-decoration:none;color:var(--fg-2);font-weight:520;background:var(--raised);
+    transition:border-color var(--t-out) var(--exit),color var(--t-out) var(--exit),
+               transform var(--t-out) var(--exit)}
+  .ghost:hover{border-color:var(--line-3);color:var(--fg);transform:translateY(-1px)}
+  .note{font-size:13px;color:var(--fg-3);margin-top:var(--s4)}
 
-  /* the drawing. aspect-ratio reserves the box before paint: no CLS */
-  .shot{margin:46px auto 0;max-width:960px;border-radius:var(--r-lg);
-    border:1px solid var(--line);background:var(--soft);overflow:hidden;
+  /* the drawing sits on paper, exactly as it does in the editor */
+  .shot{margin:var(--s8) auto 0;max-width:960px;border-radius:var(--r-lg);
+    border:1px solid var(--line-2);background:var(--paper);overflow:hidden;
     box-shadow:var(--sh-3);aspect-ratio:940/400}
   .shot svg{display:block;width:100%;height:100%}
 
-  /* ==================================================================
-     THE SELF-DRAWING PLAN
-     Elements are visible by default; the animations only run when JS
-     adds .play, and each uses fill-mode both so the delay holds the
-     from-state. No .play, no JS, or reduced motion -> finished drawing.
-     Only transform, opacity and stroke-dashoffset are animated.
-     ================================================================== */
-  #plan .wall{fill:none;stroke:var(--ink);stroke-width:9;stroke-linecap:square;
-    stroke-linejoin:miter}
-  #plan .room{fill:var(--panel)}
-  #plan .lbl{font:600 13px Inter,sans-serif;fill:var(--faint);letter-spacing:.06em}
-  #plan .dim{font:700 12px Inter,sans-serif;fill:var(--warn)}
-  #plan .sz{font:400 10.5px Inter,sans-serif;fill:var(--faint)}
-  #plan .nm{font:600 11px Inter,sans-serif;fill:var(--ink-2)}
+  /* ---------- the self-drawing plan ---------- */
+  #plan .wall{fill:none;stroke:#1A1D22;stroke-width:9;stroke-linecap:square}
+  #plan .room{fill:#FFFFFF}
+  #plan .lbl{font:600 13px ui-sans-serif,system-ui,sans-serif;fill:#A8AEB8;
+             letter-spacing:.07em}
+  #plan .dim{font:700 12px ui-sans-serif,system-ui,sans-serif;fill:#B0741F;
+             font-variant-numeric:tabular-nums}
+  #plan .sz{font:400 10.5px ui-sans-serif,system-ui,sans-serif;fill:#A8AEB8;
+            font-variant-numeric:tabular-nums}
+  #plan .nm{font:600 11px ui-sans-serif,system-ui,sans-serif;fill:#4A515C}
   #plan .pool{mix-blend-mode:multiply}
-  :root[data-theme="dark"] #plan .pool{mix-blend-mode:screen;opacity:.55}
-
   #plan.play .wall{stroke-dasharray:100;stroke-dashoffset:100;
-    animation:draw .9s var(--e-out) forwards}
-  #plan.play #roomLayer{animation:fade .5s var(--e-out) .75s both}
-  #plan.play #labelLayer>*{animation:fade .4s var(--e-out) both}
-  #plan.play #furnLayer>*{animation:drop .5s var(--e-spring) both}
-  #plan.play #lightLayer{animation:fade .9s var(--e-out) 4s both}
-  #plan.play #dimLayer{animation:fade .5s var(--e-out) 5.4s both}
+    animation:draw .9s var(--enter) forwards}
+  #plan.play #roomLayer{animation:fade .5s var(--enter) .75s both}
+  #plan.play #labelLayer>*{animation:fade .4s var(--enter) both}
+  #plan.play #furnLayer>*{animation:drop .5s var(--spring) both}
+  #plan.play #lightLayer{animation:fade .9s var(--enter) 4s both}
+  #plan.play #dimLayer{animation:fade .5s var(--enter) 5.4s both}
   #plan.play #dimLine{stroke-dasharray:100;stroke-dashoffset:100;
-    animation:draw .7s var(--e-out) 5.4s forwards}
+    animation:draw .7s var(--enter) 5.4s forwards}
   @keyframes draw{to{stroke-dashoffset:0}}
   @keyframes fade{from{opacity:0}to{opacity:1}}
   @keyframes drop{from{opacity:0;transform:translateY(-14px) scale(.96)}
                   to{opacity:1;transform:none}}
 
-  /* ==================================================================
-     SECTIONS
-     ================================================================== */
+  /* ---------- sections ---------- */
   section{padding:88px 0}
-  .head{max-width:38rem;margin-bottom:44px}
-  .head h2{margin-bottom:14px}
-  .kicker{font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--accent-text);margin-bottom:14px}
+  .head{max-width:38rem;margin-bottom:var(--s8)}
+  .head h2{margin-bottom:var(--s3)}
+  .kicker{font-size:12px;font-weight:620;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent-2);margin-bottom:var(--s3)}
+  .alt{background:var(--panel);border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line)}
 
-  /* three acts */
-  .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s5)}
   @media (max-width:900px){.acts{grid-template-columns:1fr}}
   .act{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
-    padding:26px;transition:transform var(--m-base) var(--e-out),
-    box-shadow var(--m-base) var(--e-out),border-color var(--m-base) var(--e-out)}
-  .act:hover{transform:translateY(-4px);box-shadow:var(--sh-2);border-color:var(--accent-2)}
-  .act .n{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;
-    font-size:13px;font-weight:700;margin-bottom:16px;
-    background:linear-gradient(150deg,var(--fill-a),var(--fill-b));color:var(--on-fill)}
-  .act h3{font-size:18px;font-weight:680;margin-bottom:8px}
-  .act p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.62}
-  .act svg.mini{width:100%;height:96px;margin-top:18px;display:block;
-    border-radius:var(--r-xs);background:var(--sunk)}
+    padding:var(--s6);
+    transition:transform var(--t-in) var(--enter),box-shadow var(--t-in) var(--enter),
+               border-color var(--t-in) var(--enter)}
+  .act:hover{transform:translateY(-3px);box-shadow:var(--sh-2);
+    border-color:var(--accent-line)}
+  .act .n{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+    font-size:12px;font-weight:700;margin-bottom:var(--s4);
+    background:var(--accent);color:var(--accent-ink)}
+  .act h3{font-size:17px;font-weight:620;margin-bottom:6px}
+  .act p{margin:0;color:var(--fg-3);font-size:14px;line-height:1.6}
+  .act svg.mini{width:100%;height:92px;margin-top:var(--s4);display:block;
+    border-radius:var(--r-xs);background:var(--paper);border:1px solid var(--line)}
 
-  /* ==================================================================
-     CLAUDE
-     ================================================================== */
-  .claudeWrap{background:var(--claude-soft);
-    border-top:1px solid var(--claude-line);border-bottom:1px solid var(--claude-line)}
-  .cGrid{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center}
-  @media (max-width:900px){.cGrid{grid-template-columns:1fr;gap:34px}}
-  .cbadge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:680;
-    color:var(--claude-text);background:var(--panel);border:1px solid var(--claude-line);
-    padding:5px 13px;border-radius:100px;margin-bottom:18px}
-  .ccta{background:linear-gradient(160deg,var(--cfill-a),var(--cfill-b));
-    color:var(--on-fill);padding:12px 22px;border-radius:var(--r-sm);font-weight:650;
-    text-decoration:none;display:inline-block;
-    box-shadow:0 2px 6px rgba(200,106,58,.3),0 10px 26px rgba(200,106,58,.22);
-    transition:filter var(--m-fast) var(--e-out),transform var(--m-fast) var(--e-out),box-shadow var(--m-fast) var(--e-out)}
-  .ccta:hover{filter:brightness(1.06);transform:translateY(-2px);
-    box-shadow:0 4px 10px rgba(200,106,58,.32),0 16px 34px rgba(200,106,58,.28)}
+  /* ---------- Claude ---------- */
+  .claudeWrap{background:var(--panel);border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line)}
+  .cGrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);align-items:center}
+  @media (max-width:900px){.cGrid{grid-template-columns:1fr;gap:var(--s6)}}
+  .cbadge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:620;
+    color:var(--accent-2);background:var(--accent-wash);border:1px solid var(--accent-line);
+    padding:4px var(--s3);border-radius:100px;margin-bottom:var(--s4)}
+  .ccta{background:var(--accent);color:var(--accent-ink);padding:11px var(--s5);
+    border-radius:var(--r-sm);font-weight:600;text-decoration:none;display:inline-block;
+    box-shadow:0 2px 10px rgba(79,95,230,.3);
+    transition:background var(--t-out) var(--exit),transform var(--t-out) var(--exit),
+               box-shadow var(--t-out) var(--exit)}
+  .ccta:hover{background:var(--accent-2);transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(79,95,230,.4)}
   .ccta:active{transform:translateY(0) scale(.98)}
 
-  /* mood switcher */
-  .moodBox{background:var(--panel);border:1px solid var(--claude-line);
-    border-radius:var(--r);padding:14px;box-shadow:var(--sh-2)}
-  .moodPlan{border-radius:var(--r-xs);overflow:hidden;background:var(--sunk);
+  .moodBox{background:var(--raised);border:1px solid var(--line-2);
+    border-radius:var(--r);padding:var(--s3);box-shadow:var(--sh-2)}
+  .moodPlan{border-radius:var(--r-xs);overflow:hidden;background:var(--paper);
     aspect-ratio:420/260}
   .moodPlan svg{display:block;width:100%;height:100%}
-  .moods{display:flex;gap:7px;margin-top:13px;flex-wrap:wrap}
-  .mood{flex:1;min-width:96px;min-height:40px;border:1px solid var(--line);
-    background:var(--panel);color:var(--ink-2);border-radius:100px;
-    padding:9px 14px;font:inherit;font-size:13px;font-weight:560;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;gap:8px;
-    transition:background var(--m-fast) var(--e-out),border-color var(--m-fast) var(--e-out),color var(--m-fast) var(--e-out),transform var(--m-fast) var(--e-out),box-shadow var(--m-fast) var(--e-out)}
-  .mood:hover{border-color:var(--claude-line);transform:translateY(-1px)}
+  .moods{display:flex;gap:6px;margin-top:var(--s3);flex-wrap:wrap}
+  .mood{flex:1;min-width:92px;min-height:38px;border:1px solid var(--line-2);
+    background:var(--panel);color:var(--fg-3);border-radius:100px;
+    padding:8px var(--s3);font:inherit;font-size:12.5px;font-weight:520;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    transition:background var(--t-out) var(--exit),color var(--t-out) var(--exit),
+               border-color var(--t-out) var(--exit),transform var(--t-out) var(--exit)}
+  .mood:hover{border-color:var(--line-3);color:var(--fg);transform:translateY(-1px)}
   .mood:active{transform:translateY(0) scale(.97)}
-  .mood .dot{width:9px;height:9px;border-radius:50%;flex:none;
-    transition:background var(--m-base) var(--e-out)}
-  .mood[aria-pressed="true"]{border-color:transparent;color:var(--on-fill);font-weight:660;
-    background:linear-gradient(180deg,var(--cfill-a),var(--cfill-b));
-    box-shadow:0 2px 10px rgba(200,106,58,.3)}
-  .moodNote{font-size:12.5px;color:var(--muted);margin:11px 2px 2px;min-height:1.5em}
-  /* the pools crossfade between moods - colour and opacity only */
-  #moodPlan .pool{transition:fill var(--m-base) var(--e-out),
-                             opacity var(--m-base) var(--e-out);
-                  mix-blend-mode:multiply}
-  :root[data-theme="dark"] #moodPlan .pool{mix-blend-mode:screen}
+  .mood .dot{width:8px;height:8px;border-radius:50%;flex:none;
+    transition:background var(--t-in) var(--enter)}
+  .mood[aria-pressed="true"]{border-color:transparent;color:var(--accent-ink);
+    font-weight:620;background:var(--accent);box-shadow:0 2px 10px rgba(79,95,230,.3)}
+  .moodNote{font-size:12px;color:var(--fg-3);margin:var(--s3) 2px 2px;min-height:1.5em}
+  #moodPlan .pool{transition:fill var(--t-in) var(--enter),opacity var(--t-in) var(--enter);
+    mix-blend-mode:multiply}
 
-  /* chat sample */
-  .chat{background:var(--panel);border:1px solid var(--claude-line);
-    border-radius:var(--r);padding:16px;box-shadow:var(--sh-2);
-    font-size:13.5px;line-height:1.55;margin-top:18px}
-  .msg{display:flex;gap:10px;margin-bottom:11px}
+  .chat{background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);
+    padding:var(--s4);font-size:13px;line-height:1.55;margin-top:var(--s5)}
+  .msg{display:flex;gap:var(--s2);margin-bottom:var(--s2)}
   .msg:last-child{margin-bottom:0}
-  .av{width:26px;height:26px;border-radius:8px;flex:none;display:grid;place-items:center;
+  .av{width:24px;height:24px;border-radius:7px;flex:none;display:grid;place-items:center;
     font-size:11px;font-style:normal;font-weight:700}
-  .av.u{background:var(--ink-2);color:var(--bg)}
-  .av.c{color:var(--on-fill)}
-  .av.c{background:linear-gradient(150deg,var(--cfill-a),var(--cfill-b))}
-  .bub{background:var(--soft);border-radius:10px;padding:9px 12px;color:var(--ink-2)}
-  .msg.c .bub{background:var(--claude-soft);border:1px solid var(--claude-line)}
-  .bub code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--claude-text)}
+  .av.u{background:var(--line-3);color:var(--fg)}
+  .av.c{background:var(--accent);color:var(--accent-ink)}
+  .bub{background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    padding:8px var(--s3);color:var(--fg-2)}
+  .msg.c .bub{background:var(--accent-wash);border-color:var(--accent-line)}
+  .bub code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--accent-2)}
+  .bub b{color:var(--fg)}
 
-  /* ==================================================================
-     CHECKS
-     ================================================================== */
-  .checkGrid{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center}
-  @media (max-width:900px){.checkGrid{grid-template-columns:1fr;gap:32px}}
-  .panelDemo{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  /* ---------- checks ---------- */
+  .checkGrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);align-items:center}
+  @media (max-width:900px){.checkGrid{grid-template-columns:1fr;gap:var(--s6)}}
+  .panelDemo{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);
     overflow:hidden;box-shadow:var(--sh-2)}
-  .panelDemo .bar{display:flex;align-items:center;gap:9px;padding:12px 15px;
-    border-bottom:1px solid var(--line);font-size:11px;font-weight:700;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  .panelDemo .cnt{background:var(--warn);color:var(--on-fill);border-radius:100px;
-    padding:1px 8px;font-size:10px;letter-spacing:0}
-  .panelDemo .list{padding:10px}
-  .wrow{background:var(--warn-soft);border:1px solid var(--warn-line);color:var(--warn);
-    border-radius:var(--r-xs);padding:9px 12px;font-size:12.5px;margin-bottom:7px;
-    line-height:1.5;transition:transform var(--m-fast) var(--e-out)}
+  .panelDemo .bar{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);
+    border-bottom:1px solid var(--line);font-size:11px;font-weight:620;
+    letter-spacing:.07em;text-transform:uppercase;color:var(--fg-3)}
+  .panelDemo .cnt{background:var(--warn);color:var(--app);border-radius:100px;
+    padding:1px 7px;font-size:10px;letter-spacing:0;font-weight:700}
+  .panelDemo .list{padding:var(--s2)}
+  .wrow{background:var(--warn-wash);border:1px solid var(--warn-line);color:var(--warn);
+    border-radius:var(--r-xs);padding:8px var(--s3);font-size:12px;margin-bottom:6px;
+    line-height:1.5;transition:transform var(--t-out) var(--exit)}
   .wrow:last-child{margin-bottom:0}
   .wrow:hover{transform:translateX(3px)}
-  .wrow b{font-weight:680}
-  .checkList{list-style:none;padding:0;margin:22px 0 0}
-  .checkList li{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);
-    color:var(--muted);font-size:15px}
-  .checkList li svg{width:17px;height:17px;flex:none;color:var(--accent-text);margin-top:4px}
-  .checkList b{color:var(--ink);font-weight:620}
+  .wrow b{font-weight:620}
+  .checkList{list-style:none;padding:0;margin:var(--s5) 0 0}
+  .checkList li{display:flex;gap:var(--s3);padding:var(--s3) 0;
+    border-top:1px solid var(--line);color:var(--fg-3);font-size:14.5px}
+  .checkList li svg{width:16px;height:16px;flex:none;color:var(--accent-2);margin-top:4px;
+    stroke-width:1.8}
+  .checkList b{color:var(--fg);font-weight:600}
 
-  /* ==================================================================
-     FEATURES / FAQ / FOOTER
-     ================================================================== */
-  .feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:26px}
-  .feat h3{display:flex;align-items:center;gap:11px;font-size:16.5px;font-weight:660;
-    margin-bottom:7px}
-  .feat .ic{width:30px;height:30px;border-radius:9px;background:var(--soft);
-    display:grid;place-items:center;color:var(--accent-text);flex:none;
-    transition:transform var(--m-base) var(--e-spring)}
-  .feat:hover .ic{transform:scale(1.12) rotate(-6deg)}
-  .feat .ic svg{width:16px;height:16px;display:block}
-  .feat p{margin:0;color:var(--muted);font-size:14.5px}
+  /* ---------- features / faq / footer ---------- */
+  .feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--s6)}
+  .feat h3{display:flex;align-items:center;gap:var(--s3);font-size:16px;font-weight:620;
+    margin-bottom:6px}
+  .feat .ic{width:30px;height:30px;border-radius:8px;background:var(--raised);
+    border:1px solid var(--line);display:grid;place-items:center;color:var(--accent-2);
+    flex:none;transition:transform var(--t-in) var(--spring),
+    border-color var(--t-in) var(--enter)}
+  .feat:hover .ic{transform:scale(1.1) rotate(-6deg);border-color:var(--accent-line)}
+  .feat .ic svg{width:15px;height:15px;display:block;stroke-width:1.5}
+  .feat p{margin:0;color:var(--fg-3);font-size:14px}
 
-  .alt{background:var(--soft);border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line)}
-  .faq details{border-bottom:1px solid var(--line);padding:17px 0}
-  .faq summary{cursor:pointer;font-weight:620;list-style:none;display:flex;
-    justify-content:space-between;gap:16px;align-items:center;
-    transition:color var(--m-fast)}
-  .faq summary:hover{color:var(--accent-text)}
+  .faq details{border-bottom:1px solid var(--line);padding:var(--s4) 0}
+  .faq summary{cursor:pointer;font-weight:560;list-style:none;display:flex;
+    justify-content:space-between;gap:var(--s4);align-items:center;color:var(--fg);
+    transition:color var(--t-out) var(--exit)}
+  .faq summary:hover{color:var(--accent-2)}
   .faq summary::-webkit-details-marker{display:none}
-  .faq summary::after{content:"";width:9px;height:9px;flex:none;
-    border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);
+  .faq summary::after{content:"";width:8px;height:8px;flex:none;
+    border-right:2px solid var(--fg-4);border-bottom:2px solid var(--fg-4);
     transform:rotate(45deg) translate(-2px,-2px);
-    transition:transform var(--m-base) var(--e-out)}
+    transition:transform var(--t-in) var(--enter)}
   .faq details[open] summary::after{transform:rotate(-135deg) translate(-3px,-3px)}
-  .faq p{color:var(--muted);margin:12px 0 0;font-size:15px;max-width:52rem}
+  .faq p{color:var(--fg-3);margin:var(--s3) 0 0;font-size:14.5px;max-width:52rem}
 
   .final{text-align:center;padding:96px 0}
-  .final h2{margin-bottom:14px}
-  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:14px}
-  footer .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
-  footer a{color:var(--muted);text-decoration:none;transition:color var(--m-fast);
-    padding:7px 2px;display:inline-block}   /* 23px tall was a mean target */
-  footer a:hover{color:var(--ink)}
+  .final h2{margin-bottom:var(--s3)}
+  footer{border-top:1px solid var(--line);padding:var(--s8) 0;color:var(--fg-3);
+    font-size:13.5px}
+  footer .wrap{display:flex;gap:var(--s5);flex-wrap:wrap;align-items:center}
+  footer a{color:var(--fg-3);text-decoration:none;padding:6px 2px;display:inline-block;
+    transition:color var(--t-out) var(--exit)}
+  footer a:hover{color:var(--fg)}
   footer .sp{flex:1}
   @media (max-width:700px){
     nav a:not(.cta){display:none}
-    .hero{padding:48px 0 12px}
+    .hero{padding:48px 0 var(--s3)}
     section{padding:64px 0}
   }
 </style>
@@ -348,7 +321,7 @@
     <a href="#claude">Furnish with Claude</a>
     <a href="#checks">What won't fit</a>
     <a href="#faq">Questions</a>
-    <a class="cta" href="app.html?v=2026-08-30.1326">Open the planner</a>
+    <a class="cta" href="app.html?v=2026-08-30.1340">Open the planner</a>
     <button class="themeBtn" id="themeBtn" title="Switch theme" aria-label="Switch theme">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
            stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/>
@@ -363,7 +336,7 @@
   <p class="sub">Draw your home to scale, move real furniture around it, and walk into the
      shop with every size in centimetres. Free, and it runs entirely in your browser.</p>
   <div class="btns">
-    <a class="cta" href="app.html?v=2026-08-30.1326">Open the planner</a>
+    <a class="cta" href="app.html?v=2026-08-30.1340">Open the planner</a>
     <a class="ghost" href="#how">See how it works</a>
   </div>
   <p class="note">No sign-up. Nothing uploaded. Your plans stay on your own computer.</p>
@@ -520,7 +493,7 @@
         where, at what colour temperature, wired into circuits with their switches
         &mdash; then writes you moods to switch between. It cannot invent a sofa that
         does not exist, and anything it gets wrong is reported rather than placed.</p>
-      <a class="ccta" href="app.html?v=2026-08-30.1326">Try it &mdash; it's free</a>
+      <a class="ccta" href="app.html?v=2026-08-30.1340">Try it &mdash; it's free</a>
       <div class="chat">
         <div class="msg"><i class="av u">T</i><div class="bub">
           Couple with a baby, both work from home.</div></div>
@@ -701,14 +674,14 @@
   <h2>Ready to see what fits?</h2>
   <p class="lede" style="margin:14px auto 28px">Open it and draw your first room.
      Nothing to install, nothing to sign up for.</p>
-  <a class="cta" href="app.html?v=2026-08-30.1326">Open the planner</a>
+  <a class="cta" href="app.html?v=2026-08-30.1340">Open the planner</a>
 </div>
 
 <footer><div class="wrap">
   <span>&copy; <span id="yr">2026</span> Floor Plan Studio</span>
   <span class="sp"></span>
   <a href="privacy.html">Privacy</a>
-  <a href="app.html?v=2026-08-30.1326">Open the planner</a>
+  <a href="app.html?v=2026-08-30.1340">Open the planner</a>
 </div></footer>
 
 <script>
@@ -720,10 +693,10 @@ const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const TK="fp-theme";
 const setTheme=t=>{ document.documentElement.setAttribute("data-theme",t);
   try{ localStorage.setItem(TK,t); }catch(e){} };
-try{
-  const saved=localStorage.getItem(TK);
-  setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));
-}catch(e){ setTheme("light"); }
+/* Dark is this product's default, on the site as in the editor. Light stays
+   a deliberate choice, and is remembered once made. */
+try{ setTheme(localStorage.getItem(TK)==="light" ? "light" : "dark"); }
+catch(e){ setTheme("dark"); }
 document.getElementById("themeBtn").onclick=()=>setTheme(
   document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
 
@@ -743,6 +716,18 @@ if(plan && !reduced){
   [...document.querySelectorAll("#furnLayer>*")].forEach((el,i)=>
     el.style.animationDelay=(2.1+i*0.04)+"s");
   requestAnimationFrame(()=>plan.classList.add("play"));
+  /* Those keyframes use fill:both with delays, so before each one starts its
+     element sits at the from-state - invisible. In a tab that is backgrounded
+     on load no frames run, the sequence never starts, and the plan would stay
+     blank. Dropping .play returns every element to its natural, drawn state. */
+  setTimeout(()=>{ if(document.getAnimations().some(a=>a.playState==="running"
+      && a.effect?.target?.closest?.("#plan"))) return;
+    plan.classList.remove("play"); }, 7000);
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible") setTimeout(()=>{
+      const live=document.getAnimations().some(a=>a.playState==="running");
+      if(!live) plan.classList.remove("play"); },200);
+  },{once:true});
   // the dimension counts up as its line draws
   const dt=document.getElementById("dimText");
   setTimeout(()=>{
