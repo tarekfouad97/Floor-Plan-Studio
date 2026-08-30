@@ -421,6 +421,42 @@
   .scn .dot{width:8px;height:8px;border-radius:50%;flex:none}
   .scn.on{border-color:transparent;color:var(--accent-ink);font-weight:580;
        background:var(--accent);box-shadow:0 2px 8px rgba(91,108,240,.28)}
+  .floors{display:flex;flex-direction:column;gap:2px;padding:var(--s2) var(--s3) var(--s1)}
+  .flr{display:flex;align-items:center;gap:var(--s2);width:100%;text-align:left;
+       border:1px solid transparent;background:none;color:var(--fg-2);cursor:pointer;
+       border-radius:var(--r-sm);padding:6px var(--s2);font-size:12.5px;
+       transition:background var(--t-out) var(--exit),color var(--t-out) var(--exit)}
+  .flr:hover{background:var(--raised);color:var(--fg)}
+  .flr.on{background:var(--accent-wash);border-color:var(--accent-line);color:var(--fg);
+       font-weight:650}
+  .flr.on .lvl{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .flr.on .ct{color:var(--fg-3)}
+  .flr .lvl{flex:none;min-width:22px;height:20px;border-radius:var(--r-xs);
+       display:grid;place-items:center;font-size:10px;font-weight:700;
+       background:var(--sunk);border:1px solid var(--line-2);color:var(--fg-3);
+       font-variant-numeric:tabular-nums}
+  .flr .nm2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .flr .ct{flex:none;font-size:10.5px;color:var(--fg-4);font-variant-numeric:tabular-nums}
+  .floorAdd{margin:0 var(--s3) var(--s3);width:calc(100% - var(--s3)*2)}
+  .airow{display:flex;gap:9px;align-items:flex-start;margin:2px 0 10px;
+       font-size:12px;color:var(--fg-3);line-height:1.5;cursor:pointer}
+  .airow input{margin-top:2px;flex:none}
+  .airow b{color:var(--fg)}
+  /* scheme switcher: floats over the plan so you can actually see each one */
+  #varbar{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+       z-index:12;display:none;gap:var(--s2);align-items:center;flex-wrap:wrap;
+       max-width:min(92%,860px);justify-content:center;
+       background:var(--panel);border:1px solid var(--line-3);border-radius:100px;
+       padding:var(--s2) var(--s3);box-shadow:var(--sh-4)}
+  #varbar.on{display:flex}
+  #varbar .vlbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--fg-3);font-weight:700;padding-right:var(--s1)}
+  .vchip{border:1px solid var(--line-2);background:var(--raised);color:var(--fg-2);
+       border-radius:100px;padding:5px var(--s3);font-size:12px;cursor:pointer;
+       white-space:nowrap;transition:background var(--t-out) var(--exit)}
+  .vchip:hover{color:var(--fg)}
+  .vchip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+  #varbar .vsep{width:1px;height:18px;background:var(--line-2);flex:none}
   .scnNote{padding:0 var(--s3) var(--s2);font-size:11.5px;color:var(--fg-3);line-height:1.5}
 
   /* ==================================================================
@@ -429,7 +465,6 @@
   .menu,#ctx{position:fixed;z-index:80;min-width:210px;max-width:300px;
        background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);
        box-shadow:var(--sh-4);padding:var(--s1);display:none;transform-origin:top left}
-  #ctx{position:absolute}
   .menu.open,#ctx[style*="block"]{animation:menuIn 180ms var(--enter)}
   @keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}
                     to{opacity:1;transform:none}}
@@ -553,9 +588,9 @@
   .btn.spark{background:var(--signal);color:var(--signal-ink);border-color:var(--fg);
        box-shadow:0 3px 0 var(--fg)}
   .btn.spark:hover{background:#b7ee2c;color:var(--signal-ink);border-color:var(--fg);box-shadow:0 4px 0 var(--fg)}
-  .btn.on,.tool.on,.scn.on{background:var(--signal)!important;color:var(--signal-ink)!important;
+  .btn.on,.tool.on,.scn.on,.flr.on{background:var(--signal)!important;color:var(--signal-ink)!important;
        border-color:var(--fg)!important;box-shadow:0 2px 0 var(--fg)!important}
-  .tool,.grp>summary,.it,.lay,.scn{font-family:var(--display)}
+  .tool,.grp>summary,.it,.lay,.scn,.flr{font-family:var(--display)}
   .hd{font-family:var(--display);color:var(--fg);letter-spacing:.08em}
   aside{background:var(--panel)}
   #stage{background:var(--paper);background-image:radial-gradient(rgba(22,32,49,.11) .65px,transparent .65px);background-size:14px 14px}
@@ -594,10 +629,7 @@
     body{overflow:visible;background:#fff;color:#000}
     #app{display:block;height:auto}
     #bar,#left,#right,#status,#numchip,#toast,#v3ctl,#hint3,#warnbar,
-    #cv3,.rail,.menu,#ctx,#measure,#empty{display:none!important}
-    svg#cv{visibility:visible!important}
-    #stage{overflow:visible;height:auto;background:#fff}
-    svg#cv{width:100%;height:172mm}
+    #cv3,.rail,.menu,#ctx,#measure,#empty,#stage{display:none!important}
     #print{display:block}
     #print section{break-before:page;padding-top:5mm}
     #pTitle{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;
@@ -605,13 +637,32 @@
             font-size:9pt}
     #pTitle .t{font-size:12pt;font-weight:700}
     #pTitle .m{color:#555}
-    svg#cv{margin-top:8mm}
     #print h2{font-size:12pt;margin:0 0 3mm}
     #print table{width:100%;border-collapse:collapse;font-size:9pt}
     #print th,#print td{border:1px solid #999;padding:1.8mm 2.4mm;text-align:left;
                         color:#000}
     #print td.n{text-align:right}
     #print,#print *{color:#000}
+    /* the illustrated shopping list */
+    #print .shFloor{font-size:11pt;margin:6mm 0 2mm;padding-bottom:1mm;
+                    border-bottom:1.5pt solid #000;break-after:avoid}
+    #print .shRoom{break-inside:avoid;margin-bottom:4mm}
+    #print .shRoom h4{font-size:9.5pt;margin:0 0 1.5mm;text-transform:uppercase;
+                      letter-spacing:.08em;break-after:avoid}
+    #print table.sh{table-layout:fixed}
+    #print table.sh td{vertical-align:middle}
+    #print tr.shSub td{background:#eee;font-weight:700;font-size:8pt;
+                       text-transform:uppercase;letter-spacing:.07em;padding:1mm 2.4mm}
+    #print td.shPic{width:13mm;text-align:center;padding:1mm}
+    #print td.shPic svg{width:11mm;height:11mm;color:#000}
+    #print td.shName small{display:block;color:#555;font-size:7.5pt;margin-top:.4mm}
+    #print .shTotal{margin-top:3mm;font-weight:700;font-size:9.5pt;text-align:right}
+    /* one plan page per floor */
+    #planPages{display:block}
+    #planPages .pf{padding-top:8mm}
+    #planPages .pf + .pf{break-before:page}
+    #planPages .pf h2{font-size:12pt;margin:0 0 2mm}
+    #planPages .pf svg{width:100%;height:165mm}
   }
 </style>
 </head>
@@ -654,6 +705,7 @@
     <button class="mi" id="bProjects" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>My designs&#8230;</button>
     <div class="msep"></div>
     <div class="mlbl">Share a copy</div>
+    <button class="mi" id="bCsv" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>Shopping list as CSV</button>
     <button class="mi" id="bPng" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Export a PNG image</button>
     <button class="mi" id="bExport" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export plan data</button>
     <button class="mi" id="bImport" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>Import plan data&#8230;</button>
@@ -671,6 +723,10 @@
   <div id="warnbar"></div>
 
   <aside id="left"><div class="pcontent">
+    <div class="sec" data-sec="floors">
+      <button class="hd">Floors<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="secbody"><div class="secinner"><div id="floorList"></div></div></div>
+    </div>
     <div class="sec" data-sec="tools">
       <button class="hd">Tools<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="secbody"><div class="secinner"><div id="tools"></div></div></div>
@@ -731,11 +787,12 @@
     <div id="measure" aria-live="polite"></div>
     <div id="numchip"></div>
     <div id="toast"></div>
-    <div id="ctx"></div>
+    <div id="varbar" role="group" aria-label="Layout schemes"></div>
     <button class="rail" id="railL" title="Hide the tool panel ([)" aria-label="Toggle tool panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <button class="rail" id="railR" title="Hide the properties panel (])" aria-label="Toggle properties panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 
+  <div id="ctx"></div>
   <aside id="right"><div class="pcontent">
     <div class="sec" data-sec="props">
       <button class="hd">Properties<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -776,12 +833,13 @@
     <span style="opacity:.7">[ ] fold panels</span>
     <span class="sep" style="height:12px"></span>
     <span id="stBuild" title="Which build is loaded. If this is older than you expect, hard-reload: Cmd/Ctrl + Shift + R."
-          style="opacity:.55;cursor:default">build 2026-08-30.1739</span>
+          style="opacity:.55;cursor:default">build 2026-08-30.2155</span>
   </div>
 </div>
 
 <div id="print">
   <div id="pTitle"></div>
+  <div id="planPages"></div>
   <section><h2>Room schedule</h2><div id="pRooms"></div></section>
   <section><h2>Shopping list — sizes in centimetres</h2><div id="pBom"></div></section>
   <section><h2>Electrical schedule</h2><div id="pElec"></div></section>
@@ -868,6 +926,15 @@
         <input id="aiBrief" type="text" placeholder="e.g. couple with a baby, both work from home">
       </div>
       <div class="row"><label>Rooms</label><select id="aiRooms"></select></div>
+      <div class="row"><label>Schemes</label><select id="aiVariants">
+        <option value="1">one layout</option>
+        <option value="3">3 to choose from</option>
+        <option value="5" selected>5 to choose from</option>
+      </select></div>
+      <label class="airow"><input type="checkbox" id="aiBare" checked>
+        <span><b>Start from bare walls.</b> Send only the rooms, doors and windows,
+        leaving out whatever is already placed, so Claude designs the room from
+        scratch instead of working around the current layout.</span></label>
       <textarea id="aiPrompt" class="ta" rows="13" readonly></textarea>
       <div class="row2" style="margin-top:12px;align-items:center">
         <button class="btn spark" id="aiCopy"><span class="sp-star">&#10022;</span>Copy the prompt</button>
@@ -966,7 +1033,9 @@ const CATALOG = [
   ["hall","Hall mirror",60,10],["hall","Storage cabinet",100,45],["hall","Split A/C unit",90,25],
   ["hall","Water tank",80,80,"circle"],["hall","Plant large",50,50,"circle"],
   ["hall","Plant small",35,35,"circle"],["hall","Spare fridge",70,70],["hall","Ironing board",130,40],
-  ["hall","Vacuum store",40,40],["hall","Safe",50,45],["hall","Suitcase store",70,45]
+  ["hall","Vacuum store",40,40],["hall","Safe",50,45],["hall","Suitcase store",70,45],
+  ["hall","Stairs up",100,250],["hall","Stairs down",100,250],
+  ["hall","Spiral stairs",160,160,"circle"]
 ].map((a,i)=>({id:"c"+i,cat:a[0],name:a[1],w:a[2],d:a[3],shape:a[4]||"rect",
                 color:CATS.find(c=>c.key===a[0]).color}));
 
@@ -1061,13 +1130,51 @@ const ROOMKINDS={indoor:{label:"Indoor",fill:"#ffffff"},
                  balcony:{label:"Balcony",fill:"#eef4ea"},
                  outdoor:{label:"Outdoor",fill:"#f1f3f5"},
                  wet:{label:"Wet room",fill:"#eaf2f7"}};
-function blankDoc(name){
-  return { version:3, name:name||"Untitled", nextId:1,
-           underlay:{src:null,x:0,y:0,cmPerPx:1,opacity:.45,locked:true,visible:true,w:0,h:0},
+const BLANK_UNDERLAY=()=>({src:null,x:0,y:0,cmPerPx:1,opacity:.45,locked:true,
+                           visible:true,w:0,h:0});
+/* ---- floors ---------------------------------------------------------
+   Everything a storey owns. circuits and scenes are deliberately NOT here:
+   a circuit runs up the building, and one "Evening" mood should dim every
+   floor rather than only the one you happen to be looking at. */
+const FLOORKEYS=["walls","openings","rooms","items","texts","dims","notes",
+                 "elec","underlay"];
+function blankFloor(id,name,elev){
+  return { id, name:name||"Ground floor", elev:elev||0,
            walls:[], openings:[], rooms:[], items:[], texts:[], dims:[], notes:[],
-           elec:[], circuits:[], scenes:[] };
+           elec:[], underlay:BLANK_UNDERLAY() };
+}
+function blankDoc(name){
+  const d={ version:4, name:name||"Untitled", nextId:1,
+            floors:[], active:null, circuits:[], scenes:[] };
+  const f=blankFloor("f"+(d.nextId++));
+  d.floors.push(f); d.active=f.id;
+  for(const k of FLOORKEYS) d[k]=f[k];
+  return d;
 }
 let DOC = blankDoc();
+
+/* The 186 places that read DOC.walls / DOC.rooms / DOC.items keep working
+   untouched: those arrays ARE the active floor's arrays, shared by reference.
+   Switching floors re-points them. The one rule this buys is that anything
+   which SERIALISES the document must go through docJSON(), which drops the
+   live keys - otherwise every floor is written twice and the sharing is lost
+   the moment the file is parsed back. */
+const activeFloor=()=>DOC.floors.find(f=>f.id===DOC.active)||DOC.floors[0];
+function syncFloor(){ const f=activeFloor(); if(f) for(const k of FLOORKEYS) f[k]=DOC[k]; }
+function bindFloor(){ const f=activeFloor(); if(!f) return;
+  DOC.active=f.id; for(const k of FLOORKEYS) DOC[k]=f[k]; }
+function docJSON(indent){
+  syncFloor();
+  const {walls,openings,rooms,items,texts,dims,notes,elec,underlay,...rest}=DOC;
+  return JSON.stringify(rest,null,indent||0);
+}
+function loadFloor(id){
+  if(!DOC.floors.some(f=>f.id===id)||id===DOC.active) return;
+  syncFloor(); DOC.active=id; bindFloor();
+  /* An in-progress wall chain or drag belongs to the floor you just left. */
+  S.sel=[]; S.draw=null; S.drag=null; S.marquee=null; S.numBuf=""; S.angBuf=null;
+  rebase(); autosave(); fit(); refreshAll();
+}
 const nid = p => p + (DOC.nextId++);
 
 const S = {
@@ -1186,10 +1293,11 @@ function itemBox(it){
   return{x:it.x-w/2,y:it.y-h/2,w,h};
 }
 const boxOverlap=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
-function roomAt(x,y){
-  for(let i=DOC.rooms.length-1;i>=0;i--) if(ptInPoly(x,y,DOC.rooms[i].poly)) return DOC.rooms[i];
+function roomAtIn(rooms,x,y){
+  for(let i=(rooms||[]).length-1;i>=0;i--) if(ptInPoly(x,y,rooms[i].poly)) return rooms[i];
   return null;
 }
+function roomAt(x,y){ return roomAtIn(DOC.rooms,x,y); }
 function docBBox(){
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,any=false;
   const add=(x,y)=>{any=true;x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
@@ -1206,22 +1314,22 @@ function docBBox(){
 /* =====================================================================
    3. HISTORY + STORAGE
    ===================================================================== */
-function snapshot(){ return JSON.stringify(DOC); }
+function snapshot(){ return docJSON(); }
 
 /* Undo must store the state BEFORE a change. `baseline` holds the last
    committed state; commit() pushes that, then re-baselines. Snapshotting
    after the mutation - the obvious mistake - makes undo a no-op. */
-let baseline=JSON.stringify(DOC);
+let baseline=docJSON();
 function rebase(){ baseline=snapshot(); }
 function commit(){
   S.undo.push(baseline); if(S.undo.length>120) S.undo.shift();
   rebase(); S.redo.length=0; autosave(); refreshAll();
 }
 function undo(){ if(!S.undo.length) return;
-  S.redo.push(snapshot()); DOC=JSON.parse(S.undo.pop());
+  S.redo.push(snapshot()); DOC=JSON.parse(S.undo.pop()); normalizeDoc();
   rebase(); S.sel=[]; autosave(); refreshAll(); }
 function redo(){ if(!S.redo.length) return;
-  S.undo.push(snapshot()); DOC=JSON.parse(S.redo.pop());
+  S.undo.push(snapshot()); DOC=JSON.parse(S.redo.pop()); normalizeDoc();
   rebase(); S.sel=[]; autosave(); refreshAll(); }
 
 const IDX="fp-projects", DK=id=>"fp-doc-"+id, LAST="fp-last";
@@ -1235,7 +1343,7 @@ function autosave(){
   saveT=setTimeout(()=>{
     try{
       if(!S.projectId){ S.projectId="p"+Date.now(); }
-      localStorage.setItem(DK(S.projectId),JSON.stringify(DOC));
+      localStorage.setItem(DK(S.projectId),docJSON());
       localStorage.setItem(LAST,S.projectId);
       const l=projects(), e=l.find(p=>p.id===S.projectId);
       if(e){ e.name=DOC.name; e.updated=Date.now(); }
@@ -1355,6 +1463,7 @@ function symKey(name){
   if(/plant/.test(n))                      return "plant";
   if(/base unit|pantry|island|breakfast|corner base/.test(n)) return "cabinet";
   if(/piano/.test(n))                      return "piano";
+  if(/stair/.test(n))                      return "stair";
   return null;
 }
 function drawSym(g,key,w,d,col,shape){
@@ -1397,6 +1506,19 @@ function drawSym(g,key,w,d,col,shape){
       break;
     case "piano": R(-hw+4,-hd+4,w-8,d*.45,2);
       for(let i=1;i<8;i++) L(-hw+4+(w-8)*i/8,-hd+4,-hw+4+(w-8)*i/8,-hd+4+d*.45); break;
+    case "stair": {
+      if(shape==="circle"){                       // spiral: treads about a newel
+        const r=min/2-2;
+        for(let i=0;i<12;i++){ const a=i*Math.PI/6;
+          L(Math.cos(a)*r*.22,Math.sin(a)*r*.22,Math.cos(a)*r,Math.sin(a)*r); }
+        C(0,0,r*.2); break;
+      }
+      const n=Math.max(3,Math.round(d/28));       // ~28 cm going per tread
+      for(let i=1;i<n;i++) L(-hw,-hd+d*i/n,hw,-hd+d*i/n);
+      /* The arrow points the way the flight climbs, so a plan read upside
+         down still says which end is the top. */
+      L(0,hd-6,0,-hd+6); L(0,-hd+6,-5,-hd+13); L(0,-hd+6,5,-hd+13);
+      break; }
     case "wardrobe": {
       const n=Math.max(2,Math.round(w/50));
       for(let i=1;i<n;i++) L(-hw+w*i/n,-hd,-hw+w*i/n,hd);
@@ -2288,7 +2410,7 @@ cv.addEventListener("pointermove",e=>{
     const dx=raw.x-S.drag.ox, dy=raw.y-S.drag.oy;
     if(!S.drag.moved&&Math.hypot(dx,dy)<1.5) return;
     S.drag.moved=true;
-    DOC=JSON.parse(S.drag.base);
+    DOC=JSON.parse(S.drag.base); bindFloor();
     const g=S.snap||1;
     const gx=Math.round(dx/g)*g, gy=Math.round(dy/g)*g;
     for(const s of S.sel){
@@ -2378,12 +2500,14 @@ function showCtx(clientX,clientY,rows){
     else d.onclick=()=>{ hideCtx(); r.act(); };
     c.appendChild(d);
   }
-  const rect=stage.getBoundingClientRect();
+  /* Viewport coordinates: this menu is opened from the canvas AND from the
+     floor list in the side panel, so it cannot be positioned against #stage. */
+  c.style.left="0px"; c.style.top="0px";
   c.style.display="block";
-  const w=c.offsetWidth, h=c.offsetHeight;
-  let x=clientX-rect.left, y=clientY-rect.top;
-  if(x+w>rect.width)  x=Math.max(0,x-w);
-  if(y+h>rect.height) y=Math.max(0,y-h);
+  const w=c.offsetWidth, h=c.offsetHeight, M=6;
+  let x=clientX, y=clientY;
+  if(x+w>innerWidth-M)  x=Math.max(M, clientX-w);
+  if(y+h>innerHeight-M) y=Math.max(M, innerHeight-h-M);
   c.style.left=x+"px"; c.style.top=y+"px";
 }
 cv.addEventListener("contextmenu",e=>{
@@ -2699,6 +2823,12 @@ function showProps(){
       </select></div>
       ${fld("X","iX",Math.round(o.x),"cm")}${fld("Y","iY",Math.round(o.y),"cm")}
       <div class="row"><label>Room</label><input type="text" value="${esc(rm?rm.name:"— none —")}" disabled></div>
+      ${/stair/i.test(o.name)?`<div class="row"><label>Leads to</label><select id="iL">
+        <option value="">— not linked —</option>
+        ${DOC.floors.filter(f=>f.id!==DOC.active).map(f=>
+          `<option value="${esc(f.name)}" ${f.name===o.linkFloor?"selected":""}>${esc(f.name)}</option>`
+        ).join("")}
+      </select></div>`:""}
       <div class="row"><label>Note</label><input id="iN" type="text" value="${esc(o.note)}" placeholder="colour, shop…"></div>
       <div class="row"><label>Price</label><input id="iP" type="text" value="${esc(o.price)}"></div>
       <div class="row2"><button class="btn" id="pRot">Rotate</button>
@@ -2708,8 +2838,12 @@ function showProps(){
         <button class="btn" id="pDel">Delete</button></div></div>`;
     const up=()=>{o.w=+$("iW").value||o.w;o.d=+$("iD").value||o.d;o.rot=+$("iR").value;
       o.x=+$("iX").value;o.y=+$("iY").value;o.note=$("iN").value;o.price=$("iP").value;
+      /* Which floor this flight arrives on. The Claude brief passes it along
+         so the landing is kept clear at both ends. */
+      if($("iL")) o.linkFloor=$("iL").value||"";
       render();refreshBom();};
-    ["iW","iD","iR","iX","iY","iN","iP"].forEach(id=>{
+    ["iW","iD","iR","iX","iY","iN","iP","iL"].forEach(id=>{
+      if(!$(id)) return;
       $(id).oninput=up; $(id).onchange=()=>{up();commit();}; });
     $("pRot").onclick=rotSel; $("pDup").onclick=dupSel; $("pDel").onclick=delSel;
     $("pFX").onclick=()=>{o.fx=!o.fx;commit();};
@@ -2811,10 +2945,18 @@ function refreshLayers(){
   }
 }
 function refreshTitle(){
-  const area=DOC.rooms.reduce((s,r)=>s+polyArea(r.poly),0)/10000;
+  syncFloor();
+  let rooms=0, area=0;
+  for(const f of DOC.floors){
+    rooms+=f.rooms.length;
+    area+=f.rooms.reduce((s,r)=>s+polyArea(r.poly),0)/10000;
+  }
+  const nf=DOC.floors.length;
   $("pTitle").innerHTML=
     `<span class="t">${esc(DOC.name||"Floor plan")}</span>`+
-    `<span class="m">${DOC.rooms.length} room${DOC.rooms.length===1?"":"s"} · `+
+    `<span class="m">`+
+    (nf>1?`${nf} floors · `:"")+
+    `${rooms} room${rooms===1?"":"s"} · `+
     `${area.toFixed(1)} m² total · all sizes in cm · ${new Date().toLocaleDateString()}</span>`;
 }
 function refreshRooms(){
@@ -2828,35 +2970,195 @@ function refreshRooms(){
       return `<tr><td>${esc(r.name)}</td><td>${Math.round(b.w)} × ${Math.round(b.h)}</td>
       <td class="n">${(polyArea(r.poly)/10000).toFixed(2)} m²</td></tr>`;}).join("")+`</table>`;
 }
+/* The list covers the whole building. Floor is part of the grouping key so
+   two identical sofas on two storeys stay two lines, not one of quantity 2. */
 function bomRows(){
+  syncFloor();
   const m=new Map();
-  for(const it of DOC.items){
-    const rm=roomAt(it.x,it.y);
-    const key=[it.name,it.w,it.d,rm?rm.name:"—",it.note||"",it.price||""].join("|");
-    if(m.has(key)) m.get(key).qty++;
-    else m.set(key,{name:it.name,w:it.w,d:it.d,room:rm?rm.name:"—",
-                    note:it.note||"",price:it.price||"",qty:1});
-  }
-  return [...m.values()].sort((a,b)=>a.room.localeCompare(b.room)||a.name.localeCompare(b.name));
+  DOC.floors.forEach((f,fi)=>{
+    for(const it of f.items){
+      const rm=roomAtIn(f.rooms,it.x,it.y);
+      const key=[f.id,it.name,it.w,it.d,rm?rm.name:"—",it.note||"",it.price||""].join("|");
+      if(m.has(key)) m.get(key).qty++;
+      else m.set(key,{floor:f.name,floorId:f.id,fi,shape:it.shape,
+                      name:it.name,w:it.w,d:it.d,room:rm?rm.name:"—",
+                      note:it.note||"",price:it.price||"",qty:1});
+    }
+  });
+  return [...m.values()].sort((a,b)=>a.fi-b.fi||a.room.localeCompare(b.room)||
+                                     a.name.localeCompare(b.name));
 }
 function elecRows(){
+  syncFloor();
   const m=new Map();
-  for(const e of DOC.elec){
-    const d=ELECBY[e.kind]; if(!d) continue;
-    const rm=roomAt(e.x,e.y), c=e.circuit?circuitOf(e.circuit):null;
-    const lit=d.load==="light";
-    const lamp=lit?(lightKelvin(e)+"K · "+lightLumens(e)+" lm"):"—";
-    const key=[d.name,rm?rm.name:"—",e.mount==null?"ceiling":e.mount,c?c.name:"—",lamp].join("|");
-    if(m.has(key)) m.get(key).qty++;
-    else m.set(key,{name:d.name,room:rm?rm.name:"—",
-                    mount:e.mount==null?"ceiling":e.mount+" cm",
-                    circuit:c?c.name:"—",lamp,qty:1});
-  }
-  return [...m.values()].sort((a,b)=>a.room.localeCompare(b.room)||a.name.localeCompare(b.name));
+  DOC.floors.forEach((f,fi)=>{
+    for(const e of f.elec){
+      const d=ELECBY[e.kind]; if(!d) continue;
+      const rm=roomAtIn(f.rooms,e.x,e.y), c=e.circuit?circuitOf(e.circuit):null;
+      const lit=d.load==="light";
+      const lamp=lit?(lightKelvin(e)+"K · "+lightLumens(e)+" lm"):"—";
+      const key=[f.id,d.name,rm?rm.name:"—",e.mount==null?"ceiling":e.mount,
+                 c?c.name:"—",lamp].join("|");
+      if(m.has(key)) m.get(key).qty++;
+      else m.set(key,{floor:f.name,floorId:f.id,fi,kind:e.kind,
+                      name:d.name,room:rm?rm.name:"—",
+                      mount:e.mount==null?"ceiling":e.mount+" cm",
+                      circuit:c?c.name:"—",lamp,qty:1});
+    }
+  });
+  return [...m.values()].sort((a,b)=>a.fi-b.fi||a.room.localeCompare(b.room)||
+                                     a.name.localeCompare(b.name));
+}
+
+/* ---- thumbnails -----------------------------------------------------
+   There are no product photographs and no network to fetch any, so a row is
+   illustrated with the drawing the piece already has on the plan. Same
+   symKey/drawSym pair the canvas uses, so the list and the plan never drift. */
+function symThumbSVG(name,w,d,shape,px){
+  const size=px||34, pad=1.5;
+  const sc=Math.min((size-pad*2)/Math.max(w,1),(size-pad*2)/Math.max(d,1));
+  const ww=w*sc, hh=d*sc;
+  const g=document.createElementNS(NS,"svg");
+  g.setAttribute("viewBox","0 0 "+size+" "+size);
+  g.setAttribute("width",size); g.setAttribute("height",size);
+  g.setAttribute("class","thumb"); g.setAttribute("aria-hidden","true");
+  const inner=document.createElementNS(NS,"g");
+  inner.setAttribute("transform","translate("+(size/2)+","+(size/2)+") scale("+sc+")");
+  g.appendChild(inner);
+  const box=el(shape==="circle"?"ellipse":"rect",
+    shape==="circle"?{cx:0,cy:0,rx:w/2,ry:d/2}:{x:-w/2,y:-d/2,width:w,height:d,rx:2/sc},
+    inner);
+  box.setAttribute("fill","none"); box.setAttribute("stroke","currentColor");
+  box.setAttribute("stroke-width",1.1/sc);
+  const k=symKey(name);
+  if(k) drawSym(inner,k,w,d,"currentColor",shape);
+  inner.querySelectorAll("[opacity]").forEach(n=>n.setAttribute("opacity",".85"));
+  return g.outerHTML;
+}
+function elecThumbSVG(kind,px){
+  const size=px||34;
+  const g=document.createElementNS(NS,"svg");
+  g.setAttribute("viewBox",(-size/2)+" "+(-size/2)+" "+size+" "+size);
+  g.setAttribute("width",size); g.setAttribute("height",size);
+  g.setAttribute("class","thumb"); g.setAttribute("aria-hidden","true");
+  drawElec(g,kind,size*0.30,"currentColor",true);
+  return g.outerHTML;
 }
 /* Moods. A scene is a named set of levels across the fittings; picking one
    dims the plan and the 3D view to match, so you can see the room at 8pm
    rather than reading it off a table. */
+/* ---- the floor list -------------------------------------------------
+   Ordered as the building stands: the top storey at the top of the list.
+   DOC.floors keeps ground-first order, so the panel renders it reversed. */
+function floorLabel(i){ return i===0 ? "G" : String(i); }
+function refreshFloors(){
+  const h=$("floorList"); if(!h) return;
+  h.innerHTML="";
+  const wrap=document.createElement("div"); wrap.className="floors";
+  syncFloor();                               // counts must include unsaved edits
+  DOC.floors.forEach((f,i)=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="flr"+(f.id===DOC.active?" on":"");
+    b.innerHTML='<span class="lvl">'+esc(floorLabel(i))+'</span>'+
+                '<span class="nm2">'+esc(f.name)+'</span>'+
+                '<span class="ct">'+(f.rooms.length||0)+' rm · '+(f.items.length||0)+'</span>';
+    b.onclick=()=>loadFloor(f.id);
+    b.oncontextmenu=e=>{ e.preventDefault(); floorMenu(e,f.id); };
+    wrap.insertBefore(b,wrap.firstChild);    // build downwards
+  });
+  h.appendChild(wrap);
+  const add=document.createElement("button");
+  add.className="btn floorAdd"; add.type="button"; add.textContent="Add a floor above";
+  add.onclick=()=>addFloor();
+  h.appendChild(add);
+}
+function floorIndex(id){ return DOC.floors.findIndex(f=>f.id===id); }
+function addFloor(){
+  syncFloor();
+  const top=DOC.floors[DOC.floors.length-1];
+  const f=blankFloor("f"+(DOC.nextId++),
+                     "Floor "+DOC.floors.length,
+                     (+top.elev||0)+280);
+  DOC.floors.push(f);
+  DOC.active=f.id; bindFloor();
+  S.sel=[]; S.draw=null;
+  commit(); fit(); refreshAll();
+  toast("Added “"+f.name+"”. Draw its walls, or trace a photo of it.");
+}
+function moveFloor(id,dir){
+  const i=floorIndex(id), j=i+dir;
+  if(i<0||j<0||j>=DOC.floors.length) return;
+  syncFloor();
+  const a=DOC.floors[i]; DOC.floors[i]=DOC.floors[j]; DOC.floors[j]=a;
+  /* Elevations describe the stack, so they travel with the position rather
+     than with the floor. */
+  const ea=DOC.floors[i].elev; DOC.floors[i].elev=DOC.floors[j].elev; DOC.floors[j].elev=ea;
+  bindFloor(); commit(); refreshAll();
+}
+async function renameFloor(id){
+  const f=DOC.floors[floorIndex(id)]; if(!f) return;
+  const r=await ask({title:"Rename this floor",
+    body:'<input id="flrName" style="width:100%" value="'+esc(f.name)+'">',
+    ok:"Rename"});
+  if(r!=="ok") return;
+  const v=($("flrName")&&$("flrName").value||"").trim();
+  if(!v) return;
+  f.name=v.slice(0,32); commit(); refreshAll();
+}
+async function deleteFloor(id){
+  if(DOC.floors.length<2){ toast("A design needs at least one floor."); return; }
+  const f=DOC.floors[floorIndex(id)]; if(!f) return;
+  const n=f.walls.length+f.items.length+f.elec.length;
+  if(n){
+    const r=await ask({title:"Delete “"+f.name+"”?",
+      body:"It holds "+f.walls.length+" walls, "+f.items.length+" pieces of furniture "+
+           "and "+f.elec.length+" electrical points. This can be undone with ⌘Z.",
+      ok:"Delete the floor"});
+    if(r!=="ok") return;
+  }
+  syncFloor();
+  DOC.floors.splice(floorIndex(id),1);
+  if(DOC.active===id) DOC.active=DOC.floors[0].id;
+  bindFloor(); S.sel=[]; commit(); fit(); refreshAll();
+  toast("Deleted “"+f.name+"”. ⌘Z brings it back.");
+}
+function duplicateFloor(id){
+  const i=floorIndex(id); if(i<0) return;
+  syncFloor();
+  const copy=JSON.parse(JSON.stringify(DOC.floors[i]));
+  copy.id="f"+(DOC.nextId++);
+  copy.name=DOC.floors[i].name+" copy";
+  copy.elev=(+DOC.floors[i].elev||0)+280;
+  /* Every object needs a fresh id or the two floors share them, and editing
+     one would reach into the other. Openings are the one thing that points at
+     a sibling - opening.wall is a wall id - so ids are remapped, not just
+     reassigned, or every door on the copy would hang off the original's wall. */
+  const remap=new Map();
+  for(const k of FLOORKEYS){
+    if(k==="underlay") continue;
+    for(const o of copy[k]) if(o&&o.id){
+      const fresh=String(o.id).slice(0,1)+(DOC.nextId++);
+      remap.set(o.id,fresh); o.id=fresh;
+    }
+  }
+  for(const o of copy.openings) if(remap.has(o.wall)) o.wall=remap.get(o.wall);
+  DOC.floors.splice(i+1,0,copy);
+  DOC.active=copy.id; bindFloor(); S.sel=[];
+  commit(); fit(); refreshAll();
+  toast("Duplicated as “"+copy.name+"”");
+}
+function floorMenu(e,id){
+  const i=floorIndex(id);
+  showCtx(e.clientX,e.clientY,[
+    {label:"Rename…",       act:()=>renameFloor(id)},
+    {label:"Duplicate",     act:()=>duplicateFloor(id)},
+    {sep:true},
+    {label:"Move up",   disabled:i>=DOC.floors.length-1, act:()=>moveFloor(id,+1)},
+    {label:"Move down", disabled:i<=0,                   act:()=>moveFloor(id,-1)},
+    {sep:true},
+    {label:"Delete floor", disabled:DOC.floors.length<2, act:()=>deleteFloor(id)}
+  ]);
+}
 function refreshScenes(){
   const h=$("sceneList"); if(!h) return;
   const lights=DOC.elec.filter(e=>(ELECBY[e.kind]||{}).load==="light");
@@ -2901,31 +3203,86 @@ function refreshElec(){
         <td class="n">${esc(r.lamp)}</td><td class="n">${r.qty}</td></tr>`).join("")+`</table>`
     : '<div class="empty">Nothing placed. Drag from the Electrical list.</div>';
   $("pElec").innerHTML = rows.length
-    ? `<table><tr><th>Point</th><th>Room</th><th>Height</th><th>Lamp</th><th>Circuit</th><th>Qty</th></tr>`+
-      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td><td>${esc(r.mount)}</td>
+    ? `<table><tr><th>Point</th><th>Floor</th><th>Room</th><th>Height</th><th>Lamp</th><th>Circuit</th><th>Qty</th></tr>`+
+      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.floor)}</td><td>${esc(r.room)}</td><td>${esc(r.mount)}</td>
         <td>${esc(r.lamp)}</td><td>${esc(r.circuit)}</td><td class="n">${r.qty}</td></tr>`).join("")+
       `</table><p style="font-size:8pt;color:#555;margin-top:3mm">`+
       `Heights are to centre, from finished floor level.</p>`
     : "<p>No electrical points placed.</p>";
 }
+
+/* ---- the shopping list ----------------------------------------------
+   Floor, then room, then what you buy for it: furniture first, then the
+   electrical points, each row carrying the drawing it has on the plan. */
+function shoppingGroups(){
+  const furn=bomRows(), elec=elecRows(), out=[];
+  const key=r=>r.floorId+"|"+r.room;
+  const seen=new Map();
+  const touch=r=>{
+    const k=key(r);
+    if(!seen.has(k)){
+      const g={floor:r.floor,floorId:r.floorId,fi:r.fi,room:r.room,furn:[],elec:[]};
+      seen.set(k,g); out.push(g);
+    }
+    return seen.get(k);
+  };
+  for(const r of furn) touch(r).furn.push(r);
+  for(const r of elec) touch(r).elec.push(r);
+  return out.sort((a,b)=>a.fi-b.fi||a.room.localeCompare(b.room));
+}
+function priceOf(r){
+  const v=parseFloat(String(r.price).replace(/[^0-9.]/g,""));
+  return isFinite(v)?v*r.qty:0;
+}
+function shoppingHTML(){
+  const groups=shoppingGroups();
+  if(!groups.length) return "<p>Nothing placed yet.</p>";
+  const multi=DOC.floors.length>1;
+  let html="", lastFloor=null, grand=0;
+  for(const g of groups){
+    if(multi && g.floorId!==lastFloor){
+      html+='<h3 class="shFloor">'+esc(g.floor)+'</h3>';
+      lastFloor=g.floorId;
+    }
+    html+='<div class="shRoom"><h4>'+esc(g.room)+'</h4><table class="sh">';
+    if(g.furn.length){
+      html+='<tr class="shSub"><td colspan="5">Furniture</td></tr>';
+      for(const r of g.furn){
+        grand+=priceOf(r);
+        html+='<tr><td class="shPic">'+symThumbSVG(r.name,r.w,r.d,r.shape)+'</td>'+
+              '<td class="shName">'+esc(r.name)+
+                (r.note?'<small>'+esc(r.note)+'</small>':"")+'</td>'+
+              '<td class="n">'+Math.round(r.w)+' × '+Math.round(r.d)+' cm</td>'+
+              '<td class="n">×'+r.qty+'</td>'+
+              '<td class="n">'+esc(r.price||"")+'</td></tr>';
+      }
+    }
+    if(g.elec.length){
+      html+='<tr class="shSub"><td colspan="5">Electrical</td></tr>';
+      for(const r of g.elec){
+        html+='<tr><td class="shPic">'+elecThumbSVG(r.kind)+'</td>'+
+              '<td class="shName">'+esc(r.name)+
+                '<small>'+esc(r.circuit==="—"?"no circuit":"circuit "+r.circuit)+'</small></td>'+
+              '<td class="n">'+esc(r.mount)+'</td>'+
+              '<td class="n">×'+r.qty+'</td>'+
+              '<td class="n">'+esc(r.lamp==="—"?"":r.lamp)+'</td></tr>';
+      }
+    }
+    html+='</table></div>';
+  }
+  if(grand>0) html+='<p class="shTotal">Total of the prices entered: '+grand.toFixed(2)+'</p>';
+  return html;
+}
 function refreshBom(){
   const rows=bomRows();
+  const multi=DOC.floors.length>1;
   $("bom").innerHTML = rows.length
-    ? `<table class="t"><tr><th>Item</th><th>Room</th><th class="n">Size</th><th class="n">Qty</th></tr>`+
-      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td>
+    ? `<table class="t"><tr><th>Item</th><th>${multi?"Floor · ":""}Room</th><th class="n">Size</th><th class="n">Qty</th></tr>`+
+      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${multi?esc(r.floor)+" · ":""}${esc(r.room)}</td>
         <td class="n">${Math.round(r.w)}×${Math.round(r.d)}</td><td class="n">${r.qty}</td></tr>`).join("")+
       `</table>`
     : '<div class="empty">No furniture placed yet.</div>';
-  const tot=rows.reduce((s,r)=>{const v=parseFloat(String(r.price).replace(/[^0-9.]/g,""));
-    return s+(isFinite(v)?v*r.qty:0);},0);
-  $("pBom").innerHTML = rows.length
-    ? `<table><tr><th>Item</th><th>Room</th><th>Size (cm)</th><th>Qty</th><th>Note</th><th>Price</th></tr>`+
-      rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.room)}</td>
-        <td class="n">${Math.round(r.w)} × ${Math.round(r.d)}</td><td class="n">${r.qty}</td>
-        <td>${esc(r.note)}</td><td class="n">${esc(r.price)}</td></tr>`).join("")+
-      (tot>0?`<tfoot><tr><td colspan="5">Total</td><td class="n">${tot.toFixed(2)}</td></tr></tfoot>`:"")+
-      `</table>`
-    : "<p>No furniture placed.</p>";
+  $("pBom").innerHTML = shoppingHTML();
   if(typeof animateBomRows==="function") animateBomRows();
 }
 function addElec(kind,at){
@@ -3140,7 +3497,7 @@ function refreshWarns(){
   }
 }
 function refreshAll(){
-  render(); showProps(); refreshRooms(); refreshBom(); refreshElec(); refreshScenes();
+  render(); showProps(); refreshFloors(); refreshRooms(); refreshBom(); refreshElec(); refreshScenes();
   refreshWarns(); refreshTitle();
   if(S.sel.length && typeof revealSection==="function") revealSection("props");
   if(typeof refreshEmpty==="function") refreshEmpty();
@@ -4182,7 +4539,7 @@ function flushSave(){
   clearTimeout(saveT);
   try{
     if(!S.projectId) S.projectId="p"+Date.now();
-    localStorage.setItem(DK(S.projectId),JSON.stringify(DOC));
+    localStorage.setItem(DK(S.projectId),docJSON());
     localStorage.setItem(LAST,S.projectId);
     const l=projects(), e=l.find(q=>q.id===S.projectId);
     if(e){ e.name=DOC.name; e.updated=Date.now(); }
@@ -4203,7 +4560,7 @@ async function guardSwitch(){
   return r==="alt";
 }
 function adoptDoc(doc,name){
-  DOC=doc; if(name) DOC.name=name; rebase(); S.emptyOff=false;
+  DOC=doc; if(name) DOC.name=name; normalizeDoc(); rebase(); S.emptyOff=false;
   S.sel=[]; S.undo=[]; S.redo=[]; fileHandle=null;
   S.projectId = STORAGE_OK ? ("p"+Date.now()) : null;
   dirty=true; if(STORAGE_OK) flushSave(); else updateBadge();
@@ -4221,7 +4578,7 @@ async function newDesign(){
 }
 async function duplicateDesign(){
   flushSave();
-  adoptDoc(JSON.parse(JSON.stringify(DOC)), DOC.name+" copy");
+  adoptDoc(JSON.parse(docJSON()), DOC.name+" copy");
   renderProjects();
   toast("Duplicated as “"+DOC.name+"”");
 }
@@ -4272,8 +4629,17 @@ function renderProjects(){
 }
 $("bProjects").onclick=()=>{ renderProjects(); $("dlgPrj").showModal(); };
 $("bNew").onclick=async()=>{ renderProjects(); await newDesign(); };
+/* "Rescale everything" means the whole building: a design left with one floor
+   at 1:50 and another at 1:100 is worse than no rescale at all. */
 function rescaleDoc(f){
   if(!(f>0) || f===1) return;
+  syncFloor();
+  const keep=DOC.active;
+  for(const fl of DOC.floors){ DOC.active=fl.id; bindFloor(); rescaleFloor(f); }
+  DOC.active=keep; bindFloor();
+  commit(); fit();
+}
+function rescaleFloor(f){
   const S1=v=>+(v*f).toFixed(1);
   for(const w of DOC.walls){ w.x1=S1(w.x1); w.y1=S1(w.y1); w.x2=S1(w.x2); w.y2=S1(w.y2);
                              w.t=Math.max(2,S1(w.t)); }
@@ -4288,8 +4654,7 @@ function rescaleDoc(f){
                             d.off=S1(d.off); }
   for(const n of DOC.notes){ n.x=S1(n.x); n.y=S1(n.y); n.tx=S1(n.tx); n.ty=S1(n.ty); }
   const u=DOC.underlay;
-  if(u.src){ u.x=S1(u.x); u.y=S1(u.y); u.cmPerPx=+(u.cmPerPx*f).toFixed(5); }
-  commit(); fit();
+  if(u&&u.src){ u.x=S1(u.x); u.y=S1(u.y); u.cmPerPx=+(u.cmPerPx*f).toFixed(5); }
 }
 $("prjScaleGo").onclick=()=>{
   const f=+$("prjScale").value;
@@ -4314,7 +4679,7 @@ const fileName=()=>(DOC.name||"floorplan").replace(/\W+/g,"-").toLowerCase()+".f
 const FTYPES=[{description:"Floor plan",accept:{"application/json":[".json"]}}];
 
 async function saveToFile(forceAsk){
-  const text=JSON.stringify(DOC,null,2);
+  const text=docJSON(2);
   if(FSA){
     try{
       if(!fileHandle||forceAsk)
@@ -4339,11 +4704,16 @@ async function saveToFile(forceAsk){
    stored value - derive it. */
 function reseedIds(){
   let hi=0;
-  for(const k of ["walls","openings","rooms","items","texts","dims","notes","elec","circuits"])
-    for(const o of (DOC[k]||[])){
-      const n=parseInt(String(o&&o.id).slice(1),10);
-      if(isFinite(n)&&n>hi) hi=n;
-    }
+  const scan=list=>{ for(const o of (list||[])){
+    const n=parseInt(String(o&&o.id).slice(1),10);
+    if(isFinite(n)&&n>hi) hi=n; } };
+  /* Ids are minted from one counter for the whole building, so the scan has
+     to cover every floor - not just the one currently bound to DOC.walls. */
+  for(const f of (DOC.floors||[])){
+    scan([f]);
+    for(const k of FLOORKEYS) if(k!=="underlay") scan(f[k]);
+  }
+  scan(DOC.circuits); scan(DOC.scenes);
   DOC.nextId=Math.max(hi+1, +DOC.nextId||1);
 }
 /* Every collection the app expects, guaranteed to exist.
@@ -4355,19 +4725,37 @@ function reseedIds(){
    and repaired the document on its way past. */
 function normalizeDoc(){
   S.emptyOff=false;               // a different document, so offer the hint again
-  for(const k of ["walls","openings","rooms","items","texts","dims",
-                  "notes","elec","circuits","scenes"])
-    if(!Array.isArray(DOC[k])) DOC[k]=[];
-  if(!DOC.underlay||typeof DOC.underlay!=="object")
-    DOC.underlay={src:null,x:0,y:0,cmPerPx:1,opacity:.45,locked:true,
-                  visible:true,w:0,h:0};
+  for(const k of ["circuits","scenes"]) if(!Array.isArray(DOC[k])) DOC[k]=[];
   if(typeof DOC.name!=="string"||!DOC.name) DOC.name="Untitled";
+  if(!(+DOC.nextId>0)) DOC.nextId=1;
+  /* Version 3 and earlier kept one storey's arrays at the top level. Fold
+     them into a single ground floor. Every plan saved before floors existed
+     - including anything already in a browser - arrives down this path, so
+     it has to keep all of it. */
+  if(!Array.isArray(DOC.floors)||!DOC.floors.length){
+    const f=blankFloor("f"+(DOC.nextId++),"Ground floor",0);
+    for(const k of FLOORKEYS) if(DOC[k]!=null) f[k]=DOC[k];
+    DOC.floors=[f]; DOC.active=f.id;
+  }
+  for(const f of DOC.floors){
+    if(!f.id) f.id="f"+(DOC.nextId++);
+    if(typeof f.name!=="string"||!f.name) f.name="Floor";
+    if(!isFinite(+f.elev)) f.elev=0;
+    for(const k of FLOORKEYS){
+      if(k==="underlay"){
+        if(!f.underlay||typeof f.underlay!=="object") f.underlay=BLANK_UNDERLAY();
+      } else if(!Array.isArray(f[k])) f[k]=[];
+    }
+  }
+  if(!DOC.floors.some(f=>f.id===DOC.active)) DOC.active=DOC.floors[0].id;
+  bindFloor();
+  DOC.version=4;
   reseedIds();
 }
 function loadDocText(text,handle){
   const d=JSON.parse(text);
-  if(!d.walls) throw new Error("not a floor plan");
-  DOC=Object.assign(blankDoc(),d); normalizeDoc();
+  if(!d.walls && !Array.isArray(d.floors)) throw new Error("not a floor plan");
+  DOC=d; normalizeDoc();
   S.scene=null;
   rebase();
   fileHandle=handle||null; S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[];
@@ -4404,7 +4792,7 @@ window.addEventListener("beforeunload",e=>{
   if(dirty && !STORAGE_OK){ e.preventDefault(); e.returnValue=""; }
 });
 $("bExport").onclick=()=>dl(URL.createObjectURL(
-  new Blob([JSON.stringify(DOC,null,2)],{type:"application/json"})),
+  new Blob([docJSON(2)],{type:"application/json"})),
   (DOC.name||"floorplan").replace(/\W+/g,"-").toLowerCase()+".json");
 $("bImport").onclick=()=>{
   const i=document.createElement("input"); i.type="file"; i.accept=".json";
@@ -4412,8 +4800,8 @@ $("bImport").onclick=()=>{
     const r=new FileReader();
     r.onload=()=>{ try{
         const d=JSON.parse(r.result);
-        if(!d.walls) throw 0;
-        DOC=Object.assign(blankDoc(),d); normalizeDoc(); rebase();
+        if(!d.walls && !Array.isArray(d.floors)) throw 0;
+        DOC=d; normalizeDoc(); rebase();
         S.projectId=null; S.sel=[]; S.undo=[]; S.redo=[]; S.scene=null;
         autosave(); fit(); refreshAll(); toast("Imported “"+DOC.name+"”");
       }catch(e){ toast("That file isn't a floor plan export."); } };
@@ -4446,21 +4834,67 @@ $("bPng").onclick=()=>{
 /* Printing used to output whatever happened to be on screen - zoomed into a
    bathroom, that is what came out. Fit the whole plan to the A4 landscape
    proportions of the print stylesheet first, then put the view back. */
+/* Every floor gets its own plan page. Each is drawn by pointing the live
+   canvas at that floor and taking a copy - the same trick the PNG export
+   uses - so the printed plan and the screen can never disagree. */
+function buildPlanPages(){
+  const host=$("planPages"); if(!host) return;
+  host.innerHTML="";
+  const keepActive=DOC.active, keepView={...S.view}, sel=S.sel;
+  const AR=277/172;                             // @page A4 landscape, 9mm margins
+  const multi=DOC.floors.length>1;
+  S.sel=[];
+  syncFloor();
+  for(const f of DOC.floors){
+    DOC.active=f.id; bindFloor();
+    const b=docBBox();
+    S.view={x:b.x, y:b.y, w:Math.max(b.w, b.h*AR)};
+    if(S.view.w>b.w) S.view.x=b.x-(S.view.w-b.w)/2;
+    const h=S.view.w/AR;
+    S.view.y=b.y-(h-b.h)/2;
+    cv.setAttribute("viewBox",`${S.view.x} ${S.view.y} ${S.view.w} ${h}`);
+    renderInto(S.view.w, h);
+    const page=document.createElement("div");
+    page.className="pf";
+    if(multi) page.innerHTML="<h2>"+esc(f.name)+"</h2>";
+    const c=cv.cloneNode(true);
+    c.removeAttribute("id"); c.removeAttribute("style");
+    c.setAttribute("viewBox",`${S.view.x} ${S.view.y} ${S.view.w} ${h}`);
+    page.appendChild(c);
+    host.appendChild(page);
+  }
+  DOC.active=keepActive; bindFloor();
+  S.view=keepView; S.sel=sel; render();
+}
 $("bPrint").onclick=()=>{
   if(is3D) set3D(false);                        // the 3D canvas does not print
-  const sel=S.sel, keep={...S.view};
-  S.sel=[];
-  const b=docBBox(), AR=277/172;                // @page A4 landscape, 9mm margins
-  S.view={x:b.x, y:b.y, w:Math.max(b.w, b.h*AR)};
-  if(S.view.w>b.w) S.view.x=b.x-(S.view.w-b.w)/2;
-  const h=S.view.w/AR;
-  S.view.y=b.y-(h-b.h)/2;
-  cv.setAttribute("viewBox",`${S.view.x} ${S.view.y} ${S.view.w} ${h}`);
-  renderInto(S.view.w, h);
-  const done=()=>{ S.view=keep; S.sel=sel; render();
-                   window.removeEventListener("afterprint",done); };
+  buildPlanPages();
+  const done=()=>{ window.removeEventListener("afterprint",done); };
   window.addEventListener("afterprint",done);
   setTimeout(()=>{ window.print(); setTimeout(done,400); },90);
+};
+/* Excel decides a file is Latin-1 unless it sees a BOM, which mangles the ×
+   and · the sizes and circuits are written with. */
+function csvCell(v){
+  const t=String(v==null?"":v);
+  return /[",\n]/.test(t) ? '"'+t.replace(/"/g,'""')+'"' : t;
+}
+$("bCsv").onclick=()=>{
+  const rows=[["Floor","Room","Kind","Item","Width cm","Depth cm","Qty",
+               "Height","Circuit","Lamp","Note","Price"]];
+  for(const g of shoppingGroups()){
+    for(const r of g.furn)
+      rows.push([g.floor,g.room,"Furniture",r.name,Math.round(r.w),Math.round(r.d),
+                 r.qty,"","","",r.note||"",r.price||""]);
+    for(const r of g.elec)
+      rows.push([g.floor,g.room,"Electrical",r.name,"","",r.qty,
+                 r.mount,r.circuit==="—"?"":r.circuit,r.lamp==="—"?"":r.lamp,"",""]);
+  }
+  if(rows.length===1){ toast("Nothing placed yet — there is no list to export."); return; }
+  const text="\ufeff"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+  dl(URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"})),
+     (DOC.name||"floorplan").replace(/\W+/g,"-").toLowerCase()+"-shopping-list.csv");
+  toast("Shopping list saved as CSV.");
 };
 $("bFit").onclick=fit;
 $("bUndo").onclick=undo; $("bRedo").onclick=redo;
@@ -4675,10 +5109,28 @@ function roomOpenings(r){
 }
 function buildPrompt(){
   const brief=($("aiBrief").value||"").trim();
-  const pick=$("aiRooms").value;
-  const rooms=DOC.rooms.filter(r=>pick==="*"||r.id===pick);
+  const pick=$("aiRooms").value||"*";
+  const bare=!!($("aiBare")&&$("aiBare").checked);
+  const nVar=Math.max(1,Math.min(5,+($("aiVariants")&&$("aiVariants").value)||1));
+  syncFloor();
+  /* Which storeys the brief covers, and which of their rooms. */
+  const wantFloor=pick.startsWith("f:")?pick.slice(2):null;
+  const scope=DOC.floors.map(f=>({
+      f, rooms: f.rooms.filter(r=>
+        pick==="*" ? true : wantFloor ? f.id===wantFloor : r.id===pick)
+    })).filter(x=>x.rooms.length);
+  const multi=DOC.floors.length>1;
   const L=[];
-  L.push("I have drawn my flat to scale in Floor Plan Studio. Please lay out the furniture.");
+  L.push(nVar>1
+    ? "I have drawn my flat to scale in Floor Plan Studio. Please give me "+nVar+
+      " different ways to furnish it, so I can compare them."
+    : "I have drawn my flat to scale in Floor Plan Studio. Please lay out the furniture.");
+  if(bare){
+    L.push("");
+    L.push("The rooms below are EMPTY on purpose - I have left out whatever is in");
+    L.push("them now. Design each room from scratch rather than working around an");
+    L.push("existing arrangement.");
+  }
   L.push("");
   L.push("## What I want");
   L.push(brief||"A practical, comfortable layout that suits the size of each room.");
@@ -4690,34 +5142,61 @@ function buildPrompt(){
   L.push("along x and its depth along y, and its front - the seat, the opening, the");
   L.push("side you approach from - faces +y, i.e. down the plan. So a sofa against the");
   L.push("top wall of a room should be rot 0; against the bottom wall, rot 180.");
+  if(multi){
+    L.push("");
+    L.push("This home has "+DOC.floors.length+" floors. Each floor has its OWN x/y grid,");
+    L.push("so the same coordinates mean different places on different floors. Every row");
+    L.push("you give back must name its floor exactly as written below.");
+  }
   L.push("");
   L.push("## The rooms");
-  for(const r of rooms){
-    const b=polyBBox(r.poly), area=(polyArea(r.poly)/10000).toFixed(1);
-    L.push("");
-    L.push("### "+r.name+"  ("+(ROOMKINDS[r.kind]||{label:r.kind}).label.toLowerCase()+")");
-    L.push("  usable floor: x "+Math.round(b.x)+" to "+Math.round(b.x+b.w)+
-           ", y "+Math.round(b.y)+" to "+Math.round(b.y+b.h)+
-           "   ("+Math.round(b.w)+" x "+Math.round(b.h)+" cm, "+area+" m2)");
-    const rect=r.poly.length===4;
-    if(!rect) L.push("  outline: "+r.poly.map(q=>"("+Math.round(q[0])+","+Math.round(q[1])+")").join(" "));
-    const ops=roomOpenings(r);
-    if(ops.length){
-      for(const {o,A,B} of ops){
-        const horiz=Math.abs(A.y-B.y)<Math.abs(A.x-B.x);
-        L.push("  "+o.type+" "+Math.round(o.w)+" cm wide: "+
-               (horiz?("along y="+Math.round((A.y+B.y)/2)+", from x "+
-                       Math.round(Math.min(A.x,B.x))+" to "+Math.round(Math.max(A.x,B.x)))
-                     :("along x="+Math.round((A.x+B.x)/2)+", from y "+
-                       Math.round(Math.min(A.y,B.y))+" to "+Math.round(Math.max(A.y,B.y))))+
-               (o.type==="door"?"  - keep its swing clear":""));
+  /* roomOpenings() and roomAt() read the bound floor, so each storey is
+     bound in turn while its section is written, and put back afterwards. */
+  const bound=DOC.active;
+  for(const {f,rooms} of scope){
+    DOC.active=f.id; bindFloor();
+    if(multi){
+      L.push("");
+      L.push("## Floor: "+f.name+"   (finished floor level "+Math.round(+f.elev||0)+" cm)");
+      const stairs=f.items.filter(i=>/stair/i.test(i.name));
+      if(stairs.length) L.push("  stairs here: "+stairs.map(i=>
+        i.name+" "+Math.round(i.w)+"x"+Math.round(i.d)+" at ("+Math.round(i.x)+","+
+        Math.round(i.y)+")"+(i.linkFloor?" -> "+i.linkFloor:"")+
+        " - keep the landing and the first two steps clear").join("; "));
+    }
+    for(const r of rooms){
+      const b=polyBBox(r.poly), area=(polyArea(r.poly)/10000).toFixed(1);
+      L.push("");
+      L.push("### "+r.name+"  ("+(ROOMKINDS[r.kind]||{label:r.kind}).label.toLowerCase()+")");
+      L.push("  usable floor: x "+Math.round(b.x)+" to "+Math.round(b.x+b.w)+
+             ", y "+Math.round(b.y)+" to "+Math.round(b.y+b.h)+
+             "   ("+Math.round(b.w)+" x "+Math.round(b.h)+" cm, "+area+" m2)");
+      const rect=r.poly.length===4;
+      if(!rect) L.push("  outline: "+r.poly.map(q=>"("+Math.round(q[0])+","+Math.round(q[1])+")").join(" "));
+      const ops=roomOpenings(r);
+      if(ops.length){
+        for(const {o,A,B} of ops){
+          const horiz=Math.abs(A.y-B.y)<Math.abs(A.x-B.x);
+          L.push("  "+o.type+" "+Math.round(o.w)+" cm wide: "+
+                 (horiz?("along y="+Math.round((A.y+B.y)/2)+", from x "+
+                         Math.round(Math.min(A.x,B.x))+" to "+Math.round(Math.max(A.x,B.x)))
+                       :("along x="+Math.round((A.x+B.x)/2)+", from y "+
+                         Math.round(Math.min(A.y,B.y))+" to "+Math.round(Math.max(A.y,B.y))))+
+                 (o.type==="door"?"  - keep its swing clear":""));
+        }
+      } else L.push("  (no doors or windows recorded on this room)");
+      /* "Start from bare walls" withholds the current contents entirely, so
+         the room is designed rather than tidied. Stairs are the exception:
+         they are structure, not furniture, and must stay clear. */
+      const has=DOC.items.filter(i=>{const rm=roomAt(i.x,i.y); return rm&&rm.id===r.id;})
+                         .filter(i=>!bare||/stair/i.test(i.name));
+      if(has.length) L.push("  "+(bare?"fixed in the room (leave in place): ":"already in the room: ")+
+        has.map(i=>
+          i.name+" "+Math.round(i.w)+"x"+Math.round(i.d)+" at ("+Math.round(i.x)+","+
+          Math.round(i.y)+") rot "+(i.rot||0)).join("; "));
       }
-    } else L.push("  (no doors or windows recorded on this room)");
-    const has=DOC.items.filter(i=>{const rm=roomAt(i.x,i.y); return rm&&rm.id===r.id;});
-    if(has.length) L.push("  already in the room: "+has.map(i=>
-      i.name+" "+Math.round(i.w)+"x"+Math.round(i.d)+" at ("+Math.round(i.x)+","+
-      Math.round(i.y)+") rot "+(i.rot||0)).join("; "));
   }
+  DOC.active=bound; bindFloor();
   L.push("");
   L.push("## Furniture you may use");
   L.push("Only these, spelled exactly as written. The sizes are fixed - never resize a");
@@ -4762,19 +5241,47 @@ function buildPrompt(){
   L.push("- Do not overlap two pieces. A rug may sit under other furniture.");
   L.push("- Keep every piece fully inside its room's usable floor.");
   L.push("");
-  const r0=rooms[0]?rooms[0].name:"Living";
+  const inScope=[];
+  for(const {f,rooms} of scope) for(const r of rooms) inScope.push({f,r});
+  const r0=inScope[0]?inScope[0].r.name:"Living";
+  const f0=inScope[0]?inScope[0].f.name:"Ground floor";
   L.push("## How to reply");
-  L.push("Give me one JSON object and nothing else, with these three keys:");
+  if(nVar>1){
+    L.push("Give me one JSON object and nothing else, holding "+nVar+" complete schemes.");
+    L.push("Each scheme furnishes and lights EVERY room listed above - not one room");
+    L.push("each, and not variations on a single idea. Make them genuinely different:");
+    L.push("vary how the seating is grouped, where the storage goes and how the room");
+    L.push("is zoned, not just the colour of the lighting. Give each one a short name");
+    L.push("and a sentence saying who it suits and what it trades away.");
+    L.push("");
+    L.push("{");
+    L.push('  "schemes": [');
+    L.push("    {");
+    L.push('      "name":"Open and social",');
+    L.push('      "style":"Seating faces the room rather than the TV. Best for people who'+
+           " host; the screen is a compromise.\",");
+    L.push('      "furniture": [ ... ], "lighting": [ ... ], "moods": [ ... ]');
+    L.push("    }");
+    L.push("  ]");
+    L.push("}");
+    L.push("");
+    L.push('Each scheme\'s "furniture", "lighting" and "moods" take exactly the shape');
+    L.push("below.");
+    L.push("");
+  } else {
+    L.push("Give me one JSON object and nothing else, with these three keys:");
+  }
   L.push("");
   L.push("{");
+  const FL=multi?'"floor":"'+f0+'",':"";
   L.push('  "furniture": [');
-  L.push('    {"item":"Sofa 3-seat","room":"'+r0+'","x":300,"y":250,"rot":0,'+
+  L.push('    {"item":"Sofa 3-seat",'+FL+'"room":"'+r0+'","x":300,"y":250,"rot":0,'+
          '"why":"against the top wall, facing the TV"}');
   L.push("  ],");
   L.push('  "lighting": [');
-  L.push('    {"fitting":"Pendant","room":"'+r0+'","x":300,"y":250,'+
+  L.push('    {"fitting":"Pendant",'+FL+'"room":"'+r0+'","x":300,"y":250,'+
          '"kelvin":2700,"lumens":800,"circuit":"Living","why":"over the table"},');
-  L.push('    {"fitting":"Switch 1-gang","room":"'+r0+'","x":120,"y":480,'+
+  L.push('    {"fitting":"Switch 1-gang",'+FL+'"room":"'+r0+'","x":120,"y":480,'+
          '"circuit":"Living","why":"by the door, handle side"}');
   L.push("  ],");
   L.push('  "moods": [');
@@ -4782,8 +5289,15 @@ function buildPrompt(){
   L.push("  ]");
   L.push("}");
   L.push("");
-  L.push('"item" and "fitting" must match the lists above exactly. "room" must be one');
-  L.push("of: "+rooms.map(r=>r.name).join(", ")+".");
+  L.push('"item" and "fitting" must match the lists above exactly.');
+  if(multi){
+    L.push('"floor" is required on every row and must be one of: '+
+           scope.map(x=>x.f.name).join(", ")+".");
+    for(const {f,rooms} of scope)
+      L.push('  rooms on "'+f.name+'": '+rooms.map(r=>r.name).join(", "));
+  } else {
+    L.push('"room" must be one of: '+inScope.map(x=>x.r.name).join(", ")+".");
+  }
   L.push('"x" and "y" are the centre of the piece, in centimetres, on the grid above.');
   L.push('In "moods", the keys of "levels" are circuit names and the values are 0-100.');
   L.push('Leave a circuit out of a mood to have it off. Keep "why" to a short phrase.');
@@ -4792,13 +5306,22 @@ function buildPrompt(){
 function refreshPrompt(){ $("aiPrompt").value=buildPrompt(); }
 
 function openAI(){
-  if(!DOC.rooms.length){
+  syncFloor();
+  const total=DOC.floors.reduce((n,f)=>n+f.rooms.length,0);
+  if(!total){
     toast("Draw your walls and make at least one room first — use the Room tool.",5000);
     return;
   }
   const sel=$("aiRooms");
-  sel.innerHTML='<option value="*">every room ('+DOC.rooms.length+')</option>'+
-    DOC.rooms.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join("");
+  const multi=DOC.floors.length>1;
+  let html='<option value="*">every room ('+total+')</option>';
+  for(const f of DOC.floors){
+    if(!f.rooms.length) continue;
+    if(multi) html+=`<option value="f:${esc(f.id)}">${esc(f.name)} — all ${f.rooms.length} rooms</option>`;
+    html+=f.rooms.map(r=>`<option value="${esc(r.id)}">`+
+      (multi?esc(f.name)+" · ":"")+`${esc(r.name)}</option>`).join("");
+  }
+  sel.innerHTML=html;
   $("aiResult").innerHTML=""; $("aiCopied").textContent="";
   aiStep(1); refreshPrompt();
   $("dlgAI").showModal();
@@ -4816,6 +5339,8 @@ $("aiClose").onclick=()=>$("dlgAI").close();
 document.querySelectorAll(".aitab").forEach(b=>b.onclick=()=>aiStep(+b.dataset.step));
 $("aiBrief").oninput=refreshPrompt;
 $("aiRooms").onchange=refreshPrompt;
+$("aiVariants").onchange=refreshPrompt;
+$("aiBare").onchange=refreshPrompt;
 $("aiCopy").onclick=async()=>{
   const t=$("aiPrompt");
   try{ await navigator.clipboard.writeText(t.value); }
@@ -4843,14 +5368,113 @@ function extractJSON(text){
     try{ return JSON.parse(t.slice(i,j+1)); }catch(e){ return null; }
   };
   const obj=tryParse("{","}");
-  if(obj && (obj.furniture||obj.lighting||obj.moods)) return obj;
+  if(obj && (obj.schemes||obj.variants||obj.furniture||obj.lighting||obj.moods)) return obj;
   const arr=tryParse("[","]");
   if(Array.isArray(arr)) return {furniture:arr};
   return obj&&typeof obj==="object" ? obj : null;
 }
+/* ---- schemes to choose between ---------------------------------------
+   Held in memory only. Each preview rewinds the whole document to the state
+   before the first preview and replays one scheme, so flipping between them
+   can never accumulate furniture, and nothing reaches undo or the autosave
+   until you keep one. */
+const V={list:null,i:-1,base:null,res:null,note:""};
+function startVariants(list,res){
+  /* Pasting a second reply while a preview is still on screen would otherwise
+     capture that preview as the baseline - the schemes would pile on top of
+     each other and every mood would be duplicated. */
+  if(V.list) endVariants(false);
+  syncFloor();
+  V.list=list; V.i=-1; V.res=res; V.base=docJSON();
+  $("dlgAI").close();
+  showVariant(0);
+  toast("Showing scheme 1 of "+list.length+" — flip through them, then keep one.",5200);
+}
+function variantName(v,i){
+  const n=String(v&&v.name||"").trim();
+  return n?n.slice(0,28):"Scheme "+(i+1);
+}
+function showVariant(i){
+  if(!V.list||!V.list[i]) return;
+  DOC=JSON.parse(V.base); normalizeDoc();     // rewind, then replay just this one
+  V.i=i; V.note="";
+  applyOnePlan(V.list[i],V.res,{preview:true});
+  fit(); renderVarBar();
+}
+function endVariants(keep){
+  if(!V.list) return;
+  const v=V.list[V.i], name=variantName(v,V.i);
+  if(keep){
+    commit();
+    toast("Kept “"+name+"”. ⌘Z puts the room back as it was.",5000);
+  }else{
+    DOC=JSON.parse(V.base); normalizeDoc();
+    rebase(); S.sel=[]; fit(); refreshAll();
+    toast("Discarded — nothing was changed.");
+  }
+  V.list=null; V.i=-1; V.base=null; V.note="";
+  renderVarBar();
+}
+function renderVarBar(){
+  const bar=$("varbar"); if(!bar) return;
+  if(!V.list){ bar.className=""; bar.innerHTML=""; return; }
+  bar.className="on"; bar.innerHTML="";
+  const lbl=document.createElement("span");
+  lbl.className="vlbl"; lbl.textContent="Scheme";
+  bar.appendChild(lbl);
+  V.list.forEach((v,i)=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="vchip"+(i===V.i?" on":"");
+    b.textContent=variantName(v,i);
+    const why=String(v&&(v.style||v.note)||"").trim();
+    if(why) b.title=why;
+    b.onclick=()=>showVariant(i);
+    bar.appendChild(b);
+  });
+  const sep=document.createElement("span"); sep.className="vsep"; bar.appendChild(sep);
+  const keep=document.createElement("button");
+  keep.type="button"; keep.className="btn spark"; keep.textContent="Keep this one";
+  keep.onclick=()=>endVariants(true);
+  bar.appendChild(keep);
+  const drop=document.createElement("button");
+  drop.type="button"; drop.className="btn"; drop.textContent="Discard";
+  drop.onclick=()=>endVariants(false);
+  bar.appendChild(drop);
+  const cur=V.list[V.i];
+  const why=String(cur&&(cur.style||cur.note)||"").trim();
+  if(why||V.note){
+    const n=document.createElement("div");
+    n.style.cssText="flex-basis:100%;text-align:center;font-size:11.5px;"+
+      "color:var(--fg-3);line-height:1.5;padding-top:2px";
+    n.textContent=why||V.note;
+    if(why&&V.note) n.title=V.note;
+    bar.appendChild(n);
+  }
+}
+
+/* A reply may hold one layout or several to choose between. Several are held
+   in memory and previewed on the plan one at a time; nothing is committed
+   until you keep one. */
 function applyAIPlan(){
   const res=$("aiResult");
   const plan=extractJSON($("aiReply").value);
+  const schemes=(plan&&(plan.schemes||plan.variants));
+  if(Array.isArray(schemes)&&schemes.length){
+    const usable=schemes.filter(v=>v&&(Array.isArray(v.furniture)||Array.isArray(v.lighting)));
+    if(!usable.length){
+      res.innerHTML='<span class="bad">That reply lists schemes, but none of them '+
+        'contain any furniture or lighting.</span>';
+      return;
+    }
+    if(usable.length===1) return applyOnePlan(usable[0],res);
+    startVariants(usable,res);
+    return;
+  }
+  applyOnePlan(plan,res);
+}
+function applyOnePlan(plan,res,opts){
+  opts=opts||{};
+  if(!opts.preview && V.list) endVariants(false);   // leave any preview first
   const furn=Array.isArray(plan&&plan.furniture)?plan.furniture:[];
   const lights=Array.isArray(plan&&plan.lighting)?plan.lighting:[];
   const moods=Array.isArray(plan&&plan.moods)?plan.moods:[];
@@ -4861,8 +5485,34 @@ function applyAIPlan(){
   normalizeDoc();          // never trust the document's shape here
   const byName=new Map(CATALOG.map(c=>[c.name.toLowerCase(),c]));
   const elecByName=new Map(ELEC.map(e=>[e.name.toLowerCase(),e]));
+  syncFloor();
+  /* A reply can span the building, so each row is resolved to a floor before
+     anything is placed: the named floor, else the floor whose room it names,
+     else the one on screen. A floor name we do not recognise is skipped rather
+     than guessed - putting a wardrobe on the wrong storey is worse than
+     leaving it out. */
+  const floorByName=new Map(DOC.floors.map(f=>[f.name.toLowerCase(),f]));
+  const roomHome=new Map();          // room name -> floor, when unambiguous
+  for(const f of DOC.floors) for(const r of f.rooms){
+    const k=r.name.toLowerCase();
+    roomHome.set(k, roomHome.has(k) ? null : f);   // null marks a duplicate name
+  }
   const roomByName=new Map(DOC.rooms.map(r=>[r.name.toLowerCase(),r]));
   const bad=[], warn2=[], made=[], madeElec=[];
+  const here=activeFloor();
+  function floorFor(row,label){
+    const named=String(row&&row.floor||"").trim();
+    if(named){
+      const f=floorByName.get(named.toLowerCase());
+      if(f) return f;
+      bad.push(label+" names a floor “"+named+"” that isn't in this design");
+      return null;
+    }
+    const rm=String(row&&row.room||"").trim().toLowerCase();
+    if(rm && roomHome.get(rm)) return roomHome.get(rm);
+    return here;
+  }
+  const roomsOf=f=>f.rooms;
 
   for(const row of furn){
     const nm=String(row&&(row.item||row.name)||"").trim();
@@ -4871,10 +5521,12 @@ function applyAIPlan(){
     let x=+row.x, y=+row.y;
     if(!isFinite(x)||!isFinite(y)){ bad.push(nm+" has no usable x/y"); continue; }
     let rot=Math.round((+row.rot||0)/90)*90; rot=((rot%360)+360)%360;
+    const f=floorFor(row,nm); if(!f) continue;
     const want=String(row.room||"").trim().toLowerCase();
-    if(want && !roomByName.has(want))
-      warn2.push(nm+" names a room “"+row.room+"” that isn't on the plan");
-    made.push({id:nid("i"),catalogId:c.id,name:c.name,color:c.color,shape:c.shape,
+    if(want && !roomsOf(f).some(r=>r.name.toLowerCase()===want))
+      warn2.push(nm+" names a room “"+row.room+"” that isn't on "+f.name);
+    made.push({_f:f.id,
+               id:nid("i"),catalogId:c.id,name:c.name,color:c.color,shape:c.shape,
                w:c.w,d:c.d,x:Math.round(x),y:Math.round(y),rot,
                note:String(row.why||row.note||"").slice(0,120),price:""});
   }
@@ -4898,11 +5550,13 @@ function applyAIPlan(){
     if(!d){ bad.push("“"+(nm||"(no name)")+"” is not an electrical fitting"); continue; }
     let x=+row.x, y=+row.y;
     if(!isFinite(x)||!isFinite(y)){ bad.push(nm+" has no usable x/y"); continue; }
+    const f=floorFor(row,nm); if(!f) continue;
     const want=String(row.room||"").trim().toLowerCase();
-    if(want && !roomByName.has(want))
-      warn2.push(nm+" names a room “"+row.room+"” that isn't on the plan");
+    if(want && !roomsOf(f).some(r=>r.name.toLowerCase()===want))
+      warn2.push(nm+" names a room “"+row.room+"” that isn't on "+f.name);
     const c=circuitFor(row.circuit);
-    const e={id:nid("e"),kind:d.k,x:Math.round(x),y:Math.round(y),rot:0,
+    const e={_f:f.id,
+             id:nid("e"),kind:d.k,x:Math.round(x),y:Math.round(y),rot:0,
              circuit:c?c.id:null,mount:d.mount,
              note:String(row.why||row.note||"").slice(0,120)};
     if(d.load==="light"){
@@ -4919,9 +5573,24 @@ function applyAIPlan(){
       bad.slice(0,8).map(esc).join("<br>");
     return;
   }
-  if($("aiReplace").checked){ DOC.items=[]; DOC.elec=[]; DOC.scenes=[]; }
-  DOC.items.push(...made);
-  DOC.elec.push(...madeElec);
+  /* Captured before placement strips the _f marker off each row. */
+  const madeIds=new Set(made.map(o=>o.id));
+  const placedFloors=new Set([...made,...madeElec].map(o=>o._f));
+
+  /* Replace clears every floor the reply touches, not just the bound one. */
+  if($("aiReplace").checked){
+    const touched=new Set([...made,...madeElec].map(o=>o._f));
+    for(const f of DOC.floors) if(touched.has(f.id)){ f.items=[]; f.elec=[]; }
+    DOC.scenes=[];
+    bindFloor();
+  }
+  for(const f of DOC.floors){
+    const mine=made.filter(o=>o._f===f.id), lit=madeElec.filter(o=>o._f===f.id);
+    for(const o of mine) delete o._f;
+    for(const o of lit)  delete o._f;
+    f.items.push(...mine); f.elec.push(...lit);
+  }
+  bindFloor();          // DOC.items / DOC.elec must point at the active floor again
 
   /* Moods arrive keyed by circuit name; store them keyed by fitting id so a
      scene survives someone renaming or re-wiring a circuit afterwards. */
@@ -4934,9 +5603,12 @@ function applyAIPlan(){
       const lvl=Math.max(0,Math.min(100,+src[key]));
       if(!isFinite(lvl)) continue;
       const c=circByName.get(String(key).trim().toLowerCase());
-      const hit=DOC.elec.filter(e=>(ELECBY[e.kind]||{}).load==="light" &&
-        (c ? e.circuit===c.id
-           : (roomAt(e.x,e.y)||{}).name===String(key).trim()));
+      const hit=[];
+      for(const f of DOC.floors) for(const e of f.elec){
+        if((ELECBY[e.kind]||{}).load!=="light") continue;
+        if(c ? e.circuit===c.id
+             : (roomAtIn(f.rooms,e.x,e.y)||{}).name===String(key).trim()) hit.push(e);
+      }
       if(!hit.length){ warn2.push('Mood “'+name+'” mentions “'+key+'”, which has no lights'); continue; }
       for(const e of hit) levels[e.id]=lvl;
     }
@@ -4945,14 +5617,22 @@ function applyAIPlan(){
     DOC.scenes.push(sc); madeScenes.push(sc);
   }
 
-  S.sel=made.map(i=>({k:"item",id:i.id}));
-  commit(); fit();
+  /* Land on a floor that actually received something, so the result is on
+     screen rather than behind a floor switch. */
+  let land=DOC.active;
+  if(placedFloors.size && !placedFloors.has(land)) land=[...placedFloors][0];
+  if(land!==DOC.active){ syncFloor(); DOC.active=land; bindFloor(); }
+  S.sel=opts.preview?[]:DOC.items.filter(i=>madeIds.has(i.id)).map(i=>({k:"item",id:i.id}));
+  if(opts.preview){ refreshAll(); } else { commit(); fit(); }
   const warnCount=runChecks().length;
-  const outside=made.filter(i=>!roomAt(i.x,i.y)).length;
+  let outside=0;
+  for(const f of DOC.floors) for(const i of f.items)
+    if(madeIds.has(i.id) && !roomAtIn(f.rooms,i.x,i.y)) outside++;
   const bits=[];
   if(made.length)      bits.push(made.length+" piece"+(made.length>1?"s":"")+" of furniture");
   if(madeElec.length)  bits.push(madeElec.length+" electrical point"+(madeElec.length>1?"s":""));
   if(madeScenes.length)bits.push(madeScenes.length+" mood"+(madeScenes.length>1?"s":""));
+  if(opts.preview){ V.note=bits.join(", ")+(bad.length?" · "+bad.length+" skipped":""); return; }
   res.innerHTML='<span class="good">Placed '+bits.join(", ")+'.</span>'+
     (outside?'<br><span class="bad">'+outside+' landed outside any room.</span>':"")+
     (bad.length?'<br><span class="bad">Skipped '+bad.length+':</span><br>'+
@@ -4988,6 +5668,17 @@ document.addEventListener("keydown",e=>{
   if((e.metaKey||e.ctrlKey)&&k==="p"){ e.preventDefault(); $("bPrint").click(); return; }
   if(e.key==="["){ e.preventDefault(); togglePanel("left");  return; }
   if(e.key==="]"){ e.preventDefault(); togglePanel("right"); return; }
+  /* Climb the building. Guarded on !is3D because the 3D view already spends
+     alt+arrow on panning the camera. */
+  if(e.altKey && !is3D && (e.key==="ArrowUp"||e.key==="ArrowDown")){
+    e.preventDefault();
+    const i=floorIndex(DOC.active)+(e.key==="ArrowUp"?1:-1);
+    if(i>=0 && i<DOC.floors.length){
+      loadFloor(DOC.floors[i].id);
+      toast(DOC.floors[i].name);
+    }
+    return;
+  }
 
   if(S.draw&&S.tool==="wall"){
     if(/^[0-9.]$/.test(e.key)){ S.numBuf+=e.key; showNumChip(); return; }
