@@ -1,58 +1,42 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f0e8">
 <title>Privacy — Floor Plan Studio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231b46f4'/><path d='M8 9h16M8 16h16M8 23h16' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>">
 <style>
- body{font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-      color:#1a2230;max-width:44rem;margin:0 auto;padding:3rem 1.25rem}
- h1{font-size:1.7rem;letter-spacing:-.02em} h2{font-size:1.1rem;margin-top:2.2rem}
- code{background:#f1f4f8;padding:.1rem .35rem;border-radius:4px;font-size:.9em}
- a{color:#3b6ef0}
- .back{display:inline-block;margin-bottom:1.5rem;text-decoration:none;color:#5a6b80;font-size:.92rem}
- .back:hover{color:#1a2230}
- footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid #e4e9f1;
-        color:#5a6b80;font-size:.88rem}
-</style></head><body>
-<a class="back" href="index.html">&larr; Floor Plan Studio</a>
-<h1>Privacy</h1>
-
-<h2>Who we are</h2>
-<p>Floor Plan Studio is made by Tarek Fouad, contactable at
-<a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a>. This policy covers
-<code>tarekfouad97.github.io/Floor-Plan-Studio</code>.</p>
-
-<h2>What the tool stores</h2>
-<p>Floor plans you draw are saved <strong>in your own browser</strong>, using
-local storage on your device. They are not uploaded, and I cannot see them.
-Clearing your browser data deletes them. Files you export with
-<em>Save to file</em> live only on your computer.</p>
-<p>Images you load as a tracing guide are processed entirely in your browser and
-never leave your device.</p>
-<p>The application is a single HTML file with no network code in it. Once the page
-has loaded, it makes no requests of any kind.</p>
-
-<h2>What is collected</h2>
-<p>I do not use analytics, tracking scripts, or advertising on this site, and it
-sets no cookies.</p>
-<p>The site is hosted on GitHub Pages. As the host, GitHub records standard
-server logs when a page is requested — including the visitor's IP address — and
-uses them to run and protect the service. That happens at the hosting layer,
-before any of my code runs, and I do not have access to those logs. GitHub's
-handling of them is described in the
-<a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub
-General Privacy Statement</a>.</p>
-
-<h2>Your rights</h2>
-<p>If you are in the UK or EU you may ask what data is held about you, ask for it
-to be corrected or erased, and complain to your data protection authority.
-Because plans stay on your device and no analytics are collected, in practice
-there is nothing held about you to release or erase. Write to
-<a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a> with any request.</p>
-
-<h2>Changes</h2>
-<p>Last updated 27 August 2026. Any changes will be posted on this page. If
-analytics or advertising are ever added, this policy will be updated to say so
-before they go live.</p>
-
-<footer>© 2026 Tarek Fouad · <a href="index.html">Floor Plan Studio</a></footer>
-</body></html>
+  :root{color-scheme:light;--app:#F4F0E8;--panel:#FFFDF8;--raised:#FFFFFF;--line:rgba(22,32,49,.12);--fg:#162031;--muted:#5A6573;--accent:#1B46F4;--accent-deep:#1534B7;--acid:#C8FF3D;--r:18px;--display:ui-rounded,"Arial Rounded MT Bold",ui-sans-serif,system-ui,sans-serif}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:var(--app);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)} a:focus-visible{outline:3px solid #FA8063;outline-offset:3px;border-radius:5px}
+  .wrap{width:min(100% - 32px,760px);margin:auto}.sitehead{border-bottom:1px solid var(--line);background:rgba(244,240,232,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+  .sitehead .wrap{height:64px;display:flex;align-items:center}.brand{display:flex;align-items:center;gap:10px;color:var(--fg);text-decoration:none;font:800 17px var(--display);letter-spacing:-.05em}
+  .mark{width:30px;height:30px;border-radius:9px;background:var(--accent);position:relative;overflow:hidden;box-shadow:inset -4px -4px 0 rgba(0,0,0,.12)}.mark::before{content:"";position:absolute;inset:8px;border:2px solid #fff;border-left-width:4px;border-bottom-width:4px}.mark::after{content:"";position:absolute;width:8px;height:2px;background:#fff;right:5px;top:5px}
+  main{padding:72px 0 48px}.eyebrow{display:inline-flex;padding:6px 11px;border:1px solid var(--fg);border-radius:999px;background:var(--acid);color:var(--fg);font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+  h1{font:900 clamp(34px,6vw,54px)/1 var(--display);letter-spacing:-.07em;margin:19px 0 14px}.intro{max-width:39rem;color:var(--muted);margin:0;font-size:17px}.updated{color:var(--muted);font-size:13px;margin-top:22px}
+  .policy{margin-top:42px;border:2px solid var(--fg);border-radius:var(--r);background:var(--panel);overflow:hidden;box-shadow:0 18px 48px rgba(22,32,49,.12)}
+  section{padding:26px 28px;border-bottom:1px solid var(--line)}section:last-child{border:0}h2{font:850 19px var(--display);letter-spacing:-.04em;margin:0 0 9px}p{margin:0 0 13px;color:var(--muted)}p:last-child{margin-bottom:0}strong{color:var(--fg)}code{background:#EEE9E0;border:1px solid var(--line);padding:.1rem .35rem;border-radius:5px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--fg);overflow-wrap:anywhere}
+  .callout{display:flex;gap:11px;margin-top:16px;padding:13px 14px;border-radius:11px;background:var(--acid);border:2px solid var(--fg);color:var(--fg);font-size:14px}.callout b{color:var(--fg);font-size:17px;line-height:1}
+  footer{margin-top:34px;padding:25px 0 46px;border-top:2px solid var(--fg);color:var(--muted);font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}@media(max-width:580px){main{padding-top:52px}.policy section{padding:22px 20px}}
+</style>
+</head>
+<body>
+<header class="sitehead"><div class="wrap"><a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>Floor Plan Studio</a></div></header>
+<main class="wrap">
+  <span class="eyebrow">Plain language privacy</span>
+  <h1>Your plan is yours.</h1>
+  <p class="intro">Floor Plan Studio is designed to work on your device. This page explains exactly what that means and what changes if the site later introduces advertising or analytics.</p>
+  <p class="updated">Last updated 30 August 2026</p>
+  <div class="policy">
+    <section><h2>Who runs Floor Plan Studio</h2><p>Floor Plan Studio is made by Tarek Fouad. Contact: <a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a>. This policy covers <code>tarekfouad97.github.io/Floor-Plan-Studio</code>.</p></section>
+    <section><h2>Your floor plans stay on your device</h2><p>Plans are saved in your own browser using local storage. They are not uploaded, and I cannot see them. Clearing browser data removes saved plans. Files you export live only on your computer.</p><p>Images used as tracing guides are processed in your browser and never leave your device.</p></section>
+    <section><h2>What is collected today</h2><p><strong>Floor Plan Studio currently uses no analytics, tracking scripts, advertising, or cookies.</strong> After the page loads, the application makes no network requests of its own.</p><p>GitHub Pages, the hosting provider, records standard server logs when a page is requested, including IP addresses, to operate and protect the service. That happens before this app runs and is covered by GitHub’s <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">privacy statement</a>.</p></section>
+    <section><h2>If advertising is introduced</h2><p>Advertising is not active today. Before any advertising or analytics is enabled, this policy will be updated with the provider, purpose, data categories, retention details, and how to change consent. Where required, a consent choice will appear before non-essential advertising technology loads.</p><div class="callout"><b aria-hidden="true">✦</b><span>The planner itself will remain usable without an account, and your plan data will not be sold or sent to an ad provider.</span></div></section>
+    <section><h2>Your rights and questions</h2><p>If you are in the UK or EU, you may ask what data is held about you, request correction or deletion, or complain to your data-protection authority. Because plans stay on your device and no analytics are collected today, there is normally no plan data to provide or erase. Email <a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a> with a request.</p></section>
+  </div>
+</main>
+<footer class="wrap"><span>© 2026 Tarek Fouad</span><a href="index.html">Back to Floor Plan Studio</a></footer>
+</body>
+</html>

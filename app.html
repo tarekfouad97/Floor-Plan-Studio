@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Floor Plan Editor</title>
+<meta name="theme-color" content="#f4f0e8">
+<title>Floor Plan Studio — planner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231b46f4'/><path d='M8 9h16M8 16h16M8 23h16' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>">
 <style>
   /* ==================================================================
      TOKENS
@@ -12,26 +14,31 @@
      the primary action.
      ================================================================== */
   :root{
-    color-scheme:dark;
-    --app:#0B0D10; --panel:#14171C; --raised:#1C2027; --sunk:#0E1116;
-    --line:rgba(255,255,255,.06); --line-2:rgba(255,255,255,.10);
-    --line-3:rgba(255,255,255,.16);
-    /* --fg-3 is the dimmest tone allowed to carry TEXT: measured 4.82:1 on
-       --panel and 4.38:1 on --raised. --fg-4 is for hairlines and dormant
+    color-scheme:light;
+    --app:#F4F0E8; --panel:#FFFDF8; --raised:#FFFFFF; --sunk:#EEE9E0;
+    --line:rgba(22,32,49,.10); --line-2:rgba(22,32,49,.16);
+    --line-3:rgba(22,32,49,.28);
+    /* --fg-3 is the dimmest tone allowed to carry TEXT: measured 4.94:1 on
+       --panel and 5.02:1 on --raised. --fg-4 is for hairlines and dormant
        glyphs only, never a label. */
-    --fg:#E6E9EF; --fg-2:#9BA3B0; --fg-3:#8A93A2; --fg-4:#6B7381;
-    --accent:#4F5FE6; --accent-2:#7C8AF7; --accent-ink:#FFFFFF;
-    --accent-wash:rgba(91,108,240,.15); --accent-line:rgba(91,108,240,.45);
-    --warn:#E0A264; --warn-wash:rgba(224,162,100,.11); --warn-line:rgba(224,162,100,.26);
-    --err:#E8806E;  --err-wash:rgba(232,128,110,.11);  --err-line:rgba(232,128,110,.26);
-    --ok:#5FC08A;   --ok-wash:rgba(95,192,138,.11);
+    --fg:#162031; --fg-2:#435064; --fg-3:#657080; --fg-4:#8A928F;
+    /* alias: 14 inline styles in the markup reach for --muted. Undefined, they
+       silently inherited --fg and rendered secondary labels at full strength. */
+    --muted:var(--fg-3);
+    --accent:#1B46F4; --accent-2:#1534B7; --accent-ink:#FFFFFF;
+    --signal:#C8FF3D; --signal-ink:#162031;
+    --accent-wash:rgba(27,70,244,.10); --accent-line:rgba(27,70,244,.42);
+    --warn:#B94732; --warn-wash:rgba(250,128,99,.14); --warn-line:rgba(185,71,50,.32);
+    --err:#B94732;  --err-wash:rgba(250,128,99,.14);  --err-line:rgba(185,71,50,.32);
+    --ok:#507000;   --ok-wash:rgba(200,255,61,.26);
     /* the drawing surface never follows the theme: it is what prints */
-    --paper:#FAFAF8; --paper-edge:#E8E8E4;
-    --sh-1:0 1px 2px rgba(0,0,0,.45);
-    --sh-2:0 2px 6px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.34);
-    --sh-3:0 10px 34px rgba(0,0,0,.5),0 3px 10px rgba(0,0,0,.36);
-    --sh-4:0 28px 70px rgba(0,0,0,.62),0 8px 24px rgba(0,0,0,.44);
-    --r:10px; --r-sm:7px; --r-xs:5px; --r-lg:14px;
+    --paper:#FFFDF8; --paper-edge:#DED8CD;
+    --sh-1:0 1px 2px rgba(22,32,49,.08);
+    --sh-2:0 4px 10px rgba(22,32,49,.08),0 12px 24px rgba(22,32,49,.07);
+    --sh-3:0 12px 32px rgba(22,32,49,.16),0 3px 8px rgba(22,32,49,.08);
+    --sh-4:0 28px 70px rgba(22,32,49,.22),0 8px 24px rgba(22,32,49,.12);
+    --r:12px; --r-sm:9px; --r-xs:6px; --r-lg:18px;
+    --display:ui-rounded,"Arial Rounded MT Bold",ui-sans-serif,system-ui,sans-serif;
     /* 4px grid */
     --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px;
     /* motion */
@@ -40,22 +47,6 @@
     --spring:cubic-bezier(.34,1.56,.5,1);
     --t-in:200ms; --t-out:120ms; --t-slow:260ms;
     --lw:236px; --rw:318px; --pad-l:236px; --pad-r:318px;
-  }
-  :root[data-theme="light"]{
-    color-scheme:light;
-    --app:#EDEFF3; --panel:#FFFFFF; --raised:#FFFFFF; --sunk:#F4F6F9;
-    --line:rgba(12,18,28,.09); --line-2:rgba(12,18,28,.14);
-    --line-3:rgba(12,18,28,.22);
-    --fg:#11151B; --fg-2:#535C6A; --fg-3:#5F6875; --fg-4:#828B99;
-    --accent:#3E4FD8; --accent-2:#4453D6; --accent-ink:#FFFFFF;
-    --accent-wash:rgba(62,79,216,.09); --accent-line:rgba(62,79,216,.34);
-    --warn:#9A5A12; --warn-wash:rgba(154,90,18,.08); --warn-line:rgba(154,90,18,.22);
-    --err:#B33B2A;  --err-wash:rgba(179,59,42,.07);   --err-line:rgba(179,59,42,.2);
-    --ok:#12794E;   --ok-wash:rgba(18,121,78,.08);
-    --sh-1:0 1px 2px rgba(12,18,28,.06);
-    --sh-2:0 2px 6px rgba(12,18,28,.07),0 8px 20px rgba(12,18,28,.06);
-    --sh-3:0 10px 34px rgba(12,18,28,.11),0 3px 10px rgba(12,18,28,.06);
-    --sh-4:0 28px 70px rgba(12,18,28,.2),0 8px 24px rgba(12,18,28,.1);
   }
 
   /* every motion in the file answers to this */
@@ -67,7 +58,7 @@
 
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
-  body{font:13px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
+  body{font:13px/1.5 var(--display),ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
        "Segoe UI",Roboto,"Helvetica Neue",sans-serif;
        color:var(--fg);background:var(--app);overflow:hidden;
        -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
@@ -129,8 +120,13 @@
        transition:background var(--t-out) var(--exit),color var(--t-out) var(--exit)}
   #bar .home:hover{background:var(--raised);color:var(--fg)}
   #bar .home i{width:19px;height:19px;border-radius:5px;display:grid;place-items:center;
-       background:var(--accent);color:var(--accent-ink);font-style:normal;font-size:10px;
-       flex:none;transition:transform var(--t-in) var(--spring)}
+       background:linear-gradient(135deg,var(--accent-2),var(--accent));color:transparent;
+       font-style:normal;font-size:10px;flex:none;position:relative;overflow:hidden;
+       transition:transform var(--t-in) var(--spring)}
+  #bar .home i::before{content:"";position:absolute;inset:5px;border:1px solid #fff;
+       border-left-width:2px;border-bottom-width:2px;border-radius:1px}
+  #bar .home i::after{content:"";position:absolute;width:5px;height:1px;background:#fff;
+       right:3px;top:3px;border-radius:2px}
   #bar .home:hover i{transform:rotate(-6deg) scale(1.08)}
   .sep{width:1px;height:18px;background:var(--line-2);flex:none;margin:0 var(--s1)}
 
@@ -157,7 +153,6 @@
   /* the Claude action: same single accent, marked by its glyph not a hue */
   .btn.spark{background:var(--accent-wash);color:var(--accent-2);
        border-color:var(--accent-line);font-weight:580}
-  :root[data-theme="light"] .btn.spark{color:var(--accent)}
   .btn.spark:hover{background:var(--accent);color:var(--accent-ink);
        border-color:transparent;box-shadow:0 2px 10px rgba(91,108,240,.32)}
   .btn.spark .sp-star{display:inline-block;font-size:10px;line-height:1;
@@ -298,7 +293,6 @@
       border-radius:100px;padding:6px var(--s4);box-shadow:var(--sh-3);
       opacity:0;font-size:12px;color:var(--fg-2);
       -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-  :root[data-theme="light"] #measure{background:rgba(255,255,255,.94)}
   #measure.on{display:flex;animation:measureIn 260ms var(--spring) forwards}
   #measure.off{display:flex;animation:measureOut 120ms var(--exit) forwards}
   @keyframes measureIn {from{opacity:0;transform:translateX(-50%) translateY(8px) scale(.94)}
@@ -317,7 +311,6 @@
          padding:9px var(--s4);border-radius:var(--r);font-size:12px;display:none;
          z-index:9;box-shadow:var(--sh-3);opacity:0;max-width:70%;line-height:1.45;
          transition:opacity var(--t-in) var(--enter),transform var(--t-in) var(--enter)}
-  :root[data-theme="light"] #toast{background:rgba(255,255,255,.97)}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 
   /* canvas empty state */
@@ -330,7 +323,6 @@
      -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px) saturate(1.2);
      border:1px solid var(--line-2);border-radius:var(--r-lg);
      box-shadow:var(--sh-3);animation:eIn .4s var(--enter) both;color:var(--fg)}
-  :root[data-theme="light"] #empty .ecard{background:rgba(255,255,255,.95)}
   @keyframes eIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
   #empty .eicon{width:38px;height:38px;margin:0 auto var(--s3);border-radius:11px;
      display:grid;place-items:center;font-size:16px;color:var(--accent-ink);
@@ -524,7 +516,6 @@
   #v3ctl{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
      background:rgba(20,23,28,.9)!important;border:1px solid var(--line-2)!important;
      box-shadow:var(--sh-3);border-radius:var(--r)!important;color:var(--fg-2)}
-  :root[data-theme="light"] #v3ctl{background:rgba(255,255,255,.94)!important}
   #v3ctl input[type=range]{accent-color:var(--accent)}
   #v3ctl label{color:var(--fg-3)!important}
   #v3ctl input[type=number]{background:var(--sunk);color:var(--fg);
@@ -533,7 +524,6 @@
      border:1px solid var(--line-2);box-shadow:var(--sh-2);
      -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
      border-radius:var(--r-sm)}
-  :root[data-theme="light"] #hint3{background:rgba(255,255,255,.94)!important}
 
   #warnbar{grid-column:1/4;background:var(--warn-wash);
            border-bottom:1px solid var(--warn-line);color:var(--warn);
@@ -548,6 +538,31 @@
   #saveBadge.dirty{background:var(--warn-wash);color:var(--warn)}
   #saveBadge.none{background:var(--err-wash);color:var(--err)}
   #print{display:none}
+
+  /* Blueprint editorial layer: shared with the public site, while the
+     interaction model below remains deliberately dense for active planning. */
+  #bar{background:rgba(255,253,248,.94);border-bottom:2px solid var(--fg);
+       -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+  #bar .home{font-family:var(--display);font-weight:800;color:var(--fg);letter-spacing:-.035em}
+  #bar .nm{font-family:var(--display);font-weight:800;color:var(--fg)}
+  #bar .home:hover{background:var(--accent-wash);color:var(--accent)}
+  .btn{font-family:var(--display);font-weight:750;border-color:var(--line-2)}
+  .btn:hover{background:var(--accent-wash);border-color:var(--accent-line);box-shadow:none}
+  .btn.pri{box-shadow:0 4px 0 var(--accent-2),0 7px 13px rgba(27,70,244,.16)}
+  .btn.pri:hover{box-shadow:0 6px 0 var(--accent-2),0 9px 18px rgba(27,70,244,.2)}
+  .btn.spark{background:var(--signal);color:var(--signal-ink);border-color:var(--fg);
+       box-shadow:0 3px 0 var(--fg)}
+  .btn.spark:hover{background:#b7ee2c;color:var(--signal-ink);border-color:var(--fg);box-shadow:0 4px 0 var(--fg)}
+  .btn.on,.tool.on,.scn.on{background:var(--signal)!important;color:var(--signal-ink)!important;
+       border-color:var(--fg)!important;box-shadow:0 2px 0 var(--fg)!important}
+  .tool,.grp>summary,.it,.lay,.scn{font-family:var(--display)}
+  .hd{font-family:var(--display);color:var(--fg);letter-spacing:.08em}
+  aside{background:var(--panel)}
+  #stage{background:var(--paper);background-image:radial-gradient(rgba(22,32,49,.11) .65px,transparent .65px);background-size:14px 14px}
+  #empty .ecard,#toast,#measure{background:rgba(255,253,248,.96);color:var(--fg);border-color:var(--line-3)}
+  #hint3,#hint{background:rgba(255,253,248,.96)!important;color:var(--fg-2)!important;border-color:var(--line-2)}
+  #status{background:var(--panel);border-top:2px solid var(--fg)}
+  dialog::backdrop{background:rgba(22,32,49,.35)}
 
   /* responsive: shed chrome before shedding controls */
   @media (max-width:1180px){
@@ -567,10 +582,10 @@
 
   @page{size:A4 landscape;margin:9mm}
   @media print{
-    /* Paper is paper. The dark theme must not reach the printer: the tokens
-       are forced back to ink-on-white here, because #print inherits body
-       colour and a near-white --fg would print invisibly. */
-    :root,:root[data-theme="dark"],:root[data-theme="light"]{
+    /* Paper is paper. The screen palette must not reach the printer: the
+       tokens are forced back to ink-on-white here, because #print inherits
+       body colour and a cream --paper would tint every page. */
+    :root{
       --app:#fff; --panel:#fff; --raised:#fff; --sunk:#fff; --paper:#fff;
       --fg:#000; --fg-2:#222; --fg-3:#444; --fg-4:#666;
       --line:#999; --line-2:#999; --line-3:#666;
@@ -626,7 +641,6 @@
     <button class="btn" id="b3d">3D view</button>
     <button class="btn spark" id="bAI"><span class="sp-star">&#10022;</span>Furnish</button>
     <button class="btn pri" id="bPrint">Print / PDF</button>
-    <button class="btn ico" id="bTheme" title="Switch theme" aria-label="Switch theme"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg></button>
   </div>
 
   <div class="menu" id="menuFile" role="menu">
@@ -762,7 +776,7 @@
     <span style="opacity:.7">[ ] fold panels</span>
     <span class="sep" style="height:12px"></span>
     <span id="stBuild" title="Which build is loaded. If this is older than you expect, hard-reload: Cmd/Ctrl + Shift + R."
-          style="opacity:.55;cursor:default">build 2026-08-30.1340</span>
+          style="opacity:.55;cursor:default">build 2026-08-30.1739</span>
   </div>
 </div>
 
@@ -4568,21 +4582,6 @@ function revealSection(key){
     setSection(sec,false); UI.sec[key]=1; uiSave();
   }
 }
-
-/* ---- theme ----------------------------------------------------------
-   Chrome only. The drawing keeps its paper palette in both themes: it is
-   what gets printed and exported, and a plan reads as ink on paper. */
-function applyTheme(t){
-  document.documentElement.setAttribute("data-theme",t);
-  UI.theme=t; uiSave();
-  const b=$("bTheme");
-  if(b) b.title = t==="dark" ? "Switch to light" : "Switch to dark";
-}
-/* Dark is the default for this tool, not a mirror of the OS. Light stays a
-   deliberate choice, and is remembered once made. */
-applyTheme(UI.theme==="light" ? "light" : "dark");
-$("bTheme").onclick=()=>applyTheme(
-  document.documentElement.getAttribute("data-theme")==="dark" ? "light" : "dark");
 
 /* ---- canvas empty state ---------------------------------------------
    A blank grid tells a first-time visitor nothing, and once the walls are
