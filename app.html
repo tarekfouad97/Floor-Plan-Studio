@@ -268,7 +268,11 @@
   /* Once there is a plan to look at, get out of its way: sit low so the
      drawing stays visible behind the invitation. */
   #empty.claude{place-items:end center;padding-bottom:34px}
-  #empty .ecard{pointer-events:auto;text-align:center;max-width:400px;padding:22px 28px;
+  /* The card is a hint laid over the drawing surface, so it must not take
+     pointer events - only its own buttons do. Sitting centre-screen with
+     pointer-events:auto it was swallowing the clicks meant to draw the
+     first wall. */
+  #empty .ecard{pointer-events:none;text-align:center;max-width:400px;padding:22px 28px;
      background:color-mix(in srgb,var(--panel) 88%,transparent);
      backdrop-filter:blur(14px) saturate(1.2);
      border:1px solid var(--line);border-radius:var(--r-lg);
@@ -295,6 +299,7 @@
   #empty .etitle{font-size:16.5px;font-weight:680;letter-spacing:-.015em;margin-bottom:7px}
   #empty .ebody{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:16px}
   #empty .eacts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  #empty .eacts .btn{pointer-events:auto}
 
   #numchip{position:absolute;background:var(--ink);color:var(--panel);padding:4px 9px;
            border-radius:6px;font-size:12px;font-variant-numeric:tabular-nums;
@@ -1735,6 +1740,7 @@ const TOOLS=[["select","Select","V"],["wall","Wall","W"],["door","Door","D"],
   ["window","Window","N"],["opening","Opening","O"],["room","Room","R"],
   ["text","Text","T"],["dim","Dimension","M"],["note","Leader","L"],["erase","Erase","E"]];
 function setTool(t){
+  if(t!=="select" && typeof dismissEmpty==="function") dismissEmpty();
   S.tool=t; S.draw=null; S.numBuf=""; S.cal=null;
   $("stTool").textContent=(TOOLS.find(x=>x[0]===t)||[,t])[1];
   const hints={wall:"Click to start. Type a number + Enter for an exact length. Esc ends.",
@@ -1899,6 +1905,7 @@ function pinchState(){
           cx:(a.x+b.x)/2, cy:(a.y+b.y)/2};
 }
 cv.addEventListener("pointerdown",e=>{
+  if(typeof dismissEmpty==="function") dismissEmpty();
   if(e.pointerType==="touch"){
     touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(touches.size===2){
@@ -2083,6 +2090,7 @@ cv.addEventListener("wheel",e=>{
 cv.addEventListener("dragover",e=>{e.preventDefault();e.dataTransfer.dropEffect="copy";});
 cv.addEventListener("drop",e=>{
   e.preventDefault();
+  if(typeof dismissEmpty==="function") dismissEmpty();
   const f=e.dataTransfer.files&&e.dataTransfer.files[0];
   if(f&&f.type.startsWith("image/")){ loadImageFile(f); return; }
   const cid=e.dataTransfer.getData("text/plain");
@@ -3921,7 +3929,7 @@ async function guardSwitch(){
   return r==="alt";
 }
 function adoptDoc(doc,name){
-  DOC=doc; if(name) DOC.name=name; rebase();
+  DOC=doc; if(name) DOC.name=name; rebase(); S.emptyOff=false;
   S.sel=[]; S.undo=[]; S.redo=[]; fileHandle=null;
   S.projectId = STORAGE_OK ? ("p"+Date.now()) : null;
   dirty=true; if(STORAGE_OK) flushSave(); else updateBadge();
@@ -4072,6 +4080,7 @@ function reseedIds(){
    needed "replace" ticked: that branch happened to assign the arrays first
    and repaired the document on its way past. */
 function normalizeDoc(){
+  S.emptyOff=false;               // a different document, so offer the hint again
   for(const k of ["walls","openings","rooms","items","texts","dims",
                   "notes","elec","circuits","scenes"])
     if(!Array.isArray(DOC[k])) DOC[k]=[];
@@ -4312,8 +4321,19 @@ $("bTheme").onclick=()=>applyTheme(
    A blank grid tells a first-time visitor nothing, and once the walls are
    up the Claude route is the thing most people want next - so offer it at
    that moment instead of leaving it to be discovered. */
+/* Dismissed for this document. Drawing a wall chain does not commit until
+   the chain ends, so refreshAll - and with it refreshEmpty - does not run
+   for the whole time you are placing points. The card stayed up through the
+   entire first draw. Any real interaction now retires it, and it only comes
+   back for a different document. */
+function dismissEmpty(){
+  if(S.emptyOff) return;
+  S.emptyOff=true;
+  const h=$("empty"); if(h){ h.className=""; h.dataset.mode=""; }
+}
 function refreshEmpty(){
   const host=$("empty"); if(!host) return;
+  if(S.emptyOff){ host.className=""; return; }
   const noWalls=!DOC.walls.length, rooms=DOC.rooms.length, items=DOC.items.length;
   let mode=null;
   if(is3D) mode=null;
@@ -4341,7 +4361,7 @@ function refreshEmpty(){
     bo.textContent="Claude can lay out the furniture at real sizes, keeping walkways "+
                    "clear and doors unblocked — or drag pieces from the catalogue yourself.";
     act("Furnish with Claude","spark",()=>openAI());
-    act("I'll do it myself","",()=>{ $("empty").className=""; revealSection("cats"); });
+    act("I'll do it myself","",()=>{ dismissEmpty(); revealSection("cats"); });
   }
 }
 
