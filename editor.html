@@ -651,6 +651,10 @@
        transition:background-color var(--t-slow) var(--enter)}
   :root[data-sheet="dark"] #stage{--paper:#0D1016;--paper-grid:rgba(255,255,255,.11)}
   :root[data-sheet="dark"] #stage svg#cv{filter:invert(1) hue-rotate(180deg)}
+  /* A light's pool is a faint warm tint on white paper. Inverted onto black it
+     becomes a glowing disc, which is truthful but, on a flat with forty
+     fittings, buries the plan under it. Halve them on the dark sheet. */
+  :root[data-sheet="dark"] #stage svg#cv .pool{opacity:.42}
   #bSheet .moon{display:none}
   :root[data-sheet="dark"] #bSheet .sun{display:none}
   :root[data-sheet="dark"] #bSheet .moon{display:block}
@@ -2063,9 +2067,10 @@ function render(){
       if(isLight&&lvl){
         const spread=Math.sqrt(lightLumens(e)/600)*90;
         el("circle",{cx:0,cy:0,r:spread,fill:kelvinCSS(lightKelvin(e),.13*lvl/100),
-                     stroke:"none"},g);
+                     stroke:"none",class:"pool"},g);
         el("circle",{cx:0,cy:0,r:spread*.55,
-                     fill:kelvinCSS(lightKelvin(e),.16*lvl/100),stroke:"none"},g);
+                     fill:kelvinCSS(lightKelvin(e),.16*lvl/100),stroke:"none",
+                     class:"pool"},g);
       }
       el("circle",{cx:0,cy:0,r:R*1.5,fill:"#fff",opacity:.75},g);
       drawElec(g,e.kind,R,col,on);

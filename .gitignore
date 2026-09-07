@@ -3,3 +3,6 @@
 # Vite dependency cache
 v2/.vite/
 node_modules/
+
+# recovered local designs - private, do not publish
+recovered-designs/
