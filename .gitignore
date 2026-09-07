@@ -1,1 +1,5 @@
 .DS_Store
+
+# Vite dependency cache
+v2/.vite/
+node_modules/

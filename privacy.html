@@ -1,42 +1,360 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f4f0e8">
-<title>Privacy — Floor Plan Studio</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231b46f4'/><path d='M8 9h16M8 16h16M8 23h16' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>">
+<meta name="theme-color" content="#05060A">
+<title>Privacy policy — Floor Plan Studio</title>
+<meta name="description" content="Floor Plan Studio runs entirely in your browser. No account, no analytics, no cookies, no advertising, and nothing you draw is ever sent anywhere. Here is exactly what that means.">
+<link rel="canonical" href="https://tarekfouad97.github.io/Floor-Plan-Studio/privacy.html">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='4' y1='2' x2='28' y2='20' gradientUnits='userSpaceOnUse'><stop stop-color='%237DD3FC'/><stop offset='1' stop-color='%23818CF8'/></linearGradient></defs><path d='M4 19.5 16 26 16 29 4 22.5Z' fill='%23312E81'/><path d='M28 19.5 16 26 16 29 28 22.5Z' fill='%233730A3'/><path d='M16 13 28 19.5 16 26 4 19.5Z' fill='%234338CA'/><path d='M4 10.5 16 17 16 20 4 13.5Z' fill='%234F46E5'/><path d='M28 10.5 16 17 16 20 28 13.5Z' fill='%234338CA'/><path d='M16 4 28 10.5 16 17 4 10.5Z' fill='url(%23g)'/></svg>">
+
 <style>
-  :root{color-scheme:light;--app:#F4F0E8;--panel:#FFFDF8;--raised:#FFFFFF;--line:rgba(22,32,49,.12);--fg:#162031;--muted:#5A6573;--accent:#1B46F4;--accent-deep:#1534B7;--acid:#C8FF3D;--r:18px;--display:ui-rounded,"Arial Rounded MT Bold",ui-sans-serif,system-ui,sans-serif}
-  *{box-sizing:border-box} html{scroll-behavior:smooth}
-  body{margin:0;background:var(--app);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-  a{color:var(--accent)} a:focus-visible{outline:3px solid #FA8063;outline-offset:3px;border-radius:5px}
-  .wrap{width:min(100% - 32px,760px);margin:auto}.sitehead{border-bottom:1px solid var(--line);background:rgba(244,240,232,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
-  .sitehead .wrap{height:64px;display:flex;align-items:center}.brand{display:flex;align-items:center;gap:10px;color:var(--fg);text-decoration:none;font:800 17px var(--display);letter-spacing:-.05em}
-  .mark{width:30px;height:30px;border-radius:9px;background:var(--accent);position:relative;overflow:hidden;box-shadow:inset -4px -4px 0 rgba(0,0,0,.12)}.mark::before{content:"";position:absolute;inset:8px;border:2px solid #fff;border-left-width:4px;border-bottom-width:4px}.mark::after{content:"";position:absolute;width:8px;height:2px;background:#fff;right:5px;top:5px}
-  main{padding:72px 0 48px}.eyebrow{display:inline-flex;padding:6px 11px;border:1px solid var(--fg);border-radius:999px;background:var(--acid);color:var(--fg);font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
-  h1{font:900 clamp(34px,6vw,54px)/1 var(--display);letter-spacing:-.07em;margin:19px 0 14px}.intro{max-width:39rem;color:var(--muted);margin:0;font-size:17px}.updated{color:var(--muted);font-size:13px;margin-top:22px}
-  .policy{margin-top:42px;border:2px solid var(--fg);border-radius:var(--r);background:var(--panel);overflow:hidden;box-shadow:0 18px 48px rgba(22,32,49,.12)}
-  section{padding:26px 28px;border-bottom:1px solid var(--line)}section:last-child{border:0}h2{font:850 19px var(--display);letter-spacing:-.04em;margin:0 0 9px}p{margin:0 0 13px;color:var(--muted)}p:last-child{margin-bottom:0}strong{color:var(--fg)}code{background:#EEE9E0;border:1px solid var(--line);padding:.1rem .35rem;border-radius:5px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--fg);overflow-wrap:anywhere}
-  .callout{display:flex;gap:11px;margin-top:16px;padding:13px 14px;border-radius:11px;background:var(--acid);border:2px solid var(--fg);color:var(--fg);font-size:14px}.callout b{color:var(--fg);font-size:17px;line-height:1}
-  footer{margin-top:34px;padding:25px 0 46px;border-top:2px solid var(--fg);color:var(--muted);font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}@media(max-width:580px){main{padding-top:52px}.policy section{padding:22px 20px}}
+/* Same sheet as the home page. Hand-written, no framework, no webfont, no CDN —
+   which is what lets section 4 below say "no third-party requests" honestly. */
+:root{
+  --ink:#05060A; --ink-2:#0A0C12;
+  --rule:rgba(255,255,255,.09); --rule-2:rgba(255,255,255,.16);
+  --chalk:#EDEEF2; --chalk-2:#9BA1B0; --chalk-3:#6B7183;
+  --indigo:#6366F1; --indigo-2:#4F46E5; --cyan:#38BDF8;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,ui-sans-serif,
+         system-ui,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
+         "Liberation Mono",monospace;
+  --gut:clamp(20px,5vw,40px);
+  --enter:cubic-bezier(.16,1,.3,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--chalk);font:16px/1.7 var(--sans);
+     -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:34px 34px;
+  -webkit-mask-image:radial-gradient(130% 60% at 50% 0%,#000 25%,transparent 75%);
+          mask-image:radial-gradient(130% 60% at 50% 0%,#000 25%,transparent 75%);
+}
+a{color:inherit}
+h1,h2,h3{margin:0;letter-spacing:-.03em;line-height:1.1;font-weight:660}
+p,ul{margin:0}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+.wrap{width:min(1120px,100% - var(--gut)*2);margin-inline:auto}
+/* the prose sits at the same left edge as the wordmark above it, but stops
+   at a readable measure rather than running the full width of the header */
+.head>*,main section{max-width:790px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.skip{position:absolute;left:-9999px;top:0;background:var(--indigo);color:#fff;
+      padding:10px 16px;border-radius:0 0 8px 0;z-index:99}
+.skip:focus{left:0}
+
+header{position:sticky;top:0;z-index:50;background:rgba(5,6,10,.72);
+  border-bottom:1px solid var(--rule);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+          backdrop-filter:blur(18px) saturate(1.4)}
+.hbar{display:flex;align-items:center;gap:20px;height:60px;
+      width:min(1120px,100% - var(--gut)*2);margin-inline:auto}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;
+      font-weight:680;letter-spacing:-.025em;font-size:1.02rem;white-space:nowrap}
+.tile{width:27px;height:27px;flex:none;position:relative;display:block}
+.tile svg{width:100%;height:100%;display:block;
+  filter:drop-shadow(0 3px 9px rgba(99,102,241,.55));
+  transition:opacity .6s var(--enter)}
+.tile canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;
+  transition:opacity .6s var(--enter);
+  filter:drop-shadow(0 3px 9px rgba(99,102,241,.55))}
+.tile canvas.on{opacity:1}
+.tile.live svg{opacity:0}
+nav{margin-left:auto;display:flex;align-items:center;gap:clamp(14px,2.4vw,28px)}
+nav a{color:var(--chalk-2);text-decoration:none;font-size:.92rem}
+nav a:hover{color:var(--chalk)}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  padding:8px 15px;border-radius:9px;font-weight:600;font-size:.88rem;
+  background:linear-gradient(135deg,var(--indigo),var(--indigo-2));color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 26px rgba(79,70,229,.4)}
+
+.head{padding:clamp(52px,8vw,88px) 0 0}
+h1{font-size:clamp(2.1rem,5vw,3.1rem);letter-spacing:-.038em}
+.stamp{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);
+  font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);
+  border:1px solid rgba(56,189,248,.3);background:rgba(56,189,248,.07);
+  border-radius:100px;padding:6px 13px;margin-bottom:22px}
+.stamp .dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 10px var(--cyan)}
+.sum{margin-top:22px;font-size:clamp(1.02rem,1.5vw,1.16rem);color:var(--chalk-2)}
+.dates{margin-top:26px;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;
+  color:var(--chalk-3);display:flex;flex-wrap:wrap;gap:6px 22px}
+
+/* the short version, before the long version */
+.tldr{margin-top:40px;border:1px solid var(--rule-2);border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+  padding:clamp(20px,3vw,28px)}
+.tldr h2{font-size:.7rem;font-family:var(--mono);letter-spacing:.19em;
+  text-transform:uppercase;color:var(--chalk-3);margin-bottom:16px;font-weight:600}
+.tldr ul{list-style:none;padding:0;display:grid;gap:11px}
+.tldr li{display:flex;gap:12px;font-size:.97rem;color:var(--chalk-2)}
+.tldr li b{color:var(--chalk);font-weight:600}
+.tldr .y{color:var(--indigo);flex:none;font-weight:700;width:14px;text-align:center}
+
+main{padding-bottom:20px}
+section{padding-top:clamp(44px,6vw,64px);scroll-margin-top:78px}
+section>h2{font-size:clamp(1.32rem,2.4vw,1.62rem);margin-bottom:6px}
+section .ref{font-family:var(--mono);font-size:.68rem;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--chalk-3);display:block;
+  border-top:1px solid var(--rule);padding-top:13px;margin-bottom:16px}
+section p{margin-top:14px;color:var(--chalk-2)}
+section p:first-of-type{margin-top:0}
+section ul{margin-top:14px;padding-left:0;list-style:none;display:grid;gap:10px}
+section ul li{position:relative;padding-left:20px;color:var(--chalk-2)}
+section ul li::before{content:"";position:absolute;left:0;top:.78em;width:9px;height:1px;
+  background:var(--rule-2)}
+section b,section strong{color:var(--chalk);font-weight:600}
+section a{color:var(--cyan)}
+code{font-family:var(--mono);font-size:.88em;background:rgba(255,255,255,.06);
+  padding:1px 6px;border-radius:5px;color:var(--chalk)}
+
+.note{margin-top:20px;border-left:2px solid var(--indigo);padding:2px 0 2px 18px;
+  color:var(--chalk-2);font-size:.95rem}
+
+footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
+  padding:34px 0 56px}
+.foot{display:flex;flex-wrap:wrap;gap:18px 26px;align-items:center;
+      width:min(1120px,100% - var(--gut)*2);margin-inline:auto}
+.foot .sp{flex:1}
+.foot a{color:var(--chalk-2);text-decoration:none;font-size:.9rem}
+.foot a:hover{color:var(--chalk)}
+.foot .fine{font-family:var(--mono);font-size:.7rem;color:var(--chalk-3);
+  letter-spacing:.04em;width:100%;margin-top:6px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 </head>
 <body>
-<header class="sitehead"><div class="wrap"><a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>Floor Plan Studio</a></div></header>
-<main class="wrap">
-  <span class="eyebrow">Plain language privacy</span>
-  <h1>Your plan is yours.</h1>
-  <p class="intro">Floor Plan Studio is designed to work on your device. This page explains exactly what that means and what changes if the site later introduces advertising or analytics.</p>
-  <p class="updated">Last updated 30 August 2026</p>
-  <div class="policy">
-    <section><h2>Who runs Floor Plan Studio</h2><p>Floor Plan Studio is made by Tarek Fouad. Contact: <a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a>. This policy covers <code>tarekfouad97.github.io/Floor-Plan-Studio</code>.</p></section>
-    <section><h2>Your floor plans stay on your device</h2><p>Plans are saved in your own browser using local storage. They are not uploaded, and I cannot see them. Clearing browser data removes saved plans. Files you export live only on your computer.</p><p>Images used as tracing guides are processed in your browser and never leave your device.</p></section>
-    <section><h2>What is collected today</h2><p><strong>Floor Plan Studio currently uses no analytics, tracking scripts, advertising, or cookies.</strong> After the page loads, the application makes no network requests of its own.</p><p>GitHub Pages, the hosting provider, records standard server logs when a page is requested, including IP addresses, to operate and protect the service. That happens before this app runs and is covered by GitHub’s <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">privacy statement</a>.</p></section>
-    <section><h2>If advertising is introduced</h2><p>Advertising is not active today. Before any advertising or analytics is enabled, this policy will be updated with the provider, purpose, data categories, retention details, and how to change consent. Where required, a consent choice will appear before non-essential advertising technology loads.</p><div class="callout"><b aria-hidden="true">✦</b><span>The planner itself will remain usable without an account, and your plan data will not be sold or sent to an ad provider.</span></div></section>
-    <section><h2>Your rights and questions</h2><p>If you are in the UK or EU, you may ask what data is held about you, request correction or deletion, or complain to your data-protection authority. Because plans stay on your device and no analytics are collected today, there is normally no plan data to provide or erase. Email <a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a> with a request.</p></section>
+<a class="skip" href="#main">Skip to content</a>
+
+<header>
+  <div class="hbar">
+    <a class="mark" href="index.html"><span class="tile"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="mk0" x1="4" y1="2" x2="28" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#7DD3FC"/><stop offset="1" stop-color="#818CF8"/></linearGradient></defs><path d="M4 19.5 16 26 16 29 4 22.5Z" fill="#312E81"/><path d="M28 19.5 16 26 16 29 28 22.5Z" fill="#3730A3"/><path d="M16 13 28 19.5 16 26 4 19.5Z" fill="#4338CA"/><path d="M4 10.5 16 17 16 20 4 13.5Z" fill="#4F46E5"/><path d="M28 10.5 16 17 16 20 28 13.5Z" fill="#4338CA"/><path d="M16 4 28 10.5 16 17 4 10.5Z" fill="url(#mk0)"/></svg></span>Floor Plan Studio</a>
+    <nav>
+      <a href="index.html#how">What it does</a>
+      <a href="index.html#faq">Questions</a>
+      <a class="btn" href="app.html?v=2026-09-07.1">Open the planner</a>
+    </nav>
   </div>
-</main>
-<footer class="wrap"><span>© 2026 Tarek Fouad</span><a href="index.html">Back to Floor Plan Studio</a></footer>
+</header>
+
+<div class="wrap head">
+  <span class="stamp"><span class="dot"></span>Runs entirely in your browser</span>
+  <h1>Privacy policy</h1>
+  <p class="sum">Floor Plan Studio is a single web page that runs on your own device.
+  It has no server, no account system and no network code in it. This page explains, in
+  plain terms, what that means for your data — and what would have to change here first
+  if that ever stopped being true.</p>
+  <div class="dates">
+    <span>Last updated: 7 September 2026</span>
+    <span>Effective: 7 September 2026</span>
+  </div>
+
+  <div class="tldr">
+    <h2>The short version</h2>
+    <ul>
+      <li><span class="y">&#10003;</span><span>We <b>do not collect</b> your name, email,
+        address or any other personal information. There is no form to fill in.</span></li>
+      <li><span class="y">&#10003;</span><span>Your floor plans <b>never leave your
+        device</b>. There is nowhere for them to go.</span></li>
+      <li><span class="y">&#10003;</span><span>No cookies, no analytics, no tracking
+        pixels, no advertising, no third-party scripts of any kind.</span></li>
+      <li><span class="y">&#10003;</span><span>Work in progress is saved in your own
+        browser's local storage, on your device, and you can clear it at any
+        time.</span></li>
+      <li><span class="y">&#10003;</span><span>If any of that changes, this page is
+        updated <b>before</b> the change goes live, and the date above will say
+        so.</span></li>
+    </ul>
+  </div>
+</div>
+
+<main id="main"><div class="wrap">
+
+<section id="who">
+  <span class="ref">Section 01</span>
+  <h2>Who is behind this site</h2>
+  <p>Floor Plan Studio is a personal project by an independent developer, published at
+  <span class="mono">tarekfouad97.github.io/Floor-Plan-Studio</span> and hosted on GitHub
+  Pages. It is not a company and it is not funded by anyone.</p>
+  <p>For anything to do with privacy, including a request about your data or a question
+  about this policy, write to
+  <a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a>. Messages are usually
+  answered within a few days, and always within one month.</p>
+  <p>For the purposes of the UK and EU General Data Protection Regulation, the site
+  operator is the data controller for the very limited processing described below.</p>
+</section>
+
+<section id="collect">
+  <span class="ref">Section 02</span>
+  <h2>What this site collects</h2>
+  <p>Nothing. There is no sign-up, no login, no contact form, no newsletter, no comment
+  box and no upload. The site never asks you for personal information, and it has no
+  server-side code that could receive any.</p>
+  <p>Specifically, the following are <b>not</b> collected, stored or transmitted by this
+  site:</p>
+  <ul>
+    <li>Your name, email address, postal address or phone number</li>
+    <li>Your floor plans, room measurements, furniture choices or any other drawing
+      content</li>
+    <li>Account credentials — there are no accounts</li>
+    <li>Payment details — the site is free and has no payment of any kind</li>
+    <li>Location data, contacts, photos or files, beyond an image you deliberately open
+      as a tracing underlay, which is read in your browser and never sent anywhere</li>
+  </ul>
+</section>
+
+<section id="storage">
+  <span class="ref">Section 03</span>
+  <h2>What is stored on your own device</h2>
+  <p>So that you do not lose an afternoon's work by closing a tab, the planner saves your
+  current design and a few interface preferences in your browser's <b>local
+  storage</b>. This is a standard browser feature. It is not a cookie, it is never sent
+  in a network request, and it stays on the device you are using.</p>
+  <p>What is kept there:</p>
+  <ul>
+    <li><b>Your designs</b> — the walls, rooms, furniture, electrical items and notes of
+      each plan you have worked on, so that "My designs" can reopen them</li>
+    <li><b>Interface preferences</b> — which panels are folded, whether the drawing sheet
+      is set to light or dark, and which sections are open</li>
+    <li><b>The clipboard</b> — anything you have copied inside the planner, so it survives
+      a reload</li>
+  </ul>
+  <p>You are in control of all of it. Deleting a design inside the planner removes it.
+  Clearing site data for this site in your browser settings removes everything at once,
+  including your designs — so save anything you want to keep to a
+  <code>.json</code> file first. Using the planner in a private or incognito window means
+  nothing is kept once the window closes.</p>
+  <div class="note">Local storage is per-browser and per-device. A plan saved in Chrome on
+  your laptop is not visible in Safari, on your phone, or to anyone else — including the
+  site operator, who cannot see it at all.</div>
+</section>
+
+<section id="third">
+  <span class="ref">Section 04</span>
+  <h2>Third parties, cookies and trackers</h2>
+  <p>There are none. This site loads <b>no</b> external scripts, stylesheets, web fonts,
+  images, embeds or frames. Every page here is self-contained, which means your browser
+  makes no requests to any domain other than the one hosting the site. You can confirm
+  this yourself in your browser's network inspector.</p>
+  <p>As a result, this site sets <b>no cookies at all</b> — not necessary ones, not
+  preference ones, not analytics ones — and there is no cookie banner because there is
+  nothing to consent to.</p>
+  <p>There is <b>no analytics</b> of any kind: no Google Analytics, no Plausible, no
+  page-view counter, no heatmaps, no session recording, no error reporting.</p>
+  <p>There is <b>no advertising</b> on this site, and no advertising or personalisation
+  identifiers are set.</p>
+  <p><b>Hosting.</b> The site is served by GitHub Pages, operated by GitHub, Inc. Like
+  any web host, GitHub's servers process the technical information every web request
+  necessarily carries — your IP address, the page requested, the time, and your browser's
+  user-agent string — in order to deliver the page and to protect the service from abuse.
+  This is standard server operation, is not under this site's control, and is not used
+  here for analytics or profiling. GitHub's handling of it is described in the
+  <a href="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement"
+  rel="noopener noreferrer" target="_blank">GitHub Privacy Statement</a>.</p>
+</section>
+
+<section id="ai">
+  <span class="ref">Section 05</span>
+  <h2>The &ldquo;Furnish with Claude&rdquo; feature</h2>
+  <p>This one is worth being precise about, because it is the part people assume sends
+  data somewhere. It does not.</p>
+  <p>When you use <b>Furnish</b>, the planner writes out a text description of your rooms
+  and the furniture catalogue and places it on <b>your clipboard</b>. You then paste that
+  text into Claude yourself, in your own browser and under your own account, and paste
+  the reply back into the planner. The planner reads the reply, matches the names against
+  its catalogue, and places the furniture.</p>
+  <p>At no point does Floor Plan Studio contact Claude, Anthropic, or any other service.
+  It contains no API keys and no network-request code whatsoever. The only link to Claude
+  anywhere in the planner is an ordinary <em>Open Claude</em> hyperlink, which you may
+  click or ignore.</p>
+  <p>If you do choose to paste your room description into Claude, that conversation
+  happens between you and Anthropic under
+  <a href="https://www.anthropic.com/legal/privacy" rel="noopener noreferrer"
+  target="_blank">Anthropic's privacy policy</a> and your own account settings there.
+  Nothing about it passes through this site.</p>
+</section>
+
+<section id="files">
+  <span class="ref">Section 06</span>
+  <h2>Files you open and files you save</h2>
+  <p>Opening a plan file or a tracing image uses your browser's ordinary file picker. The
+  file is read into the page's memory on your machine and is never transmitted. Saving —
+  a <code>.json</code> plan, a CSV, a PNG, or a PDF from the print dialog — is an
+  ordinary browser download to a location you choose. Those files are yours; this site
+  keeps no copy and has no way to reach them.</p>
+</section>
+
+<section id="rights">
+  <span class="ref">Section 07</span>
+  <h2>Your rights</h2>
+  <p>Data-protection law gives you rights over personal data held about you — the right
+  to know what is held, to get a copy, to have it corrected or erased, to object to its
+  use, and to complain to a regulator.</p>
+  <p>Those rights apply here in an unusually simple way: <b>this site holds no personal
+  data about you</b>, so there is nothing to disclose, correct, export or erase, and no
+  request could return anything. Everything the planner produces is already in your
+  hands — on your device, in files you control.</p>
+  <p>If you are in the UK or the EEA and believe otherwise, you may contact
+  <a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a> and you have the right to
+  lodge a complaint with your national supervisory authority (in the UK, the Information
+  Commissioner's Office).</p>
+  <p>If you are a California resident, the CCPA/CPRA rights to know, delete, correct and
+  opt out of sale or sharing apply in the same way: no personal information is collected,
+  and <b>none has ever been sold or shared</b> for cross-context behavioural advertising
+  or any other purpose.</p>
+</section>
+
+<section id="children">
+  <span class="ref">Section 08</span>
+  <h2>Children</h2>
+  <p>This site is a general-audience tool and is not directed at children. Because it
+  collects no personal information from anyone, it collects none from children either,
+  and no age-based profiling of any kind takes place.</p>
+</section>
+
+<section id="changes">
+  <span class="ref">Section 09</span>
+  <h2>Changes to this policy</h2>
+  <p>If anything described here changes — if analytics, advertising, cookies or any
+  third-party script is ever added to this site — this page will be rewritten to describe
+  it accurately, and the "last updated" date at the top will change,
+  <b>before</b> the change goes live rather than after. Where the law requires consent,
+  such as for advertising or analytics cookies for visitors in the UK and EEA, that
+  consent will be asked for and recorded before any such script is allowed to load.</p>
+  <p>Material changes will also be noted on the home page. Continuing to use the site
+  after a change means the updated policy applies to you.</p>
+</section>
+
+<section id="contact">
+  <span class="ref">Section 10</span>
+  <h2>Contact</h2>
+  <p>Questions about this policy, about how the planner handles your data, or about
+  anything else on this site:
+  <a href="mailto:tare2fo2ad@gmail.com">tare2fo2ad@gmail.com</a>.</p>
+</section>
+
+</div></main>
+
+<footer>
+  <div class="foot">
+    <a class="mark" href="index.html" style="font-size:.96rem"><span class="tile"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="mk1" x1="4" y1="2" x2="28" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#7DD3FC"/><stop offset="1" stop-color="#818CF8"/></linearGradient></defs><path d="M4 19.5 16 26 16 29 4 22.5Z" fill="#312E81"/><path d="M28 19.5 16 26 16 29 28 22.5Z" fill="#3730A3"/><path d="M16 13 28 19.5 16 26 4 19.5Z" fill="#4338CA"/><path d="M4 10.5 16 17 16 20 4 13.5Z" fill="#4F46E5"/><path d="M28 10.5 16 17 16 20 28 13.5Z" fill="#4338CA"/><path d="M16 4 28 10.5 16 17 4 10.5Z" fill="url(#mk1)"/></svg></span>Floor Plan Studio</a>
+    <span class="sp"></span>
+    <a href="index.html#how">What it does</a>
+    <a href="index.html#faq">Questions</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="mailto:tare2fo2ad@gmail.com">Contact</a>
+    <a href="app.html?v=2026-09-07.1">Open the planner</a>
+    <div class="fine">Free to use. Measure before you buy — the catalogue uses standard
+      sizes, not any one manufacturer&rsquo;s. Not architectural or electrical advice.</div>
+  </div>
+</footer>
 </body>
 </html>

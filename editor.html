@@ -3,42 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f4f0e8">
-<title>Floor Plan Studio — planner</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231b46f4'/><path d='M8 9h16M8 16h16M8 23h16' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>">
+<meta name="theme-color" content="#050505">
+<title>Floor Plan Studio — the planner</title>
+<meta name="description" content="Draw your flat to scale in centimetres, place real furniture, check the clearances, and print a plan and a shopping list. Free, no account, and nothing you draw leaves your browser.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='4' y1='2' x2='28' y2='20' gradientUnits='userSpaceOnUse'><stop stop-color='%237DD3FC'/><stop offset='1' stop-color='%23818CF8'/></linearGradient></defs><path d='M4 19.5 16 26 16 29 4 22.5Z' fill='%23312E81'/><path d='M28 19.5 16 26 16 29 28 22.5Z' fill='%233730A3'/><path d='M16 13 28 19.5 16 26 4 19.5Z' fill='%234338CA'/><path d='M4 10.5 16 17 16 20 4 13.5Z' fill='%234F46E5'/><path d='M28 10.5 16 17 16 20 28 13.5Z' fill='%234338CA'/><path d='M16 4 28 10.5 16 17 4 10.5Z' fill='url(%23g)'/></svg>">
 <style>
   /* ==================================================================
      TOKENS
-     Dark by default. The chrome is layered greyscale; the drawing stays
-     on paper. One accent, spent only on selection, the active tool and
-     the primary action.
+     One dark shell, the same one the public site wears: near-black
+     ground, glass panels, a hairline of white for every edge. Indigo is
+     spent only on selection, the active tool and the primary action;
+     fuchsia is spent only on the Claude action.
+
+     The drawing sheet is deliberately NOT part of this. It is a separate
+     surface with its own light/dark switch in the toolbar, because it is
+     the thing that gets printed.
      ================================================================== */
   :root{
-    color-scheme:light;
-    --app:#F4F0E8; --panel:#FFFDF8; --raised:#FFFFFF; --sunk:#EEE9E0;
-    --line:rgba(22,32,49,.10); --line-2:rgba(22,32,49,.16);
-    --line-3:rgba(22,32,49,.28);
-    /* --fg-3 is the dimmest tone allowed to carry TEXT: measured 4.94:1 on
-       --panel and 5.02:1 on --raised. --fg-4 is for hairlines and dormant
+    color-scheme:dark;
+    --app:#050505; --panel:#0B0B0F; --raised:#17171D; --sunk:#08080B;
+    --glass:rgba(255,255,255,.035); --glass-2:rgba(255,255,255,.07);
+    --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+    --line-3:rgba(255,255,255,.26);
+    /* --fg-3 is the dimmest tone allowed to carry TEXT: measured 7.1:1 on
+       --panel and 6.0:1 on --raised. --fg-4 is for hairlines and dormant
        glyphs only, never a label. */
-    --fg:#162031; --fg-2:#435064; --fg-3:#657080; --fg-4:#8A928F;
+    --fg:#F4F4F6; --fg-2:#C6C6D0; --fg-3:#9B9BA8; --fg-4:#6A6A76;
     /* alias: 14 inline styles in the markup reach for --muted. Undefined, they
        silently inherited --fg and rendered secondary labels at full strength. */
     --muted:var(--fg-3);
-    --accent:#1B46F4; --accent-2:#1534B7; --accent-ink:#FFFFFF;
-    --signal:#C8FF3D; --signal-ink:#162031;
-    --accent-wash:rgba(27,70,244,.10); --accent-line:rgba(27,70,244,.42);
-    --warn:#B94732; --warn-wash:rgba(250,128,99,.14); --warn-line:rgba(185,71,50,.32);
-    --err:#B94732;  --err-wash:rgba(250,128,99,.14);  --err-line:rgba(185,71,50,.32);
-    --ok:#507000;   --ok-wash:rgba(200,255,61,.26);
-    /* the drawing surface never follows the theme: it is what prints */
-    --paper:#FFFDF8; --paper-edge:#DED8CD;
-    --sh-1:0 1px 2px rgba(22,32,49,.08);
-    --sh-2:0 4px 10px rgba(22,32,49,.08),0 12px 24px rgba(22,32,49,.07);
-    --sh-3:0 12px 32px rgba(22,32,49,.16),0 3px 8px rgba(22,32,49,.08);
-    --sh-4:0 28px 70px rgba(22,32,49,.22),0 8px 24px rgba(22,32,49,.12);
+    --accent:#6366F1; --accent-2:#4F46E5; --accent-ink:#FFFFFF;
+    --accent-soft:#C7D2FE; --cyan:#38BDF8;
+    --signal:#E879F9; --signal-soft:#F5C8FF; --signal-ink:#1B0620;
+    --accent-wash:rgba(99,102,241,.16); --accent-line:rgba(129,140,248,.44);
+    --warn:#FBBF24; --warn-wash:rgba(251,191,36,.12); --warn-line:rgba(251,191,36,.30);
+    --err:#FB7185;  --err-wash:rgba(251,113,133,.13); --err-line:rgba(251,113,133,.34);
+    --ok:#4ADE80;   --ok-wash:rgba(74,222,128,.15);
+    /* the drawing sheet. Light by default; the toolbar switch flips it, and
+       @media print forces it back to white whatever the switch says. */
+    --paper:#F7F7F5; --paper-edge:#D8D8D3; --paper-grid:rgba(22,32,49,.13);
+    --sh-1:0 1px 2px rgba(0,0,0,.5);
+    --sh-2:0 4px 10px rgba(0,0,0,.45),0 12px 24px rgba(0,0,0,.34);
+    --sh-3:0 12px 32px rgba(0,0,0,.55),0 3px 8px rgba(0,0,0,.4);
+    --sh-4:0 28px 70px rgba(0,0,0,.72),0 8px 24px rgba(0,0,0,.46);
     --r:12px; --r-sm:9px; --r-xs:6px; --r-lg:18px;
-    --display:ui-rounded,"Arial Rounded MT Bold",ui-sans-serif,system-ui,sans-serif;
+    --mk:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 4 28 10.5 16 17 4 10.5Z' fill='black'/><path d='M4 10.5 16 17 16 20 4 13.5Z' fill='black' opacity='.75'/><path d='M28 10.5 16 17 16 20 28 13.5Z' fill='black' opacity='.55'/><path d='M16 13.6 28 20.1 16 26.6 4 20.1Z' fill='black' opacity='.85'/><path d='M4 20.1 16 26.6 16 29.6 4 23.1Z' fill='black' opacity='.6'/><path d='M28 20.1 16 26.6 16 29.6 28 23.1Z' fill='black' opacity='.45'/></svg>");
+    --display:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,ui-sans-serif,
+              system-ui,"Helvetica Neue",Arial,sans-serif;
     /* 4px grid */
     --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px;
     /* motion */
@@ -119,15 +131,12 @@
        padding:5px var(--s2);border-radius:var(--r-sm);
        transition:background var(--t-out) var(--exit),color var(--t-out) var(--exit)}
   #bar .home:hover{background:var(--raised);color:var(--fg)}
-  #bar .home i{width:19px;height:19px;border-radius:5px;display:grid;place-items:center;
-       background:linear-gradient(135deg,var(--accent-2),var(--accent));color:transparent;
-       font-style:normal;font-size:10px;flex:none;position:relative;overflow:hidden;
+  #bar .home i{width:20px;height:20px;border-radius:0;display:block;flex:none;
+       font-style:normal;font-size:0;position:relative;background:none;
+       -webkit-mask:var(--mk) center/contain no-repeat;mask:var(--mk) center/contain no-repeat;
+       background-image:linear-gradient(135deg,var(--cyan),var(--accent-2));
        transition:transform var(--t-in) var(--spring)}
-  #bar .home i::before{content:"";position:absolute;inset:5px;border:1px solid #fff;
-       border-left-width:2px;border-bottom-width:2px;border-radius:1px}
-  #bar .home i::after{content:"";position:absolute;width:5px;height:1px;background:#fff;
-       right:3px;top:3px;border-radius:2px}
-  #bar .home:hover i{transform:rotate(-6deg) scale(1.08)}
+  #bar .home:hover i{transform:translateY(-1px) scale(1.06)}
   .sep{width:1px;height:18px;background:var(--line-2);flex:none;margin:0 var(--s1)}
 
   /* ---------- buttons ---------- */
@@ -144,17 +153,17 @@
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .btn:disabled{opacity:.34;cursor:default;transform:none;box-shadow:none}
   .btn.on{background:var(--accent);color:var(--accent-ink);border-color:transparent;
-       font-weight:580;box-shadow:0 0 0 1px var(--accent-line),0 2px 8px rgba(91,108,240,.3)}
+       font-weight:580;box-shadow:0 0 0 1px var(--accent-line),0 2px 8px rgba(99,102,241,.3)}
   .btn.on:hover{background:var(--accent-2);color:var(--accent-ink)}
   .btn.pri{background:var(--accent);color:var(--accent-ink);border-color:transparent;
-       font-weight:580;box-shadow:0 1px 2px rgba(0,0,0,.3),0 2px 10px rgba(91,108,240,.26)}
+       font-weight:580;box-shadow:0 1px 2px rgba(0,0,0,.3),0 2px 10px rgba(99,102,241,.26)}
   .btn.pri:hover{background:var(--accent-2);color:var(--accent-ink);
-       box-shadow:0 2px 4px rgba(0,0,0,.3),0 6px 18px rgba(91,108,240,.34)}
+       box-shadow:0 2px 4px rgba(0,0,0,.3),0 6px 18px rgba(99,102,241,.34)}
   /* the Claude action: same single accent, marked by its glyph not a hue */
   .btn.spark{background:var(--accent-wash);color:var(--accent-2);
        border-color:var(--accent-line);font-weight:580}
   .btn.spark:hover{background:var(--accent);color:var(--accent-ink);
-       border-color:transparent;box-shadow:0 2px 10px rgba(91,108,240,.32)}
+       border-color:transparent;box-shadow:0 2px 10px rgba(99,102,241,.32)}
   .btn.spark .sp-star{display:inline-block;font-size:10px;line-height:1;
        animation:twinkle 4.5s var(--enter) infinite}
   @keyframes twinkle{0%,78%,100%{opacity:.8;transform:scale(1)}
@@ -228,7 +237,7 @@
   .tool:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .tool.on{background:var(--accent);color:var(--accent-ink);border-color:transparent;
         font-weight:580;transform:none;
-        box-shadow:0 0 0 1px var(--accent-line),0 2px 10px rgba(91,108,240,.3)}
+        box-shadow:0 0 0 1px var(--accent-line),0 2px 10px rgba(99,102,241,.3)}
   .tool.on:hover{background:var(--accent-2);transform:translateY(-2px)}
   .tool b{font-size:11px;opacity:.55;font-weight:600}
 
@@ -270,7 +279,8 @@
   .it.ghost{opacity:.32;transform:none;box-shadow:none;background:none}
 
   /* ==================================================================
-     STAGE — the drawing keeps its paper in both themes
+     STAGE — the sheet. Its colour is set in the glass layer at the
+     foot of this stylesheet, where the light/dark switch lives.
      ================================================================== */
   #stage{position:relative;overflow:hidden;min-width:0;background:var(--paper)}
   svg#cv{width:100%;height:100%;display:block;touch-action:none}
@@ -289,7 +299,7 @@
   /* signature moment: the measurement badge */
   #measure{position:absolute;left:50%;bottom:var(--s4);transform:translateX(-50%) translateY(6px);
       display:none;align-items:center;gap:var(--s3);z-index:5;pointer-events:none;
-      background:rgba(20,23,28,.94);border:1px solid var(--line-2);
+      background:rgba(14,14,19,.94);border:1px solid var(--line-2);
       border-radius:100px;padding:6px var(--s4);box-shadow:var(--sh-3);
       opacity:0;font-size:12px;color:var(--fg-2);
       -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
@@ -305,7 +315,7 @@
 
   #toast{position:absolute;left:50%;bottom:var(--s5);
          transform:translateX(-50%) translateY(14px) scale(.97);
-         background:rgba(20,23,28,.96);color:var(--fg);
+         background:rgba(14,14,19,.96);color:var(--fg);
          -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
          border:1px solid var(--line-2);
          padding:9px var(--s4);border-radius:var(--r);font-size:12px;display:none;
@@ -319,14 +329,14 @@
   #empty.on{display:grid}
   #empty.claude{place-items:end center;padding-bottom:var(--s6)}
   #empty .ecard{pointer-events:none;text-align:center;max-width:400px;
-     padding:var(--s5) var(--s6);background:rgba(20,23,28,.93);
+     padding:var(--s5) var(--s6);background:rgba(14,14,19,.93);
      -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px) saturate(1.2);
      border:1px solid var(--line-2);border-radius:var(--r-lg);
      box-shadow:var(--sh-3);animation:eIn .4s var(--enter) both;color:var(--fg)}
   @keyframes eIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
   #empty .eicon{width:38px;height:38px;margin:0 auto var(--s3);border-radius:11px;
      display:grid;place-items:center;font-size:16px;color:var(--accent-ink);
-     background:var(--accent);box-shadow:0 4px 14px rgba(91,108,240,.3)}
+     background:var(--accent);box-shadow:0 4px 14px rgba(99,102,241,.3)}
   #empty.claude .eicon{animation:float 4.5s var(--enter) infinite}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
   #empty .etitle{font-size:15px;font-weight:600;letter-spacing:-.02em;margin-bottom:5px}
@@ -420,7 +430,7 @@
   .scn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .scn .dot{width:8px;height:8px;border-radius:50%;flex:none}
   .scn.on{border-color:transparent;color:var(--accent-ink);font-weight:580;
-       background:var(--accent);box-shadow:0 2px 8px rgba(91,108,240,.28)}
+       background:var(--accent);box-shadow:0 2px 8px rgba(99,102,241,.28)}
   .floors{display:flex;flex-direction:column;gap:2px;padding:var(--s2) var(--s3) var(--s1)}
   .flr{display:flex;align-items:center;gap:var(--s2);width:100%;text-align:left;
        border:1px solid transparent;background:none;color:var(--fg-2);cursor:pointer;
@@ -533,7 +543,7 @@
   .aitab:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
   .aitab.on{color:var(--fg)}
   .aitab.on .n{background:var(--accent);color:var(--accent-ink);border-color:transparent;
-      transform:scale(1.1);box-shadow:0 2px 8px rgba(91,108,240,.32)}
+      transform:scale(1.1);box-shadow:0 2px 8px rgba(99,102,241,.32)}
   .aitab.done .n{background:var(--ok-wash);color:var(--ok);border-color:transparent}
   .aitab.on .t{font-weight:600}
   .ta{width:100%;border:1px solid var(--line-2);border-radius:var(--r-sm);
@@ -549,13 +559,13 @@
 
   /* 3D controls */
   #v3ctl{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-     background:rgba(20,23,28,.9)!important;border:1px solid var(--line-2)!important;
+     background:rgba(14,14,19,.9)!important;border:1px solid var(--line-2)!important;
      box-shadow:var(--sh-3);border-radius:var(--r)!important;color:var(--fg-2)}
   #v3ctl input[type=range]{accent-color:var(--accent)}
   #v3ctl label{color:var(--fg-3)!important}
   #v3ctl input[type=number]{background:var(--sunk);color:var(--fg);
      border:1px solid var(--line-2)!important;border-radius:var(--r-xs)!important}
-  #hint3,#hint{background:rgba(20,23,28,.9)!important;color:var(--fg-3)!important;
+  #hint3,#hint{background:rgba(14,14,19,.9)!important;color:var(--fg-3)!important;
      border:1px solid var(--line-2);box-shadow:var(--sh-2);
      -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
      border-radius:var(--r-sm)}
@@ -574,30 +584,78 @@
   #saveBadge.none{background:var(--err-wash);color:var(--err)}
   #print{display:none}
 
-  /* Blueprint editorial layer: shared with the public site, while the
-     interaction model below remains deliberately dense for active planning. */
-  #bar{background:rgba(255,253,248,.94);border-bottom:2px solid var(--fg);
-       -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
-  #bar .home{font-family:var(--display);font-weight:800;color:var(--fg);letter-spacing:-.035em}
-  #bar .nm{font-family:var(--display);font-weight:800;color:var(--fg)}
-  #bar .home:hover{background:var(--accent-wash);color:var(--accent)}
-  .btn{font-family:var(--display);font-weight:750;border-color:var(--line-2)}
-  .btn:hover{background:var(--accent-wash);border-color:var(--accent-line);box-shadow:none}
-  .btn.pri{box-shadow:0 4px 0 var(--accent-2),0 7px 13px rgba(27,70,244,.16)}
-  .btn.pri:hover{box-shadow:0 6px 0 var(--accent-2),0 9px 18px rgba(27,70,244,.2)}
-  .btn.spark{background:var(--signal);color:var(--signal-ink);border-color:var(--fg);
-       box-shadow:0 3px 0 var(--fg)}
-  .btn.spark:hover{background:#b7ee2c;color:var(--signal-ink);border-color:var(--fg);box-shadow:0 4px 0 var(--fg)}
-  .btn.on,.tool.on,.scn.on,.flr.on{background:var(--signal)!important;color:var(--signal-ink)!important;
-       border-color:var(--fg)!important;box-shadow:0 2px 0 var(--fg)!important}
-  .tool,.grp>summary,.it,.lay,.scn,.flr{font-family:var(--display)}
-  .hd{font-family:var(--display);color:var(--fg);letter-spacing:.08em}
+  /* ==================================================================
+     GLASS LAYER
+     Everything above styles structure; this styles the shell, and it is
+     the only place the site's look is spelled out. The stage is excluded
+     on purpose - the sheet has its own switch, three rules down.
+     ================================================================== */
+  #bar{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+       border-bottom:1px solid var(--line);
+       -webkit-backdrop-filter:blur(18px) saturate(1.35);
+       backdrop-filter:blur(18px) saturate(1.35)}
+  #bar .home{font-weight:700;color:var(--fg);letter-spacing:-.02em}
+  #bar .home:hover{background:var(--glass-2);color:var(--fg)}
+  #bar .home i{background:linear-gradient(135deg,var(--cyan),var(--accent-2));
+       box-shadow:0 2px 12px rgba(99,102,241,.5)}
+  #bar .nm{font-weight:600;color:var(--fg-2);letter-spacing:-.01em}
   aside{background:var(--panel)}
-  #stage{background:var(--paper);background-image:radial-gradient(rgba(22,32,49,.11) .65px,transparent .65px);background-size:14px 14px}
-  #empty .ecard,#toast,#measure{background:rgba(255,253,248,.96);color:var(--fg);border-color:var(--line-3)}
-  #hint3,#hint{background:rgba(255,253,248,.96)!important;color:var(--fg-2)!important;border-color:var(--line-2)}
-  #status{background:var(--panel);border-top:2px solid var(--fg)}
-  dialog::backdrop{background:rgba(22,32,49,.35)}
+  .hd{color:var(--fg-3);letter-spacing:.09em;background:var(--panel)}
+  .hd:hover{color:var(--fg)}
+
+  .btn{background:var(--glass);border-color:var(--line-2);font-weight:560}
+  .btn:hover{background:var(--glass-2);border-color:var(--line-3);color:var(--fg);
+       box-shadow:none}
+  .btn[aria-expanded="true"]{background:var(--accent-wash);color:var(--accent-soft);
+       border-color:var(--accent-line)}
+  .btn.pri{background:linear-gradient(135deg,var(--accent),var(--accent-2));
+       box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 6px 20px rgba(79,70,229,.42)}
+  .btn.pri:hover{background:linear-gradient(135deg,#7C7EF6,var(--accent));
+       box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 8px 26px rgba(79,70,229,.55)}
+  /* the Claude action: the only place a second hue is spent in the whole app */
+  .btn.spark{background:rgba(232,121,249,.13);color:var(--signal-soft);
+       border-color:rgba(232,121,249,.42);box-shadow:none}
+  .btn.spark:hover{background:linear-gradient(135deg,#C026D3,var(--signal));color:#fff;
+       border-color:transparent;box-shadow:0 6px 20px rgba(232,121,249,.4)}
+  .btn.on,.tool.on,.scn.on,.vchip.on{
+       background:var(--accent)!important;color:var(--accent-ink)!important;
+       border-color:transparent!important;
+       box-shadow:0 0 0 1px var(--accent-line),0 4px 16px rgba(99,102,241,.4)!important}
+  .flr.on{background:var(--accent-wash);border-color:var(--accent-line);color:var(--fg)}
+
+  /* ---------- the drawing sheet ----------
+     Light by default. Dark inverts the SVG wholesale: the plan is line art,
+     so invert + hue-rotate flips its lightness while leaving every hue where
+     it was. A trace photograph goes with it, into a negative - the sketch you
+     are tracing over is white paper, and left un-inverted it would flood the
+     whole sheet back to white. Neither the print pages nor the PNG export can
+     see any of this: both clone #cv out of #stage first, and the clone loses
+     the id the selector needs. */
+  #stage{background:var(--paper);
+       background-image:radial-gradient(var(--paper-grid) .65px,transparent .65px);
+       background-size:14px 14px;
+       transition:background-color var(--t-slow) var(--enter)}
+  :root[data-sheet="dark"] #stage{--paper:#0D1016;--paper-grid:rgba(255,255,255,.11)}
+  :root[data-sheet="dark"] #stage svg#cv{filter:invert(1) hue-rotate(180deg)}
+  #bSheet .moon{display:none}
+  :root[data-sheet="dark"] #bSheet .sun{display:none}
+  :root[data-sheet="dark"] #bSheet .moon{display:block}
+
+  /* ---------- floating glass ---------- */
+  #empty .ecard,#toast,#measure{background:rgba(14,14,19,.86);color:var(--fg);
+       border-color:var(--line-2);
+       -webkit-backdrop-filter:blur(18px) saturate(1.35);
+       backdrop-filter:blur(18px) saturate(1.35)}
+  #hint3,#hint,#v3ctl{background:rgba(14,14,19,.86)!important;color:var(--fg-2)!important;
+       border-color:var(--line-2)!important}
+  #varbar{background:rgba(14,14,19,.9);border-color:var(--line-2);
+       -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+  .menu,#ctx,dialog{background:rgba(17,17,22,.95);border-color:var(--line-2);
+       -webkit-backdrop-filter:blur(22px) saturate(1.3);
+       backdrop-filter:blur(22px) saturate(1.3)}
+  dialog .foot{background:rgba(255,255,255,.03)}
+  #status{background:var(--panel);border-top:1px solid var(--line)}
+  dialog::backdrop{background:rgba(0,0,0,.66)}
 
   /* responsive: shed chrome before shedding controls */
   @media (max-width:1180px){
@@ -617,9 +675,11 @@
 
   @page{size:A4 landscape;margin:9mm}
   @media print{
-    /* Paper is paper. The screen palette must not reach the printer: the
-       tokens are forced back to ink-on-white here, because #print inherits
-       body colour and a cream --paper would tint every page. */
+    /* The screen palette must not reach the printer. The tokens are forced
+       back to ink-on-white here, because #print inherits body colour and a
+       near-black shell would otherwise flood every page. The sheet switch
+       cannot reach this: its dark rule is scoped to #stage, which is
+       display:none in print. */
     :root{
       --app:#fff; --panel:#fff; --raised:#fff; --sunk:#fff; --paper:#fff;
       --fg:#000; --fg-2:#222; --fg-3:#444; --fg-4:#666;
@@ -689,6 +749,7 @@
 
     <span class="sp"></span>
     <button class="btn ico" id="bFit" title="Fit to view (F)" aria-label="Fit to view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>
+    <button class="btn ico" id="bSheet" aria-label="Switch the drawing sheet between light and dark"><svg class="ic sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.3M12 19.7V22M4.3 4.3l1.6 1.6M18.1 18.1l1.6 1.6M2 12h2.3M19.7 12H22M4.3 19.7l1.6-1.6M18.1 5.9l1.6-1.6"/></svg><svg class="ic moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z"/></svg></button>
     <button class="btn" id="b3d">3D view</button>
     <button class="btn spark" id="bAI"><span class="sp-star">&#10022;</span>Furnish</button>
     <button class="btn pri" id="bPrint">Print / PDF</button>
@@ -833,7 +894,7 @@
     <span style="opacity:.7">[ ] fold panels</span>
     <span class="sep" style="height:12px"></span>
     <span id="stBuild" title="Which build is loaded. If this is older than you expect, hard-reload: Cmd/Ctrl + Shift + R."
-          style="opacity:.55;cursor:default">build 2026-08-30.2155</span>
+          style="opacity:.55;cursor:default">build 2026-09-07.1</span>
   </div>
 </div>
 
@@ -1198,11 +1259,13 @@ const esc=v=>String(v==null?"":v)
   .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
   .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 
-/* The drawing is always on paper, in both themes and on the printer, so its
-   ink does not follow the UI tokens. One accent for selection, and category
-   colours desaturated at RENDER TIME - the catalogue keeps its stored values,
-   we simply draw them muted so the plan reads as draughtsmanship. */
-const INK_SEL="#4453D6";
+/* The drawing is line art on a sheet, and it is drawn once, the same way,
+   whatever the shell is wearing - the sheet's dark mode is a CSS filter over
+   the finished SVG, not a second palette. So this ink does not follow the UI
+   tokens. One accent for selection, and category colours desaturated at
+   RENDER TIME - the catalogue keeps its stored values, we simply draw them
+   muted so the plan reads as draughtsmanship. */
+const INK_SEL="#6366F1";
 const _mutedCache=new Map();
 function muted(hex){
   if(typeof hex!=="string"||hex[0]!=="#"||hex.length!==7) return hex;
@@ -2064,7 +2127,7 @@ function render(){
     const m=S.marquee;
     el("rect",{x:Math.min(m.x1,m.x2),y:Math.min(m.y1,m.y2),
         width:Math.abs(m.x2-m.x1),height:Math.abs(m.y2-m.y1),
-        fill:"rgba(68,83,214,.10)",stroke:INK_SEL,"stroke-width":1,
+        fill:"rgba(99,102,241,.12)",stroke:INK_SEL,"stroke-width":1,
         "stroke-dasharray":"5 4","vector-effect":"non-scaling-stroke"},gH);
   }
   $("stZoom").textContent=Math.round(stage.clientWidth/S.view.w*100*2.54/96*37.8/10*10)||Math.round(100*1200/S.view.w);
@@ -4156,7 +4219,8 @@ function render3(){
   const W=st.clientWidth, H=st.clientHeight, dpr=window.devicePixelRatio||1;
   c.width=W*dpr; c.height=H*dpr;
   const g=c.getContext("2d"); g.scale(dpr,dpr);
-  g.fillStyle="#eef1f4"; g.fillRect(0,0,W,H);
+  g.fillStyle=document.documentElement.dataset.sheet==="dark"?"#0D1016":"#EEF1F4";
+  g.fillRect(0,0,W,H);
   const quads=buildScene();
   if(!quads.length){ g.fillStyle="#68727f"; g.font="14px sans-serif";
     g.fillText("Nothing to show yet — draw some walls.",20,30); return; }
@@ -4914,6 +4978,23 @@ const UI_KEY="fp-ui";
 const UI=(()=>{ try{ return JSON.parse(localStorage.getItem(UI_KEY))||{}; }
                 catch(e){ return {}; } })();
 function uiSave(){ try{ localStorage.setItem(UI_KEY,JSON.stringify(UI)); }catch(e){} }
+
+/* ---- the drawing sheet ------------------------------------------------
+   The shell is dark and stays dark. The sheet is the document, so it gets
+   its own switch: dark to draw at night, light to see what will print.
+   Printing and the PNG export are unaffected either way - both take a copy
+   of the SVG out of #stage, and the dark rule is scoped to #stage. */
+function setSheet(mode,quiet){
+  const dark = mode==="dark";
+  document.documentElement.dataset.sheet = dark ? "dark" : "light";
+  UI.sheet = dark ? "dark" : "light";
+  const b=$("bSheet");
+  if(b) b.title = dark ? "Drawing sheet: dark \u2014 click for light"
+                       : "Drawing sheet: light \u2014 click for dark";
+  if(!quiet){ uiSave(); if(typeof is3D!=="undefined" && is3D) render3(); }
+}
+setSheet(UI.sheet==="dark" ? "dark" : "light", true);
+$("bSheet").onclick=()=>setSheet(UI.sheet==="dark" ? "light" : "dark");
 
 /* ---- drop-down menus ------------------------------------------------- */
 let openMenu=null;

@@ -1,0 +1,11 @@
+# Floor Plan Studio
+User-agent: *
+Allow: /
+
+# The planner itself is an application, not a document. Let it be crawled so the
+# link works, but the pages worth indexing are the ones below in the sitemap.
+Disallow: /editor.html
+Disallow: /trace/
+Disallow: /*.floorplan.json$
+
+Sitemap: https://tarekfouad97.github.io/Floor-Plan-Studio/sitemap.xml

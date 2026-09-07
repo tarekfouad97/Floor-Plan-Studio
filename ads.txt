@@ -1,0 +1,11 @@
+# Google AdSense authorised-sellers file.
+#
+# Ads are NOT switched on yet. When you are approved, replace the line below
+# with your own publisher id and uncomment it — Google will not count you as
+# the authorised seller of this inventory until it can read that line here at
+# https://tarekfouad97.github.io/Floor-Plan-Studio/ads.txt
+#
+# The id is the same "ca-pub-…" number you put in ADS.client in index.html,
+# but written here WITHOUT the "ca-pub-" prefix.
+#
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
