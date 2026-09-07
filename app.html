@@ -818,7 +818,7 @@
     </div>
     <div class="sec" data-sec="cats">
       <button class="hd">Furniture<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-      <div class="secbody"><div class="secinner"><div class="pad" style="padding-bottom:4px"><input id="search" placeholder="Search 113 pieces…" autocomplete="off"></div><div id="cats"></div></div></div>
+      <div class="secbody"><div class="secinner"><div class="pad" style="padding-bottom:4px"><input id="search" placeholder="Search the catalogue…" autocomplete="off"></div><div id="cats"></div></div></div>
     </div>
   </div></aside>
 
@@ -5127,6 +5127,9 @@ $("search").addEventListener("input",e=>buildCatalog(e.target.value));
    the right edge behind a scrollbar that was styled to zero height. They
    are grouped now, and both side panels fold away.
    ===================================================================== */
+/* the count used to be typed into the markup, and drifted: it said 113 for a
+   catalogue of 116. Ask the catalogue. */
+$("search").placeholder="Search "+CATALOG.length+" pieces\u2026";
 const UI_KEY="fp-ui";
 const UI=(()=>{ try{ return JSON.parse(localStorage.getItem(UI_KEY))||{}; }
                 catch(e){ return {}; } })();

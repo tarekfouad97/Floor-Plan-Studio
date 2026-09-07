@@ -11,11 +11,25 @@ with every size in centimetres. No build step, no server, nothing uploaded.
 |---|---|
 | `index.html` | Landing page — this is what GitHub Pages serves |
 | `app.html` | The planner itself. The whole application, in one file |
-| `privacy.html` | Privacy policy |
+| `guides.html` | Hub for the three reference pages |
+| `furniture-sizes.html` | All 116 catalogue pieces, generated from `app.html` |
+| `room-clearances.html` | Walkways and clearances |
+| `measure-a-room.html` | How to measure a room |
+| `about.html`, `terms.html`, `privacy.html` | About, terms, privacy policy |
+| `site.css` | Shared shell for every page except `index.html` and the app |
+| `ads.js` | Ad slots and the blocker note — one place for the publisher id |
 | `editor.html` | Working copy of the app, opened directly from disk (see below) |
 | `planner.html` | The earlier "classic" planner, kept for saved plans that use it |
 | `vendor/three.module.min.js` | three.js r160, vendored (see below) |
 | `robots.txt`, `sitemap.xml`, `ads.txt` | Search and ads plumbing |
+
+`index.html` keeps its own inline CSS because the hero, the 3D stages and the
+clearance widget are bespoke to it. Every other page uses `site.css`, so a change
+to the header or footer there has to be made in two places, not eight.
+
+`furniture-sizes.html` is generated from `app.html`'s `CATALOG`. If you add or
+resize a piece in the planner, that page is out of date until it is regenerated —
+the numbers are copied, not linked.
 | `PLAN.md` | Design notes: why standalone HTML, why SVG, why cm-only |
 | `trace/` | Python tooling used once to extract walls from the original sketch |
 | `*.floorplan.json` | Saved plans |

@@ -32,21 +32,36 @@ Everything is wired and switched off. Nothing contacts Google until you do all
 of this. **Do it in this order** — step 4 is not optional, and step 1 is
 currently the thing standing between you and approval.
 
-1. **Get more content on the site.** A single tool with a FAQ usually fails
-   AdSense review as "low value content", and it is also why nobody is finding
-   you in search. Write two or three genuinely useful reference pages —
-   standard furniture dimensions in cm, how to measure a room properly, minimum
-   clearances and walkways. You already have the data: the planner's catalogue
-   is 113 pieces at real sizes, and the clearance figures are in the checks. Add
-   each new page to `sitemap.xml`.
+1. **Content — done, for now.** This was the blocker. The site now carries
+   `furniture-sizes.html` (all 116 catalogue pieces, generated from the app's own
+   `CATALOG` so the two cannot disagree), `room-clearances.html`,
+   `measure-a-room.html`, a `guides.html` hub, plus `about.html` and
+   `terms.html`. That is a real site rather than a tool with a FAQ.
+
+   If a reviewer still calls it thin, the next pages to write are room-by-room
+   layout guides — small bedroom, galley kitchen, long thin living room — since
+   they use the same figures and answer real searches. Add every new page to
+   `sitemap.xml`.
 
 2. **Apply to AdSense**, get approved, and create three ad units. The slots on
    the home page are named `in-content-1`, `in-content-2` and `footer`.
 
-3. **Fill in the ids.** In `index.html`, find the `ADS` object near the bottom:
-   put your publisher id in `ADS.client` and the three unit ids in `ADS.slots`.
-   Then put the same publisher id in `ads.txt` and uncomment that line — without
-   it Google will not count you as the authorised seller of your own inventory.
+3. **Fill in the ids.** Everything lives in `ads.js` now — one file, loaded by
+   every page that carries a slot. Put your publisher id in `ADS.client` and the
+   three unit ids in `ADS.slots`.
+
+   Then `ads.txt`, and read this bit carefully. **The crawler looks for it at the
+   root of the host, not at the root of your project.** On the current address
+   that means `https://tarekfouad97.github.io/ads.txt` — which this repository
+   cannot serve, because the file it publishes lands at
+   `tarekfouad97.github.io/Floor-Plan-Studio/ads.txt` and is never read. Two ways
+   out, and only one of them is good:
+
+   - **Use a custom domain** (see below). `example.com/ads.txt` is then the root,
+     the file works, and the whole site moves out of a subdirectory.
+   - Or create a second repository named exactly `tarekfouad97.github.io` and put
+     `ads.txt` in it. This works, but every other site you ever host on that
+     account shares the file.
 
 4. **Rewrite `privacy.html` BEFORE you flip the switch.** As it stands it says
    outright that this site carries no advertising, sets no cookies and makes no

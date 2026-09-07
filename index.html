@@ -381,6 +381,18 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
 .foot .fine{font-family:var(--mono);font-size:.7rem;color:var(--chalk-3);
             letter-spacing:.04em;width:100%;margin-top:6px}
 
+.gcards{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);
+  border-radius:16px;overflow:hidden;margin-top:26px}
+@media(min-width:760px){.gcards{grid-template-columns:repeat(3,1fr)}}
+.gcards a{background:var(--ink-2);padding:clamp(22px,3vw,30px);text-decoration:none;
+  display:block;transition:background .18s ease}
+.gcards a:hover{background:var(--ink-3)}
+.gcards .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--indigo);display:block;margin-bottom:11px}
+.gcards h3{font-size:1.1rem;margin:0 0 8px;letter-spacing:-.02em}
+.gcards p{font-size:.92rem;color:var(--chalk-2)}
+.gcards .go{display:block;margin-top:14px;font-size:.85rem;color:var(--cyan)}
+
 /* ---------- ad slots ----------
    Space is reserved before anything loads, so switching ads on later cannot
    shove the page around under someone who is already reading it. */
@@ -438,8 +450,9 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
   <div class="wrap hbar">
     <a class="mark" href="./"><span class="tile" id="logoTile"><canvas id="logo3d"></canvas><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="mk0" x1="4" y1="2" x2="28" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#7DD3FC"/><stop offset="1" stop-color="#818CF8"/></linearGradient></defs><path d="M4 19.5 16 26 16 29 4 22.5Z" fill="#312E81"/><path d="M28 19.5 16 26 16 29 28 22.5Z" fill="#3730A3"/><path d="M16 13 28 19.5 16 26 4 19.5Z" fill="#4338CA"/><path d="M4 10.5 16 17 16 20 4 13.5Z" fill="#4F46E5"/><path d="M28 10.5 16 17 16 20 28 13.5Z" fill="#4338CA"/><path d="M16 4 28 10.5 16 17 4 10.5Z" fill="url(#mk0)"/></svg></span>Floor Plan Studio</a>
     <nav>
-      <a href="#fit" class="hide-s">Will it fit?</a>
-      <a href="#how">What it does</a>
+      <a href="#how" class="hide-s">What it does</a>
+      <a href="guides.html">Guides</a>
+      <a href="about.html" class="hide-s">About</a>
       <a href="#faq" class="hide-s">Questions</a>
       <a class="btn btn-pri btn-sm" href="app.html?v=2026-09-07.1">Open the planner</a>
     </nav>
@@ -463,7 +476,7 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
       </div>
       <div class="under">
         <span><span class="tick">&#10003;</span>Nothing to install</span>
-        <span><span class="tick">&#10003;</span>113 pieces, real sizes</span>
+        <span><span class="tick">&#10003;</span>116 pieces, real sizes</span>
         <span><span class="tick">&#10003;</span>Prints to A4</span>
       </div>
     </div>
@@ -626,7 +639,7 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
       <div class="stage">
         <div class="num">STAGE 02</div>
         <h3>Put things in it</h3>
-        <p>A catalogue of 113 pieces at industry-standard sizes — sofas, beds, wardrobes,
+        <p>A catalogue of 116 pieces at industry-standard sizes — sofas, beds, wardrobes,
         appliances, the lot. Drag, drop, rotate, or type an exact size.</p>
         <ul>
           <li><b>Real dimensions</b> on every piece, always in centimetres</li>
@@ -716,11 +729,52 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
   </div>
 </section>
 
+<!-- =========================== GUIDES ============================ -->
+<section id="guides">
+  <div class="wrap">
+    <div class="band">
+      <span class="ref">The numbers, written down</span><span class="ln"></span><span class="n">04</span>
+    </div>
+    <div class="rev" style="margin-bottom:6px">
+      <h2>Everything it checks, as plain reference</h2>
+      <p class="lead" style="margin-top:16px">The planner knows a few hundred standard
+      sizes and a couple of dozen clearance rules. They are all published here, generated
+      from the same catalogue the tool draws with &mdash; useful whether or not you ever
+      open it.</p>
+    </div>
+    <div class="gcards rev">
+      <a href="furniture-sizes.html">
+        <span class="k">Reference</span>
+        <h3>Standard furniture sizes</h3>
+        <p>116 pieces at their industry-standard width and depth, room by room, with the
+        heights that go with them and the doorway test that decides whether it gets into
+        the house at all.</p>
+        <span class="go">Read the sizes &rarr;</span>
+      </a>
+      <a href="room-clearances.html">
+        <span class="k">Reference</span>
+        <h3>Clearances and walkways</h3>
+        <p>How much clear floor to leave in front of, behind and beside everything
+        &mdash; comfortable and minimum, in centimetres. The figures the planner flags
+        your drawing against.</p>
+        <span class="go">Read the clearances &rarr;</span>
+      </a>
+      <a href="measure-a-room.html">
+        <span class="k">Guide</span>
+        <h3>How to measure a room</h3>
+        <p>A ten-minute order of work, how to tell whether a room is actually square, and
+        the six things people forget until the furniture is already in the van.</p>
+        <span class="go">Read the guide &rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- =========================== PRIVACY =========================== -->
 <section id="privacy">
   <div class="wrap">
     <div class="band">
-      <span class="ref">How it is built</span><span class="ln"></span><span class="n">04</span>
+      <span class="ref">How it is built</span><span class="ln"></span><span class="n">05</span>
     </div>
     <div class="rev" style="margin-bottom:34px">
       <h2>It never sends your flat anywhere</h2>
@@ -756,7 +810,7 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
 <section id="faq">
   <div class="wrap">
     <div class="band">
-      <span class="ref">Questions</span><span class="ln"></span><span class="n">05</span>
+      <span class="ref">Questions</span><span class="ln"></span><span class="n">06</span>
     </div>
     <div class="faq rev">
       <details>
@@ -790,7 +844,7 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
       </details>
       <details>
         <summary>Where does the furniture catalogue come from?</summary>
-        <div class="ans">The 113 pieces use generic industry-standard dimensions, not any
+        <div class="ans">The 116 pieces use generic industry-standard dimensions, not any
         one manufacturer&rsquo;s data. They are there so you can plan with something
         realistic before you have chosen a specific product — measure the real thing
         before you buy it.</div>
@@ -841,7 +895,10 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
     <a class="mark" href="./" style="font-size:.96rem"><span class="tile"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="mk1" x1="4" y1="2" x2="28" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#7DD3FC"/><stop offset="1" stop-color="#818CF8"/></linearGradient></defs><path d="M4 19.5 16 26 16 29 4 22.5Z" fill="#312E81"/><path d="M28 19.5 16 26 16 29 28 22.5Z" fill="#3730A3"/><path d="M16 13 28 19.5 16 26 4 19.5Z" fill="#4338CA"/><path d="M4 10.5 16 17 16 20 4 13.5Z" fill="#4F46E5"/><path d="M28 10.5 16 17 16 20 28 13.5Z" fill="#4338CA"/><path d="M16 4 28 10.5 16 17 4 10.5Z" fill="url(#mk1)"/></svg></span>Floor Plan Studio</a>
     <span class="sp"></span>
     <a href="#how">What it does</a>
+    <a href="guides.html">Guides</a>
     <a href="#faq">Questions</a>
+    <a href="about.html">About</a>
+    <a href="terms.html">Terms</a>
     <a href="privacy.html">Privacy</a>
     <a href="mailto:tare2fo2ad@gmail.com">Contact</a>
     <a href="app.html?v=2026-09-07.1">Open the planner</a>
@@ -850,75 +907,7 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
   </div>
 </footer>
 
-<script>
-/* =====================================================================
-   AD SLOTS — wired, reserved, and switched OFF.
-
-   Nothing below contacts Google until you set both `enabled` and `consent`
-   to true, so as it ships the site still makes zero third-party requests
-   and privacy.html is still accurate.
-
-   To switch them on:
-     1. Get approved for Google AdSense and create the three ad units.
-     2. Put your publisher id in ADS.client and each unit id in ADS.slots.
-     3. Put your publisher id in /ads.txt at the site root.
-     4. Give UK/EEA visitors a consent banner BEFORE any ad script loads
-        (Google's Funding Choices does this) and set ADS.consent from it.
-     5. Rewrite privacy.html first. It currently states outright that this
-        site carries no advertising and sets no cookies; serving ads while
-        that text is live is both untrue and an AdSense policy problem.
-     6. Set ADS.enabled = true, and do the same in privacy.html if you want
-        a slot there too.
-
-   Add ?adpreview=1 to any URL to see exactly where the slots sit, without
-   loading anything from anyone.
-   ===================================================================== */
-var ADS = {
-  enabled : false,
-  consent : false,
-  client  : "ca-pub-0000000000000000",
-  slots   : {
-    "in-content-1" : "0000000000",
-    "in-content-2" : "0000000000",
-    "footer"       : "0000000000"
-  }
-};
-
-(function(){
-  "use strict";
-  var boxes = [].slice.call(document.querySelectorAll(".adslot"));
-  if(!boxes.length) return;
-
-  if(/[?&]adpreview=1/.test(location.search)){
-    boxes.forEach(function(b){ b.hidden = false; b.classList.add("preview"); });
-    return;
-  }
-  if(!ADS.enabled || !ADS.consent) return;
-  if(!/^ca-pub-\d{10,}$/.test(ADS.client)) return;   // still the placeholder id
-
-  var tag = document.createElement("script");
-  tag.async = true;
-  tag.crossOrigin = "anonymous";
-  tag.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" +
-            encodeURIComponent(ADS.client);
-  document.head.appendChild(tag);
-
-  boxes.forEach(function(b){
-    var id = ADS.slots[b.getAttribute("data-ad-slot")];
-    if(!id || /^0+$/.test(id)) return;
-    var ins = document.createElement("ins");
-    ins.className = "adsbygoogle";
-    ins.style.display = "block";
-    ins.setAttribute("data-ad-client", ADS.client);
-    ins.setAttribute("data-ad-slot", id);
-    ins.setAttribute("data-ad-format", "auto");
-    ins.setAttribute("data-full-width-responsive", "true");
-    b.querySelector(".adbox").appendChild(ins);
-    b.hidden = false;
-    (window.adsbygoogle = window.adsbygoogle || []).push({});
-  });
-})();
-</script>
+<script src="ads.js"></script>
 
 <script>
 /* ---------------------------------------------------------------------
@@ -1382,73 +1371,6 @@ function orbit(canvas, stage, cam, rend, scene, opts){
 })();
 </script>
 
-<script>
-/* =====================================================================
-   The note for people running an ad blocker.
-
-   It only ever appears when ads are actually switched on above - there is
-   no point asking someone to unblock ads that are not running. It is a card
-   in the corner, never a modal, it never covers the drawing, and once it is
-   dismissed it stays dismissed for a month.
-
-   Detection is done locally with a bait element. No request is made to
-   anyone to work out whether a blocker is present.
-   ===================================================================== */
-(function(){
-  "use strict";
-  var KEY = "fps-adnote", MONTH = 30 * 24 * 60 * 60 * 1000;
-  var preview = /[?&]adpreview=1/.test(location.search);
-
-  if(!preview && !ADS.enabled) return;
-  try{
-    var seen = +localStorage.getItem(KEY);
-    if(!preview && seen && Date.now() - seen < MONTH) return;
-  }catch(e){}
-
-  var bait = document.createElement("div");
-  bait.className = "ad-banner ads adsbox pub_300x250 text-ad doubleclick ad-placement";
-  bait.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:300px;height:250px";
-  document.body.appendChild(bait);
-
-  setTimeout(function(){
-    var cs = getComputedStyle(bait);
-    var blocked = bait.offsetHeight === 0 || bait.clientHeight === 0 ||
-                  cs.display === "none" || cs.visibility === "hidden" ||
-                  (ADS.enabled && ADS.consent && typeof window.adsbygoogle === "undefined");
-    bait.remove();
-    if(blocked || preview) show();
-  }, 400);
-
-  function show(){
-    var n = document.createElement("aside");
-    n.className = "adnote";
-    n.setAttribute("role", "complementary");
-    n.setAttribute("aria-label", "A note about ads");
-    n.innerHTML =
-      '<h3>Ads are what keep this free</h3>' +
-      '<p>There is no paid tier here, no account and nothing held back. Two or ' +
-      'three ads on this page are the only thing paying for the tool. If you can, ' +
-      'allow them on this site.</p>' +
-      '<p style="margin-bottom:8px;color:var(--chalk)">Here is what you will never get from us:</p>' +
-      '<ul><li>Pop-ups, pop-unders or interstitials</li>' +
-      '<li>Anything that covers your drawing</li>' +
-      '<li>Auto-playing video or sound</li>' +
-      '<li>Ads inside the planner itself</li></ul>' +
-      '<div class="row">' +
-      '<button class="yes" type="button">I\'ve allowed it</button>' +
-      '<button class="no"  type="button">Not now</button></div>';
-    document.body.appendChild(n);
-    requestAnimationFrame(function(){ n.classList.add("in"); });
-
-    n.querySelector(".yes").onclick = function(){ location.reload(); };
-    n.querySelector(".no").onclick  = function(){
-      try{ localStorage.setItem(KEY, Date.now()); }catch(e){}
-      n.classList.remove("in");
-      setTimeout(function(){ n.remove(); }, 450);
-    };
-  }
-})();
-</script>
 
 <script type="application/ld+json">
 {
@@ -1522,7 +1444,7 @@ function orbit(canvas, stage, cam, rend, scene, opts){
       "name": "Where does the furniture catalogue come from?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The 113 pieces use generic industry-standard dimensions, not any one manufacturer’s data. They are there so you can plan with something realistic before you have chosen a specific product — measure the real thing before you buy it."
+        "text": "The 116 pieces use generic industry-standard dimensions, not any one manufacturer’s data. They are there so you can plan with something realistic before you have chosen a specific product — measure the real thing before you buy it."
       }
     },
     {
