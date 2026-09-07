@@ -561,7 +561,21 @@
   #v3ctl{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
      background:rgba(14,14,19,.9)!important;border:1px solid var(--line-2)!important;
      box-shadow:var(--sh-3);border-radius:var(--r)!important;color:var(--fg-2)}
-  #v3ctl input[type=range]{accent-color:var(--accent)}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:18px;
+       background:transparent;cursor:pointer;margin:0}
+  input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:3px;
+       background:rgba(255,255,255,.2)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+       width:14px;height:14px;margin-top:-5.5px;border-radius:50%;
+       background:var(--accent);border:2px solid rgba(0,0,0,.5);
+       box-shadow:0 0 0 1px var(--accent)}
+  input[type=range]::-moz-range-track{height:3px;border-radius:3px;
+       background:rgba(255,255,255,.2)}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
+       background:var(--accent);border:2px solid rgba(0,0,0,.5)}
+  input[type=range]:focus-visible{outline:none}
+  input[type=range]:focus-visible::-webkit-slider-thumb{
+       box-shadow:0 0 0 3px var(--accent-wash)}
   #v3ctl label{color:var(--fg-3)!important}
   #v3ctl input[type=number]{background:var(--sunk);color:var(--fg);
      border:1px solid var(--line-2)!important;border-radius:var(--r-xs)!important}
@@ -646,8 +660,9 @@
        border-color:var(--line-2);
        -webkit-backdrop-filter:blur(18px) saturate(1.35);
        backdrop-filter:blur(18px) saturate(1.35)}
-  #hint3,#hint,#v3ctl{background:rgba(14,14,19,.86)!important;color:var(--fg-2)!important;
-       border-color:var(--line-2)!important}
+  #hint3,#hint,#v3ctl{background:rgba(28,29,38,.93)!important;color:var(--fg-2)!important;
+       border-color:rgba(255,255,255,.18)!important;
+       box-shadow:0 10px 30px rgba(0,0,0,.55)!important}
   #varbar{background:rgba(14,14,19,.9);border-color:var(--line-2);
        -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
   .menu,#ctx,dialog{background:rgba(17,17,22,.95);border-color:var(--line-2);
@@ -3920,10 +3935,18 @@ const CEIL=()=>DOC.ceiling||280;
    you see over them into every room. Knee height cleared more but left the
    building looking like a set of stumps next to 2 m wardrobes. Capped at 60%
    for a low ceiling. */
+/* What the camera aims at vertically. Half the room height points at empty
+   air above a sectioned wall; half the cut height is the middle of what is
+   actually drawn. Everything that builds a camera must agree on this. */
+const CAMZ=()=>wallCap()/2;
 const wallCap=()=>(V3.cutaway!==false)
   ? Math.round(Math.min(CEIL()*0.6, V3.cutAt||130)) : CEIL();
 
+/* When three.js draws the scene it does the lighting itself, so the quads
+   have to come out of buildScene() carrying their true colours. */
+let RAW3=false;
 function shade(hex,f){
+  if(RAW3) return hex;
   const n=parseInt(hex.slice(1),16);
   const r=Math.max(0,Math.min(255,Math.round(((n>>16)&255)*f)));
   const g=Math.max(0,Math.min(255,Math.round(((n>>8)&255)*f)));
@@ -4214,71 +4237,183 @@ function project(p,cam,B){
            y: dx*B.ux+dy*B.uy+dz*B.uz,
            z: dx*B.fx+dy*B.fy+dz*B.fz };
 }
+/* =====================================================================
+   The 3D view is drawn by three.js, from exactly the quads buildScene()
+   already produces. Everything above this line - the wall sectioning, the
+   openings, the item geometry, the camera in V3, the damped navigation -
+   is unchanged; only the rasteriser is different. What changes is that the
+   light is real: the sun casts through the window openings instead of
+   having its patches painted on the floor, and a lamp on a mood actually
+   lights the room it is in.
+
+   three.js is fetched on demand, the first time anyone opens the 3D view,
+   so the 2D planner still loads without it.
+   ===================================================================== */
+let THREE=null, threeReq=null;
+function loadThree(){
+  if(threeReq) return threeReq;
+  threeReq = import("./vendor/three.module.min.js").then(m => (THREE = m));
+  return threeReq;
+}
+const G3={ready:false, ren:null, scene:null, cam:null, mesh:null, mat:null,
+           sun:null, hemi:null, amb:null, lamps:[]};
+
+function init3(){
+  if(G3.ready) return;
+  G3.ren = new THREE.WebGLRenderer({canvas:$("cv3"), antialias:true});
+  G3.ren.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  G3.ren.shadowMap.enabled = true;
+  G3.ren.shadowMap.type = THREE.PCFSoftShadowMap;
+  G3.ren.toneMapping = THREE.ACESFilmicToneMapping;
+  G3.ren.toneMappingExposure = 1.0;
+
+  G3.scene = new THREE.Scene();
+  G3.cam = new THREE.PerspectiveCamera(48, 1, 2, 200000);
+
+  G3.mat = new THREE.MeshStandardMaterial({vertexColors:true, roughness:.87,
+             metalness:0, side:THREE.DoubleSide});
+  G3.mesh = new THREE.Mesh(new THREE.BufferGeometry(), G3.mat);
+  G3.mesh.castShadow = true; G3.mesh.receiveShadow = true;
+  G3.scene.add(G3.mesh);
+
+  G3.hemi = new THREE.HemisphereLight(0xDCE7FA, 0x30343F, .85);
+  G3.amb  = new THREE.AmbientLight(0xFFFFFF, .18);
+  G3.sun  = new THREE.DirectionalLight(0xFFF3DC, 2.1);
+  G3.sun.castShadow = true;
+  G3.sun.shadow.mapSize.set(2048, 2048);
+  G3.sun.shadow.bias = -.0007;
+  G3.sun.shadow.normalBias = 2.5;          /* the world is in centimetres */
+  G3.scene.add(G3.hemi, G3.amb, G3.sun, G3.sun.target);
+  G3.ready = true;
+}
+
+/* world (x, y north, z up)  ->  three (x, y up, -z) */
+const T3 = p => [p[0], p[2], -p[1]];
+
+function tri3(p){
+  if(p.length < 3) return [];
+  if(p.length === 3) return [p];
+  if(p.length === 4) return [[p[0],p[1],p[2]], [p[0],p[2],p[3]]];
+  /* room floors and light pools are flat, so they can be triangulated
+     properly rather than fanned - an L-shaped room fans wrong */
+  const flat = p.map(v => new THREE.Vector2(v[0], v[1]));
+  return THREE.ShapeUtils.triangulateShape(flat, []).map(f => f.map(i => p[i]));
+}
+
+function build3(){
+  RAW3 = true;
+  let quads; try{ quads = buildScene(); } finally { RAW3 = false; }
+
+  const pos=[], col=[], c=new THREE.Color();
+  for(const q of quads){
+    if(q.sun) continue;                    /* painted light: real lights now */
+    if(typeof q.c !== "string" || q.c[0] !== "#") continue;
+    c.set(q.c);
+    for(const t of tri3(q.p)) for(const v of t){
+      const w = T3(v);
+      pos.push(w[0], w[1], w[2]);
+      col.push(c.r, c.g, c.b);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("color",    new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  g.computeBoundingSphere();
+  g.computeBoundingBox();
+  G3.mesh.geometry.dispose();
+  G3.mesh.geometry = g;
+  return pos.length / 9;                   /* triangles */
+}
+
+function lights3(){
+  const dark = document.documentElement.dataset.sheet === "dark";
+  G3.ren.setClearColor(dark ? 0x0D1016 : 0xEEF1F4, 1);
+
+  const bb = G3.mesh.geometry.boundingSphere;
+  const R  = bb ? Math.max(200, bb.radius) : 600;
+  const cx = V3.cx || 0, cy = V3.cy || 0;
+
+  const s = SUN.on ? sunDir() : null;
+  if(s && s.alt > 3){
+    const d = R * 3;
+    G3.sun.visible = true;
+    G3.sun.target.position.set(cx, 0, cy);
+    G3.sun.position.set(cx + s.x*d, s.z*d, cy - s.y*d);
+    const sc = G3.sun.shadow.camera;
+    sc.left = -R*1.25; sc.right = R*1.25;
+    sc.top  =  R*1.25; sc.bottom = -R*1.25;
+    sc.near = R*0.5;   sc.far = R*6;
+    sc.updateProjectionMatrix();
+    G3.sun.intensity = 1.5 + 1.1 * Math.sin(Math.min(90, s.alt) * Math.PI/180);
+    G3.hemi.intensity = .85; G3.amb.intensity = .18;
+  } else {
+    G3.sun.visible = false;
+    G3.hemi.intensity = dark ? .30 : .55;    /* night: let the lamps do it */
+    G3.amb.intensity  = .10;
+  }
+
+  /* the electric layer, actually lit. Capped, because every extra light is
+     another branch in the shader and this runs on a drag. */
+  for(const L of G3.lamps) G3.scene.remove(L);
+  G3.lamps.length = 0;
+  const H = CEIL(), WH = wallCap(), damp = (s && s.alt > 3) ? .35 : 1;
+  const on = [];
+  for(const e of DOC.elec){
+    const d = ELECBY[e.kind];
+    if(!d || d.load !== "light") continue;
+    const lvl = sceneLevel(e.id);
+    if(lvl) on.push({e, lvl});
+  }
+  for(const {e, lvl} of on.slice(0, 12)){
+    const [r,g,b] = kelvinRGB(lightKelvin(e));
+    const z = Math.min((e.mount == null) ? H - 8 : e.mount, WH - 4);
+    const L = new THREE.PointLight(new THREE.Color(r/255, g/255, b/255));
+    /* centimetres, with a physical inverse-square falloff: an 800 lm lamp at
+       270 cm should read as a lamp, so the constant is scaled accordingly */
+    L.intensity = 58000 * (lightLumens(e)/800) * (lvl/100) * damp;
+    L.distance  = 900;
+    L.decay     = 2;
+    L.position.set(e.x, z, e.y);
+    G3.scene.add(L);
+    G3.lamps.push(L);
+  }
+}
+
+function cam3(){
+  const st = stage, W = st.clientWidth, H = st.clientHeight;
+  if(!W || !H) return;
+  G3.ren.setSize(W, H, false);
+  /* the same focal length the software renderer used, so switching to
+     three.js did not silently change how wide the view is */
+  const f = Math.min(W, H) * 1.1;
+  G3.cam.fov = 2 * Math.atan((H/2) / f) * 180 / Math.PI;
+  G3.cam.aspect = W / H;
+  G3.cam.updateProjectionMatrix();
+
+  const cam = {...V3, cz: CAMZ()};
+  const B = camBasis(cam);
+  G3.cam.up.set(0, 1, 0);
+  G3.cam.position.set(B.px, B.pz, -B.py);
+  G3.cam.lookAt(cam.cx, cam.cz, cam.cy);
+}
+
+/* camera moved, nothing else: no geometry rebuild */
+function paint3(){
+  if(!G3.ready) return;
+  cam3();
+  G3.ren.render(G3.scene, G3.cam);
+}
+/* the document, the cutaway, the sun or a mood changed */
 function render3(){
-  const c=$("cv3"), st=stage;
-  const W=st.clientWidth, H=st.clientHeight, dpr=window.devicePixelRatio||1;
-  c.width=W*dpr; c.height=H*dpr;
-  const g=c.getContext("2d"); g.scale(dpr,dpr);
-  g.fillStyle=document.documentElement.dataset.sheet==="dark"?"#0D1016":"#EEF1F4";
-  g.fillRect(0,0,W,H);
-  const quads=buildScene();
-  if(!quads.length){ g.fillStyle="#68727f"; g.font="14px sans-serif";
-    g.fillText("Nothing to show yet — draw some walls.",20,30); return; }
-  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-  for(const w of DOC.walls){ x0=Math.min(x0,w.x1,w.x2); y0=Math.min(y0,w.y1,w.y2);
-                             x1=Math.max(x1,w.x1,w.x2); y1=Math.max(y1,w.y1,w.y2); }
-  if(x0>x1){ x0=y0=0; x1=y1=400; }
-  const cam={...V3, cx:V3.cx||(x0+x1)/2, cy:V3.cy||(y0+y1)/2, cz:CEIL()/2};
-  const B=camBasis(cam);
-  const f=Math.min(W,H)*1.1;
-  /* Cutaway is done by sectioning the walls in buildScene - they are built at
-     knee height so you see over them into every room. The half-space filter
-     that used to live here deleted whole walls on the near side of the plan's
-     centre as well; running both left the building with its near half missing
-     AND its far half cut down. Sectioning alone is the whole effect. */
-  const vis = quads;
-  /* Clip to the near plane rather than discarding. Dropping any quad with a
-     single corner behind the camera threw away up to 128 surfaces a frame once
-     you zoomed in - and which ones changed with every degree of orbit, so
-     furniture flickered and popped out of existence. A surface that is partly
-     in front of the camera has to be cut, not deleted. */
-  const NEAR=1;
-  const clipNear=pr=>{
-    const out=[];
-    for(let i=0;i<pr.length;i++){
-      const a=pr[i], b=pr[(i+1)%pr.length];
-      const ain=a.z>NEAR, bin=b.z>NEAR;
-      if(ain) out.push(a);
-      if(ain!==bin){
-        const t=(NEAR-a.z)/(b.z-a.z);
-        out.push({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:NEAR});
-      }
-    }
-    return out;
-  };
-  const drawn=[];
-  for(const q of vis){
-    let pr=q.p.map(p=>project(p,cam,B));
-    if(pr.some(p=>p.z<=NEAR)){
-      if(pr.every(p=>p.z<=NEAR)) continue;    // wholly behind the camera
-      pr=clipNear(pr);
-      if(pr.length<3) continue;
-    }
-    drawn.push({pr, depth:pr.reduce((s,p)=>s+p.z,0)/pr.length, c:q.c, sun:q.sun});
+  if(!G3.ready){
+    if(is3D) loadThree().then(() => { init3(); render3(); })
+                        .catch(() => toast("The 3D view needs to be served over http, not opened from a file."));
+    return;
   }
-  drawn.sort((a,b)=>b.depth-a.depth);
-  for(const q of drawn){
-    if(q.sun){ g.globalCompositeOperation="multiply"; }
-    else { g.globalCompositeOperation="source-over"; }
-    g.beginPath();
-    q.pr.forEach((p,i)=>{
-      const sx=W/2 + p.x*f/p.z, sy=H/2 - p.y*f/p.z;   // screen y grows downward
-      i? g.lineTo(sx,sy) : g.moveTo(sx,sy);
-    });
-    g.closePath(); g.fillStyle=q.c; g.fill();
-    if(!q.sun){ g.strokeStyle="rgba(40,50,62,.16)"; g.lineWidth=.7; g.stroke(); }
-  }
-  g.globalCompositeOperation="source-over";
+  build3();
+  lights3();
+  paint3();
 }
 function fit3D(){
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
@@ -4289,42 +4424,48 @@ function fit3D(){
   if(x0>x1){ x0=y0=0; x1=y1=400; }
   V3.cx=(x0+x1)/2; V3.cy=(y0+y1)/2;
   V3.az=-55; V3.el=42;
-  /* span*1.6+400 was a guess, and a bad one - it framed the plan at about a
-     quarter of the viewport. Rather than predicting the projected size, render
-     and measure it: scan the canvas for what was actually painted and scale the
-     distance by the shortfall. Screen size goes as 1/distance, so two or three
-     passes converge, and measuring the real pixels cannot disagree with what
-     you end up looking at. */
-  const span=Math.max(x1-x0, y1-y0, 200);
-  V3.dist=span*1.5+300;
-  const cnv=$("cv3");
-  const painted=()=>{
-    const g=cnv.getContext("2d");
-    const d=g.getImageData(0,0,cnv.width,cnv.height).data;
-    let a0=1e9,b0=1e9,a1=-1,b1=-1;
-    for(let y=0;y<cnv.height;y+=4) for(let x=0;x<cnv.width;x+=4){
-      const i=(y*cnv.width+x)*4;
-      // background is the flat #eef1f4 fill laid down at the start of render3
-      if(Math.abs(d[i]-238)>5||Math.abs(d[i+1]-241)>5||Math.abs(d[i+2]-244)>5){
-        if(x<a0)a0=x; if(x>a1)a1=x; if(y<b0)b0=y; if(y>b1)b1=y;
-      }
-    }
-    return a1<0?null:{a0,a1,b0,b1, cw:cnv.width, ch:cnv.height};
-  };
-  for(let pass=0; pass<5; pass++){
-    render3();
-    const box=painted();
-    if(!box||box.a1-box.a0<2||box.b1-box.b0<2){ V3.dist*=1.6; continue; }
-    /* Changing distance scales the picture about the centre of the screen, and
-       the model does not sit centred there, so fit the furthest corner from the
-       centre - fitting the box's width would still clip the far side. */
-    const cx=box.cw/2, cy=box.ch/2;
-    const ex=Math.max(Math.abs(box.a0-cx), Math.abs(box.a1-cx));
-    const ey=Math.max(Math.abs(box.b0-cy), Math.abs(box.b1-cy));
-    const k=Math.min(cx*0.92/Math.max(1,ex), cy*0.92/Math.max(1,ey));
-    if(Math.abs(k-1)<0.02) break;
-    V3.dist=Math.max(200,Math.min(40000,V3.dist/k));
+  /* This used to render five times and scan the canvas for painted pixels,
+     because the projected size of the model was hard to predict. It only
+     needs projecting: put the eight corners of the model's box through the
+     same camera, measure how far they land from the centre, and scale the
+     distance by the shortfall. A handful of iterations, no pixels, and it
+     fits tight - a bounding sphere would leave the plan floating in the
+     middle of the viewport at about two thirds the size it should be. */
+  const st=stage, W=st.clientWidth||900, H=st.clientHeight||600;
+  const f=Math.min(W,H)*1.1, Z=CEIL();
+  /* Fit what is actually drawn, not the room's full volume. The walls are
+     sectioned for the cutaway and there is no ceiling, so fitting a box the
+     height of the room leaves the plan at about half size in the middle of
+     an empty viewport. Build the geometry first and use its real bounds. */
+  const corners=[];
+  if(G3.ready){ build3(); }
+  const bb = G3.ready && G3.mesh.geometry.boundingBox;
+  if(bb && isFinite(bb.min.x)){
+    /* three (x, up, z) back to world (x, y north, z up) */
+    for(const X of [bb.min.x,bb.max.x])
+      for(const U of [bb.min.y,bb.max.y])
+        for(const V of [bb.min.z,bb.max.z]) corners.push([X, -V, U]);
+  } else {
+    for(const X of [x0,x1]) for(const Y of [y0,y1]) for(const zz of [0,Z])
+      corners.push(W3(X,Y,zz));
   }
+  let d=Math.hypot(x1-x0, y1-y0, Z)*1.3;
+  for(let i=0;i<7;i++){
+    const cam={az:V3.az, el:V3.el, dist:d, cx:V3.cx, cy:V3.cy, cz:CAMZ()};
+    const B=camBasis(cam);
+    let ex=0, ey=0, behind=false;
+    for(const pt of corners){
+      const q=project(pt,cam,B);
+      if(q.z<1){ behind=true; break; }
+      ex=Math.max(ex, Math.abs(q.x*f/q.z));
+      ey=Math.max(ey, Math.abs(q.y*f/q.z));
+    }
+    if(behind){ d*=1.6; continue; }
+    const k=Math.min((W/2)*0.92/Math.max(1,ex), (H/2)*0.92/Math.max(1,ey));
+    if(Math.abs(k-1)<0.01) break;
+    d=Math.max(200, Math.min(40000, d/k));
+  }
+  V3.dist=d;
   NAV.taz=-55; NAV.tel=42; NAV.tdist=V3.dist; NAV.tcx=V3.cx; NAV.tcy=V3.cy;
   render3();
 }
@@ -4339,7 +4480,13 @@ function set3D(on){
   $("b3d").classList.toggle("on",on);
   if(typeof refreshEmpty==="function") refreshEmpty();
   $("b3d").textContent=on?"2D plan":"3D view";
-  if(on){ if(!V3.cx && !V3.cy) fit3D(); else render3(); }
+  if(!on) return;
+  const go=()=>{ init3(); if(!V3.cx && !V3.cy) fit3D(); else render3(); };
+  if(G3.ready) go();
+  else loadThree().then(go).catch(()=>{
+    set3D(false);
+    toast("The 3D view needs the page served over http. Run a local server, or use the published site.");
+  });
 }
 $("b3d").onclick=()=>set3D(!is3D);
 /* ---- navigation -------------------------------------------------------
@@ -4360,8 +4507,8 @@ function navTick(){
     if(Math.abs(d)>0.02){ V3[k]+=d*ease; moved=true; } else V3[k]=t; };
   step("az",NAV.taz); step("el",NAV.tel);
   step("dist",NAV.tdist); step("cx",NAV.tcx); step("cy",NAV.tcy);
-  if(moved){ render3(); NAV.anim=requestAnimationFrame(navTick); }
-  else { NAV.anim=0; render3(); }
+  if(moved){ paint3(); NAV.anim=requestAnimationFrame(navTick); }
+  else { NAV.anim=0; paint3(); }
 }
 /* Move the target so the ground point under the cursor stays under the
    cursor. The old version used an ad-hoc rotation that ignored the camera's
@@ -4378,7 +4525,7 @@ function panBy(dxPx,dyPx,fromCx,fromCy){
      with g constrained to the ground, so it's a 2x2 solve in gx, gy. */
   const st=$("stage"), W=st.clientWidth, H=st.clientHeight;
   const f=Math.min(W,H)*1.1;
-  const cam={...V3, cx:fromCx, cy:fromCy, cz:CEIL()/2};
+  const cam={...V3, cx:fromCx, cy:fromCy, cz:CAMZ()};
   const B=camBasis(cam);
   const z=Math.max(1,V3.dist), sc=z/f;
   const b1=-dxPx*sc, b2=dyPx*sc;
@@ -4420,7 +4567,7 @@ function navGo(patch,instant){
   if(patch.cx!==undefined)  NAV.tcx=patch.cx;
   if(patch.cy!==undefined)  NAV.tcy=patch.cy;
   if(instant){ V3.az=NAV.taz; V3.el=NAV.tel; V3.dist=NAV.tdist;
-               V3.cx=NAV.tcx; V3.cy=NAV.tcy; render3(); return; }
+               V3.cx=NAV.tcx; V3.cy=NAV.tcy; paint3(); return; }
   if(!NAV.anim) NAV.anim=requestAnimationFrame(navTick);
 }
 (function orbit(){
@@ -4436,7 +4583,7 @@ function navGo(patch,instant){
     NAV.vaz=NAV.vel=0;
     if(drag.sh){
       const r=c.getBoundingClientRect();
-      drag.cam={...V3, cx:NAV.tcx, cy:NAV.tcy, cz:CEIL()/2};
+      drag.cam={...V3, cx:NAV.tcx, cy:NAV.tcy, cz:CAMZ()};
       drag.B=camBasis(drag.cam);
       drag.g0=groundAt(e.clientX-r.left-r.width/2,
                        e.clientY-r.top-r.height/2, drag.cam, drag.B);
@@ -5830,7 +5977,7 @@ function finishWall(){
   showNumChip();
 }
 cv.addEventListener("dblclick",()=>{ if(S.tool==="wall") finishWall(); });
-window.addEventListener("resize",()=>{ render(); if(is3D) render3(); });
+window.addEventListener("resize",()=>{ render(); if(is3D) paint3(); });
 
 /* =====================================================================
    15. BOOT
