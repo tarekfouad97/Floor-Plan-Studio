@@ -118,7 +118,13 @@ var ADS = {
       '<button class="yes" type="button">I\'ve allowed it</button>' +
       '<button class="no"  type="button">Not now</button></div>';
     document.body.appendChild(n);
-    requestAnimationFrame(function () { n.classList.add("in"); });
+    /* Force a style flush so the transition has an initial state to run from,
+       then reveal synchronously. requestAnimationFrame would be the usual
+       trick, but it does not fire in a background or throttled tab - and the
+       card would then sit there invisible, over the corner, still taking
+       clicks. */
+    void n.offsetHeight;
+    n.classList.add("in");
 
     n.querySelector(".yes").onclick = function () { location.reload(); };
     n.querySelector(".no").onclick = function () {

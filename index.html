@@ -311,7 +311,7 @@ input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px rgba(56,1
 }
 .paper::before{transform:rotate(2.4deg) translateY(6px)}
 .paper::after{transform:rotate(1.2deg) translateY(3px)}
-.paper h4{margin:0 0 4px;font-size:.98rem;letter-spacing:-.01em}
+.paper .ph{margin:0 0 4px;font-size:.98rem;letter-spacing:-.01em;font-weight:660}
 .paper .sub{font-family:var(--mono);font-size:.63rem;letter-spacing:.14em;
             text-transform:uppercase;color:#7A8090;margin-bottom:16px}
 .paper table{width:100%;border-collapse:collapse;font-size:.76rem}
@@ -414,9 +414,10 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
   background:linear-gradient(180deg,rgba(20,21,30,.96),rgba(10,11,17,.96));
   box-shadow:0 24px 60px rgba(0,0,0,.7);
   -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
-  transform:translateY(20px);opacity:0;transition:opacity .45s var(--enter),
+  transform:translateY(20px);opacity:0;pointer-events:none;
+  transition:opacity .45s var(--enter),
   transform .45s var(--enter)}
-.adnote.in{transform:none;opacity:1}
+.adnote.in{transform:none;opacity:1;pointer-events:auto}
 .adnote h3{font-size:1.02rem;margin-bottom:8px}
 .adnote p{font-size:.88rem;color:var(--chalk-2);margin-bottom:12px}
 .adnote ul{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:6px}
@@ -704,8 +705,8 @@ footer{margin-top:clamp(60px,8vw,90px);border-top:1px solid var(--rule);
         </ul>
       </div>
       <div class="rev">
-        <div class="paper">
-          <h4>Shopping list — sizes in centimetres</h4>
+        <div class="paper" role="img" aria-label="A printed shopping list: each piece grouped by room, with its width and depth in centimetres and a running total.">
+          <div class="ph">Shopping list — sizes in centimetres</div>
           <div class="sub">Living room</div>
           <table>
             <thead><tr><th>Item</th><th class="n">Size</th><th class="n">Qty</th></tr></thead>
