@@ -5272,7 +5272,7 @@ function refreshEmpty(){
   if(S.emptyOff){ host.className=""; return; }
   const noWalls=!DOC.walls.length, rooms=DOC.rooms.length, items=DOC.items.length;
   let mode=null;
-  if(is3D) mode=null;
+  if(is3D) mode = (noWalls && !rooms && !items) ? "bare3d" : null;
   else if(noWalls) mode="start";
   else if(rooms&&!items) mode="claude";
   if(!mode){ host.className=""; return; }
@@ -5284,7 +5284,15 @@ function refreshEmpty(){
   ac.innerHTML="";
   const act=(label,cls,fn)=>{ const b=document.createElement("button");
     b.className="btn"+(cls?" "+cls:""); b.textContent=label; b.onclick=fn; ac.appendChild(b); };
-  if(mode==="start"){
+  if(mode==="bare3d"){
+    /* three.js renders an empty scene as an empty scene. Say so, and offer the
+       way back, rather than leaving someone staring at a blank rectangle. */
+    ic.textContent="▤";
+    ti.textContent="Nothing to show yet";
+    bo.textContent="There are no walls on this floor to build a model from. "+
+                   "Go back to the plan and draw some, or trace a photo.";
+    act("Back to the plan","pri",()=>set3D(false));
+  }else if(mode==="start"){
     ic.textContent="▤";
     ti.textContent="Start your floor plan";
     bo.textContent="Trace a photo of an existing plan, or draw the walls yourself. "+
