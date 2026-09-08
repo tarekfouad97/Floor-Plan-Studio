@@ -68,6 +68,32 @@ navigation, so every control — the presets, orbit, pan, the cutaway, the sun b
 time of day and north — works exactly as it did. `render3()` rebuilds geometry
 and draws; `paint3()` only draws, and is what the drag path calls.
 
+## Sharing a plan in a link
+
+`File → Copy a link to this plan` encodes the whole document into the URL
+fragment: deflate-raw, then base64url, behind a `#p1=` prefix (`#p0=` is the
+uncompressed fallback for browsers without `CompressionStream`). Everything
+after the `#` is never sent to a server, so this does not weaken anything
+`privacy.html` claims.
+
+The trace photograph is stripped — it is base64 raster and would dwarf the
+plan. A furnished 8-room flat with 52 pieces and 40 fittings comes to about
+5.6 KB of link; anything over 30,000 characters is refused with a nudge
+towards `Save to file`.
+
+Inbound links are handled on load **and** on `hashchange`, because pasting a
+link into a tab that already has the planner open is a same-document
+navigation — no reload, so a load-time handler alone would never fire.
+
+## Exporting part of a plan
+
+`File → Export plan data…` asks what to include. Walls, doors, windows and
+rooms always go; furniture, the electrical layer and the trace image are each
+optional. Dropping the electrical layer also drops moods and circuits, which
+are keyed to fitting ids and mean nothing without them. The filename says what
+happened — `-no-furniture`, `-no-electrical`, `-shell`. The copy on screen is
+never modified.
+
 ## Keeping `editor.html` in sync
 
 `editor.html` is a copy of `app.html` that differs in exactly two places:

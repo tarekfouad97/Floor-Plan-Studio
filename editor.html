@@ -785,6 +785,7 @@
     <button class="mi" id="bProjects" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>My designs&#8230;</button>
     <div class="msep"></div>
     <div class="mlbl">Share a copy</div>
+    <button class="mi" id="bLink" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy a link to this plan</button>
     <button class="mi" id="bCsv" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>Shopping list as CSV</button>
     <button class="mi" id="bPng" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Export a PNG image</button>
     <button class="mi" id="bExport" role="menuitem"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export plan data</button>
@@ -4979,6 +4980,80 @@ function loadDocText(text,handle){
   markSaved(handle?"file":"browser");
   fit(); refreshAll();
 }
+/* =====================================================================
+   SHARE A PLAN IN A LINK
+
+   Everything after the # in a URL is never sent to a server - not to
+   GitHub Pages, not to anyone. So a whole plan can travel in a link
+   without breaking a single promise on the privacy page: the person you
+   send it to decodes it in their own browser, exactly as if you had
+   emailed them the .json.
+
+   The trace photograph is deliberately left out. It is base64 raster and
+   would dwarf the plan - a 20 KB flat compresses to about 5 KB of link,
+   a photo would be megabytes.
+
+   #p1= is deflate-raw then base64url. #p0= is base64url of the raw JSON,
+   for the handful of browsers without CompressionStream.
+   ===================================================================== */
+const LINK_MAX = 30000;          // comfortably inside what chat apps forward
+
+function b64uFrom(u8){
+  let s = "";
+  for(let i=0;i<u8.length;i+=0x8000)          // spreading the whole array
+    s += String.fromCharCode.apply(null, u8.subarray(i, i+0x8000));
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function bytesFrom(b64u){
+  const s = b64u.replace(/-/g,"+").replace(/_/g,"/");
+  const bin = atob(s + "=".repeat((4 - s.length % 4) % 4));
+  const u = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) u[i] = bin.charCodeAt(i);
+  return u;
+}
+async function squeeze(str){
+  if(typeof CompressionStream !== "function") return null;
+  const cs = new CompressionStream("deflate-raw");
+  const w = cs.writable.getWriter();
+  w.write(new TextEncoder().encode(str)); w.close();
+  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+}
+async function unsqueeze(u8){
+  const ds = new DecompressionStream("deflate-raw");
+  const w = ds.writable.getWriter();
+  w.write(u8); w.close();
+  return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer());
+}
+
+/* the plan as it goes into a link: everything except the trace photo */
+function planForLink(){
+  const d = JSON.parse(docJSON());
+  let hadImage = false;
+  const strip = o => { if(o && o.underlay && o.underlay.src){ o.underlay.src = ""; hadImage = true; } };
+  strip(d);
+  for(const f of (d.floors || [])) strip(f);
+  return { json: JSON.stringify(d), hadImage };
+}
+async function planLink(){
+  const { json, hadImage } = planForLink();
+  const packed = await squeeze(json);
+  const hash = packed ? "p1=" + b64uFrom(packed)
+                      : "p0=" + b64uFrom(new TextEncoder().encode(json));
+  return { url: location.origin + location.pathname + location.search + "#" + hash,
+           hadImage, tooBig: hash.length > LINK_MAX };
+}
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
+  try{                                   /* http, or no clipboard permission */
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly","");
+    ta.style.cssText = "position:fixed;left:-9999px;top:0";
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove(); return ok;
+  }catch(e){ return false; }
+}
+
 async function openFromFile(){
   if(FSA){
     try{
@@ -5007,9 +5082,70 @@ $("bOpenFile").onclick=openFromFile;
 window.addEventListener("beforeunload",e=>{
   if(dirty && !STORAGE_OK){ e.preventDefault(); e.returnValue=""; }
 });
-$("bExport").onclick=()=>dl(URL.createObjectURL(
-  new Blob([docJSON(2)],{type:"application/json"})),
-  (DOC.name||"floorplan").replace(/\W+/g,"-").toLowerCase()+".json");
+/* ---- exporting a subset ------------------------------------------------
+   A sketch is often worth sharing without what is in it: the shell to hand
+   to someone who will furnish it themselves, or the furniture without the
+   electrical layer. Everything dropped here is dropped from a COPY - what
+   is on screen is untouched. */
+function docSubset(opt){
+  const d = JSON.parse(docJSON());
+  const floors = d.floors || [d];
+  for(const f of floors){
+    if(!opt.items) f.items = [];
+    if(!opt.elec)  f.elec  = [];
+    if(!opt.image && f.underlay) f.underlay.src = "";
+  }
+  if(!opt.image && d.underlay) d.underlay.src = "";
+  /* moods are keyed by fitting id and circuits by the wiring, so neither
+     means anything once the electrical layer has gone */
+  if(!opt.elec){ d.scenes = []; d.circuits = []; }
+  return d;
+}
+function subsetName(opt){
+  const base = (DOC.name || "floorplan").replace(/\W+/g,"-").toLowerCase();
+  const tag = (!opt.items && !opt.elec) ? "-shell"
+            : !opt.items ? "-no-furniture"
+            : !opt.elec  ? "-no-electrical" : "";
+  return base + tag + ".json";
+}
+
+$("bExport").onclick = async () => {
+  const fl = DOC.floors || [DOC];
+  const nItems = fl.reduce((n,f)=>n+((f.items||[]).length),0);
+  const nElec  = fl.reduce((n,f)=>n+((f.elec ||[]).length),0);
+  const imgB   = fl.reduce((n,f)=>n+(((f.underlay||{}).src)||"").length,0);
+  const box = (id,label,note,on,dis) =>
+    '<label class="airow" style="margin:0 0 12px"><input type="checkbox" id="'+id+'"'+
+    (on?" checked":"") + (dis?" disabled":"") + '><span><b>'+label+'</b>'+
+    (note?'<br><span style="color:var(--fg-3)">'+note+'</span>':'')+'</span></label>';
+
+  const r = await ask({
+    title:"Export plan data",
+    body:"Walls, doors, windows and rooms are always included. Choose what else "+
+         "goes in the file &mdash; nothing on screen is changed."+
+         box("exItems","Furniture",
+             nItems ? nItems+" piece"+(nItems===1?"":"s") : "nothing placed yet",
+             nItems>0, nItems===0) +
+         box("exElec","Electrical and moods",
+             nElec ? nElec+" fitting"+(nElec===1?"":"s")+", plus any lighting moods"
+                   : "nothing placed yet",
+             nElec>0, nElec===0) +
+         box("exImage","Trace image",
+             imgB ? "about "+Math.round(imgB/1024)+" KB of the file"
+                  : "no trace image loaded",
+             false, imgB===0),
+    ok:"Export"});
+  if(r!=="ok") return;
+
+  const opt = { items: !!($("exItems")||{}).checked,
+                elec : !!($("exElec") ||{}).checked,
+                image: !!($("exImage")||{}).checked };
+  const text = JSON.stringify(docSubset(opt), null, 2);
+  dl(URL.createObjectURL(new Blob([text],{type:"application/json"})), subsetName(opt));
+  const left = [opt.items?null:"furniture", opt.elec?null:"electrical"].filter(Boolean);
+  toast(left.length ? "Exported without "+left.join(" or ")+"."
+                    : "Exported the whole plan.");
+};
 $("bImport").onclick=()=>{
   const i=document.createElement("input"); i.type="file"; i.accept=".json";
   i.onchange=()=>{ const f=i.files[0]; if(!f) return;
@@ -5184,6 +5320,35 @@ document.addEventListener("pointerdown",e=>{
 },true);
 window.addEventListener("blur",closeMenu);
 $("bSaveAs").onclick=()=>saveToFile(true);
+
+$("bLink").onclick = async () => {
+  let r;
+  try{ r = await planLink(); }
+  catch(e){ toast("Could not build a link for this plan."); return; }
+  if(r.tooBig){
+    toast("This plan is too big to fit in a link. Use File → Save to file and "+
+          "send the file instead.", 7000);
+    return;
+  }
+  const ok = await copyText(r.url);
+  if(!ok){
+    /* Some browsers refuse clipboard access without a gesture they recognise.
+       Show the link rather than leaving a dead end. */
+    const p = ask({ title:"Copy this link",
+      body:"Your browser would not let the page reach the clipboard. Select the "+
+           "link below and copy it yourself."+
+           '<textarea class="ta" rows="5" readonly id="linkOut">'+esc(r.url)+'</textarea>',
+      ok:"Done" });
+    setTimeout(()=>{ const ta=$("linkOut"); if(ta){ ta.focus(); ta.select(); } },60);
+    await p;
+    return;
+  }
+  toast("Link copied. It carries the whole plan — nothing was uploaded, so "+
+        "anyone you send it to opens exactly what you see." +
+        (r.hadImage ? " The trace photo is not included; it is too big for a link." : ""),
+        7000);
+};
+
 
 /* ---- folding side panels --------------------------------------------- */
 const APP=$("app");
@@ -6021,6 +6186,31 @@ setTimeout(()=>document.body.classList.remove("boot"),1400);
           "with the Wall tool — or just start drawing.",6000);
   }
 })();
+
+/* A shared link replaces whatever was last open. This runs after boot rather
+   than inside it, so the ordinary path is untouched when there is no link -
+   and the plan lands in the library like any other opened file. */
+async function openSharedLink(){
+  const m = /^#p([01])=(.+)$/.exec(location.hash || "");
+  if(!m) return;
+  try{
+    const bytes = bytesFrom(m[2]);
+    const json  = m[1] === "1" ? await unsqueeze(bytes)
+                               : new TextDecoder().decode(bytes);
+    loadDocText(json, null);
+    /* drop the hash so a reload does not import it again, and so the address
+       bar is not five kilobytes long */
+    history.replaceState(null, "", location.pathname + location.search);
+    toast("Opened a shared plan. It is yours now — save it to a file to keep it.", 6000);
+  }catch(e){
+    toast("That shared link could not be read. It may have been cut short in transit.", 6000);
+  }
+}
+openSharedLink();
+/* Pasting a link into the address bar of a tab that already has the planner
+   open only changes the fragment, which is a same-document navigation: no
+   reload, so nothing above would ever run again. Listen for it. */
+addEventListener("hashchange", openSharedLink);
 </script>
 </body>
 </html>
